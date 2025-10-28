@@ -26,3 +26,8 @@ footer{ border-top:1px solid #eee; margin-top:64px; padding:24px 0; color:#666; 
 small.tagline{ display:block; color:#666; margin-top:2px; font-weight:400; }
 @media (max-width:720px){ .hero h1{ font-size:28px; } }
 @keyframes fadeIn{ to{ opacity:1; transform:none; } }
+/* FORCE bigger logo on desktop */
+@media (min-width: 1024px){
+  header .brand img.logo{ height: 56px !important; }
+  header .nav{ padding: 18px 0 !important; }
+}
