@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voyadecir — Translate</title>
+  <meta name="description" content="Use the Voyadecir translator inside the site.">
+  <meta name="author" content="Voyadecir">
+  <meta property="og:title" content="Voyadecir — Translate">
+  <meta property="og:description" content="Use the Voyadecir translator inside the site.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://voyadecir.com/">
+  <meta property="og:image" content="https://voyadecir.com/assets/img/favicon-32x32.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Voyadecir — Translate">
+  <meta name="twitter:description" content="Use the Voyadecir translator inside the site.">
+  <link rel="canonical" href="https://voyadecir.com/">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
+  <link rel="alternate icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/img/favicon.ico">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preload" as="image" href="assets/img/logo.png">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script defer src="assets/js/main.js"></script>
+</head>
+<body>
+  
+<header>
+  <div class="container nav">
+    <div class="brand">
+      <img src="assets/img/logo.png" alt="Voyadecir Logo" class="logo"
+           onerror="this.onerror=null;this.src='assets/img/logo.svg';">
+      <div>
+        <div data-i18n="brand.title">Voyadecir</div>
+        <small class="tagline" data-i18n="brand.tagline">Translate. Understand. Connect.</small>
+      </div>
+    </div>
+    <nav>
+      <a href="index.html" data-i18n="nav.home">Home</a>
+      <a href="translate.html" data-i18n="nav.translate">Translate</a>
+      <a href="about.html" data-i18n="nav.about">About</a>
+      <a href="contact.html" data-i18n="nav.contact">Contact</a>
+      <button id="lang-toggle" class="lang" aria-label="Toggle language">EN | ES</button>
+    </nav>
+  </div>
+</header>
+  <main class="container section">
+    <div class="card">
+      <iframe
+        class="appframe"
+        src="https://ai-translator-i5jb.onrender.com"
+        frameborder="0"
+        allow="clipboard-write; clipboard-read"
+        referrerpolicy="no-referrer"
+        sandbox="allow-scripts allow-forms allow-same-origin">
+      </iframe>
+      <div class="notice" id="offline-note">
+        If the app doesn’t load, <a href="https://ai-translator-i5jb.onrender.com" target="_blank" rel="nofollow noopener">open the translator in a new tab</a>.
+      </div>
+    </div>
+  </main>
+  
+<footer>
+  <div class="container">© 2025 Voyadecir — All rights reserved.</div>
+</footer>
+  <script>
+    // Simple timeout-based note in case iframe is blocked/unreachable
+    setTimeout(function(){
+      var f = document.querySelector('iframe.appframe');
+      // We can’t probe cross-origin reliably; show helper link after a delay.
+      var note = document.getElementById('offline-note');
+      if(note) note.style.display = 'block';
+    }, 4500);
+  </script>
+</body>
+</html>

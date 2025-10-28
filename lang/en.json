@@ -1,0 +1,23 @@
+{
+  "brand.title": "Voyadecir",
+  "brand.tagline": "Translate. Understand. Connect.",
+  "nav.home": "Home",
+  "nav.translate": "Translate",
+  "nav.about": "About",
+  "nav.contact": "Contact",
+  "hero.h1": "Voyadecir — Translate. Understand. Connect.",
+  "hero.sub": "Powered by the latest advancements in AI technology, Voyadecir bridges languages through intelligent translation and interpretation — helping you translate, understand, and connect effortlessly across the world.",
+  "cta.start": "Start Translating",
+  "about.title": "About Voyadecir",
+  "about.body": "Voyadecir helps people communicate clearly across languages with a clean, elegant experience. We believe in global connection, intelligent tools, and quiet craftsmanship.",
+  "contact.title": "Contact",
+  "contact.intro": "Send us a note. We’ll get back to you soon.",
+  "contact.name": "Name",
+  "contact.email": "Email",
+  "contact.msg": "Message",
+  "contact.send": "Send",
+  "privacy.title": "Privacy Policy",
+  "privacy.body": "We design for privacy first. This static site uses no cookies or trackers by default. If you choose to use our translator, it may rely on third-party APIs according to their policies.",
+  "terms.title": "Terms of Service",
+  "terms.body": "Use Voyadecir responsibly. We provide the service as‑is, with no guarantees. By using the site, you agree not to misuse the service."
+}

@@ -1,0 +1,12 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'>
+  <rect width='128' height='128' fill='#ffffff'/>
+  <g stroke='#000' stroke-width='2' fill='none' transform='translate(64,64)'>
+    <circle r='38'/>
+    <line x1='0' y1='-48' x2='0' y2='48'/>
+    <line x1='-48' y1='0' x2='48' y2='0'/>
+    <path d='M-28,-10 A30,30 0 0,1 28,-10'/>
+    <path d='M-28,10 A30,30 0 0,0 28,10'/>
+    <polygon points='0,-44 6,-22 0,-28 -6,-22' fill='#000'/>
+    <polygon points='44,0 22,6 28,0 22,-6' fill='#000'/>
+  </g>
+</svg>
