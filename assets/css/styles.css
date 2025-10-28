@@ -8,7 +8,7 @@ header{ position:sticky; top:0; background:#fff; border-bottom:1px solid #eee; z
 .brand img{ height:28px; width:auto; }
 /* Bigger logo on desktop */
 @media (min-width: 1024px){
-  .brand img{ height: 48px; }      /* try 48–56px */
+  .brand img{ height: 56px; }      /* try 48–56px */
   header .nav{ padding: 18px 0; }  /* slight header breathing room */
 }
 nav a{ text-decoration:none; color:#000; margin-left:16px; font-size:15px; opacity:.85; }
