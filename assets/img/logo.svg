@@ -1,12 +1,23 @@
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'>
-  <rect width='128' height='128' fill='#ffffff'/>
-  <g stroke='#000' stroke-width='2' fill='none' transform='translate(64,64)'>
-    <circle r='38'/>
-    <line x1='0' y1='-48' x2='0' y2='48'/>
-    <line x1='-48' y1='0' x2='48' y2='0'/>
-    <path d='M-28,-10 A30,30 0 0,1 28,-10'/>
-    <path d='M-28,10 A30,30 0 0,0 28,10'/>
-    <polygon points='0,-44 6,-22 0,-28 -6,-22' fill='#000'/>
-    <polygon points='44,0 22,6 28,0 22,-6' fill='#000'/>
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'>
+  <rect width='256' height='256' fill='#ffffff'/>
+  <g stroke='#000' stroke-width='2' fill='none' transform='translate(128,128)'>
+    <circle r='68'/>
+    <line x1='-90' y1='0' x2='90' y2='0'/>
+    <line x1='0' y1='-90' x2='0' y2='90'/>
+    <line x1='-64' y1='-64' x2='-44' y2='-44'/>
+    <line x1='64' y1='64' x2='44' y2='44'/>
+    <ellipse rx='68' ry='22'/>
+    <ellipse rx='68' ry='44'/>
+    <ellipse rx='68' ry='60'/>
+    <g transform='rotate(90)'>
+      <ellipse rx='68' ry='22'/>
+      <ellipse rx='68' ry='44'/>
+      <ellipse rx='68' ry='60'/>
+    </g>
   </g>
+  <g fill='#000' stroke='none' transform='translate(128,128) rotate(-10)'>
+    <rect x='6' y='-4' width='86' height='8' rx='4'/>
+    <polygon points='94,-12 120,0 94,12'/>
+  </g>
+  <polygon points='126,22 130,6 134,22' fill='#000' transform='translate(0,-90)'/>
 </svg>
