@@ -8,7 +8,7 @@ header{ position:sticky; top:0; background:#fff; border-bottom:1px solid #eee; z
 .brand img{ height:28px; width:auto; }
 /* Bigger logo on desktop */
 @media (min-width: 1024px){
-  .brand img{ height: 56px; }      /* try 48–56px */
+  .brand img{ height: 64px; }      /* try 48–56px */
   header .nav{ padding: 18px 0; }  /* slight header breathing room */
 }
 nav a{ text-decoration:none; color:#000; margin-left:16px; font-size:15px; opacity:.85; }
@@ -28,6 +28,6 @@ small.tagline{ display:block; color:#666; margin-top:2px; font-weight:400; }
 @keyframes fadeIn{ to{ opacity:1; transform:none; } }
 /* FORCE bigger logo on desktop */
 @media (min-width: 1024px){
-  header .brand img.logo{ height: 56px !important; }
+  header .brand img.logo{ height: 64px !important; }
   header .nav{ padding: 18px 0 !important; }
 }
