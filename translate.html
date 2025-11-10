@@ -11,13 +11,11 @@
   <link rel="icon" href="assets/img/favicon.ico">
   <meta name="theme-color" content="#ffffff">
   <link rel="manifest" href="manifest.webmanifest">
-  <!-- bump version to beat cache -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=4">
-  <script defer src="assets/js/main.js"></script>
-  <script defer src="assets/js/translate.js?v=1"></script>
+  <link rel="stylesheet" href="assets/css/styles.css?v=5">
+  <script defer src="assets/js/main.js?v=2"></script>
+  <script defer src="assets/js/translate.js?v=2"></script>
 </head>
 <body>
-  <!-- existing header from your site -->
   <header>
     <div class="container nav">
       <div class="brand">
@@ -40,42 +38,71 @@
 
   <main class="container section">
     <div class="translate-shell">
-      <h1 class="translate-title">Translate a document</h1>
-      <p class="translate-sub">Upload, snap a photo, or use the AI translator below.</p>
+      <h1 class="translate-title" data-i18n="translate.title">Translate a document</h1>
+      <p class="translate-sub" data-i18n="translate.subtitle">Upload, snap a photo, or use the AI translator below.</p>
 
       <div class="translate-actions">
-        <!-- hidden inputs -->
         <input type="file" id="file-input" accept=".pdf,image/*" style="display:none;">
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;">
 
-        <button class="translate-btn" id="btn-upload">
+        <button class="translate-btn" id="btn-upload" data-i18n="translate.upload">
           <span class="icon-doc"></span>
           <span>Upload document</span>
         </button>
 
-        <button class="translate-btn" id="btn-camera">
+        <button class="translate-btn" id="btn-camera" data-i18n="translate.camera">
           <span class="icon-camera"></span>
           <span>Take picture</span>
         </button>
 
-        <button class="translate-btn secondary" id="btn-listen" disabled title="Coming soon">
+        <button class="translate-btn secondary" id="btn-listen" disabled title="Coming soon" data-i18n="translate.listen">
           <span class="icon-audio"></span>
           <span>Read it to me (soon)</span>
         </button>
       </div>
 
-      <div class="translate-panel">
-        <!-- you can swap this later for a native UI -->
-        <iframe
-          class="appframe"
-          src="https://ai-translator-i5jb.onrender.com"
-          frameborder="0"
-          allow="clipboard-write; clipboard-read"
-          referrerpolicy="no-referrer"
-          sandbox="allow-scripts allow-forms allow-same-origin">
-        </iframe>
-        <div class="notice" id="offline-note">
-          If the translator doesn’t load, <a href="https://ai-translator-i5jb.onrender.com" target="_blank" rel="nofollow noopener">open it in a new tab.</a>
+      <!-- NEW translator box -->
+      <div class="translate-panel translator-ui">
+        <div class="translator-topbar">
+          <div class="translator-lang">
+            <label data-i18n="translate.from">
+              From
+              <select id="src-lang">
+                <option value="auto">Auto</option>
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+              </select>
+            </label>
+            <button id="swap-langs" class="swap-btn" data-i18n="translate.swap" title="Swap languages">⇄</button>
+            <label data-i18n="translate.to">
+              To
+              <select id="tgt-lang">
+                <option value="es">Spanish</option>
+                <option value="en">English</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+              </select>
+            </label>
+          </div>
+          <button id="translate-run" class="translate-run-btn" data-i18n="translate.run">Translate</button>
+        </div>
+
+        <div class="translator-panels">
+          <div class="translator-box">
+            <textarea id="source-text" data-i18n-placeholder="translate.sourcePlaceholder"
+                      placeholder="Type or paste text here…"></textarea>
+          </div>
+          <div class="translator-box">
+            <textarea id="target-text" data-i18n-placeholder="translate.targetPlaceholder"
+                      placeholder="Translation will appear here…" readonly></textarea>
+          </div>
+        </div>
+
+        <div class="translator-foot">
+          <span id="translator-status" data-i18n="translate.status">Ready.</span>
+          <span class="translator-hint" data-i18n="translate.hint">Coming soon: OCR from camera / upload, and “Read it to me.”</span>
         </div>
       </div>
 
@@ -88,13 +115,5 @@
   <footer>
     <div class="container">© 2025 Voyadecir — All rights reserved.</div>
   </footer>
-
-  <script>
-    // show helper after delay
-    setTimeout(function(){
-      var note = document.getElementById('offline-note');
-      if (note) note.style.display = 'block';
-    }, 4000);
-  </script>
 </body>
 </html>
