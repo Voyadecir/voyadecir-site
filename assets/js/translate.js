@@ -1,3 +1,4 @@
+// simple per-language messages for the status line
 const TRANSLATOR_LOCAL = {
   en: {
     empty: "Please enter text to translate.",
@@ -15,8 +16,12 @@ const TRANSLATOR_LOCAL = {
   }
 };
 
+// 👇 change this if your translator lives at a different URL
+const TRANSLATOR_API =
+  "https://ai-translator-i5jb.onrender.com/api/translate";
+
 document.addEventListener("DOMContentLoaded", function () {
-  // --- file / camera buttons ---
+  // upload / camera
   const btnUpload = document.getElementById("btn-upload");
   const btnCamera = document.getElementById("btn-camera");
   const fileInput = document.getElementById("file-input");
@@ -38,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // --- translator elements ---
+  // translator bits
   const source = document.getElementById("source-text");
   const target = document.getElementById("target-text");
   const runBtn = document.getElementById("translate-run");
@@ -48,9 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const swapBtn = document.getElementById("swap-langs");
   const fallback = document.getElementById("iframe-fallback");
 
-  // try hitting the API directly
-  const API_URL = "https://ai-translator-i5jb.onrender.com/api/translate";
-
+  // swap languages button
   if (swapBtn) {
     swapBtn.addEventListener("click", () => {
       const sVal = srcLang.value;
@@ -65,6 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // main translate button
   if (runBtn) {
     runBtn.addEventListener("click", async () => {
       const lang = window.VD_LANG || document.documentElement.lang || "en";
@@ -75,10 +79,11 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status) status.textContent = dict.empty;
         return;
       }
+
       if (status) status.textContent = dict.translating;
 
       try {
-        const res = await fetch(API_URL, {
+        const res = await fetch(TRANSLATOR_API, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -88,21 +93,22 @@ document.addEventListener("DOMContentLoaded", function () {
           })
         });
 
-        // if backend says no
         if (!res.ok) {
           if (status) status.textContent = dict.error;
-          // show fallback
           if (fallback) fallback.style.display = "block";
           return;
         }
 
         const data = await res.json();
         if (target) {
-          target.value = data.translated_text || data.translation || "(No translation returned)";
+          target.value =
+            data.translated_text ||
+            data.translation ||
+            "(No translation returned)";
         }
         if (status) status.textContent = dict.done;
       } catch (err) {
-        // network / CORS / blocked
+        // this is the one you saw
         if (status) status.textContent = dict.offline;
         if (fallback) fallback.style.display = "block";
       }
