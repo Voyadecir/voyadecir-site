@@ -31,3 +31,112 @@ small.tagline{ display:block; color:#666; margin-top:2px; font-weight:400; }
   header .brand img.logo{ height: 64px !important; }
   header .nav{ padding: 18px 0 !important; }
 }
+.translate-shell{
+  max-width: 920px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 20px;
+  padding: 28px 28px 36px;
+}
+
+.translate-title{
+  text-align:center;
+  margin:0;
+  font-size: 26px;
+}
+
+.translate-sub{
+  text-align:center;
+  margin-top:6px;
+  color:#555;
+}
+
+.translate-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:16px;
+  justify-content:center;
+  margin:24px 0 20px;
+}
+
+.translate-btn{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#000;
+  color:#fff;
+  border:none;
+  border-radius:14px;
+  padding:10px 16px;
+  cursor:pointer;
+  font-size:14px;
+  line-height:1;
+}
+
+.translate-btn.secondary{
+  background:#fff;
+  color:#000;
+  border:1px solid #ddd;
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+.translate-btn .icon-doc,
+.translate-btn .icon-camera,
+.translate-btn .icon-audio{
+  width:18px;
+  height:18px;
+  border:1.5px solid #fff;
+  border-radius:4px;
+  display:inline-block;
+  position:relative;
+}
+
+.translate-btn.secondary .icon-audio{
+  border-color:#000;
+}
+
+.translate-btn .icon-camera::after{
+  content:"";
+  position:absolute;
+  top:3px; left:3px;
+  width:8px; height:8px;
+  border:1.5px solid #fff;
+  border-radius:50%;
+}
+
+.translate-btn .icon-doc::after{
+  content:"";
+  position:absolute;
+  top:2px; right:2px;
+  width:6px; height:6px;
+  border-left:1.5px solid #fff;
+  border-bottom:1.5px solid #fff;
+  transform:rotate(-45deg);
+}
+
+.translate-panel{
+  margin-top:10px;
+}
+
+.translate-footnote{
+  margin-top:20px;
+  font-size:12px;
+  color:#777;
+  text-align:center;
+}
+
+@media (max-width: 640px){
+  .translate-shell{
+    padding:20px 16px 28px;
+  }
+  .translate-actions{
+    flex-direction:column;
+    align-items:center;
+  }
+  .translate-btn{
+    width:100%;
+    justify-content:center;
+  }
+}
