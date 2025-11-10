@@ -1,23 +1,43 @@
 {
   "brand.title": "Voyadecir",
   "brand.tagline": "Traducir. Entender. Conectar.",
+
   "nav.home": "Inicio",
   "nav.translate": "Traducir",
   "nav.about": "Acerca",
   "nav.contact": "Contacto",
+
   "hero.h1": "Voyadecir — Traducir. Entender. Conectar.",
   "hero.sub": "Impulsado por los últimos avances en tecnología de IA, Voyadecir conecta idiomas mediante traducción e interpretación inteligentes — ayudándote a traducir, entender y conectar sin esfuerzo en todo el mundo.",
   "cta.start": "Comenzar a traducir",
+
   "about.title": "Acerca de Voyadecir",
   "about.body": "Voyadecir ayuda a comunicar con claridad entre idiomas con una experiencia limpia y elegante. Creemos en la conexión global, herramientas inteligentes y un diseño sobrio.",
+
   "contact.title": "Contacto",
   "contact.intro": "Envíanos un mensaje. Te responderemos pronto.",
   "contact.name": "Nombre",
   "contact.email": "Correo",
   "contact.msg": "Mensaje",
   "contact.send": "Enviar",
+
   "privacy.title": "Política de Privacidad",
   "privacy.body": "Priorizamos la privacidad. Este sitio estático no usa cookies ni rastreadores por defecto. Si utilizas nuestro traductor, puede depender de APIs de terceros conforme a sus políticas.",
+
   "terms.title": "Términos de servicio",
-  "terms.body": "Usa Voyadecir de manera responsable. Ofrecemos el servicio tal cual, sin garantías. Al usar el sitio, aceptas no hacer un uso indebido del servicio."
+  "terms.body": "Usa Voyadecir de manera responsable. Ofrecemos el servicio tal cual, sin garantías. Al usar el sitio, aceptas no hacer un uso indebido del servicio.",
+
+  "translate.title": "Traducir un documento",
+  "translate.subtitle": "Sube, toma una foto o usa el traductor de IA aquí abajo.",
+  "translate.upload": "Subir documento",
+  "translate.camera": "Tomar foto",
+  "translate.listen": "Léemelo (pronto)",
+  "translate.from": "De",
+  "translate.to": "A",
+  "translate.swap": "⇄",
+  "translate.run": "Traducir",
+  "translate.sourcePlaceholder": "Escribe o pega tu texto aquí…",
+  "translate.targetPlaceholder": "La traducción aparecerá aquí…",
+  "translate.status": "Listo.",
+  "translate.hint": "Muy pronto: OCR desde cámara/subida y ‘Léemelo’."
 }
