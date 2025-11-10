@@ -1,4 +1,3 @@
-// Local strings for translator-specific stuff
 const TRANSLATOR_LOCAL = {
   en: {
     empty: "Please enter text to translate.",
@@ -17,7 +16,7 @@ const TRANSLATOR_LOCAL = {
 };
 
 document.addEventListener("DOMContentLoaded", function () {
-  // --- FILE / CAMERA buttons ---
+  // upload / camera
   const btnUpload = document.getElementById("btn-upload");
   const btnCamera = document.getElementById("btn-camera");
   const fileInput = document.getElementById("file-input");
@@ -27,9 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
     btnUpload.addEventListener("click", () => fileInput.click());
     fileInput.addEventListener("change", e => {
       const file = e.target.files[0];
-      if (file) {
-        alert(`File selected: ${file.name}\n(OCR will be added soon.)`);
-      }
+      if (file) alert(`File selected: ${file.name}\n(OCR will be added soon.)`);
     });
   }
 
@@ -37,25 +34,21 @@ document.addEventListener("DOMContentLoaded", function () {
     btnCamera.addEventListener("click", () => cameraInput.click());
     cameraInput.addEventListener("change", e => {
       const file = e.target.files[0];
-      if (file) {
-        alert("Photo captured! OCR translation coming soon.");
-      }
+      if (file) alert("Photo captured! OCR translation coming soon.");
     });
   }
 
-  // --- Translator Panel ---
+  // translator elements
   const source = document.getElementById("source-text");
   const target = document.getElementById("target-text");
-  const runBtn = document.getElementById("translate-run");
+  const runBtn = document.getElementById("translate-run"); // now in top row
   const status = document.getElementById("translator-status");
   const srcLang = document.getElementById("src-lang");
   const tgtLang = document.getElementById("tgt-lang");
   const swapBtn = document.getElementById("swap-langs");
 
-  // your Render API endpoint (change if needed)
   const API_URL = "https://ai-translator-i5jb.onrender.com/api/translate";
 
-  // swap languages
   if (swapBtn) {
     swapBtn.addEventListener("click", () => {
       const sVal = srcLang.value;
@@ -70,7 +63,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // run translation
   if (runBtn) {
     runBtn.addEventListener("click", async () => {
       const lang = window.VD_LANG || document.documentElement.lang || "en";
@@ -81,7 +73,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (status) status.textContent = dict.empty;
         return;
       }
-
       if (status) status.textContent = dict.translating;
 
       try {
@@ -110,6 +101,4 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
-
-  // if main.js already ran and set the language, placeholders are already updated
 });
