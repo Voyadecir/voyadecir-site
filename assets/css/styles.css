@@ -376,3 +376,18 @@ small.tagline{
     flex-direction:column;
   }
 }
+/* fix translator dropdowns getting squished */
+.translator-lang label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.translator-lang select {
+  min-width: 120px;   /* <— this makes them visible */
+  background: #111;
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 4px 6px;
+}
