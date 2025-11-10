@@ -3,20 +3,20 @@ const TRANSLATOR_LOCAL = {
     empty: "Please enter text to translate.",
     translating: "Translating…",
     error: "Error from server.",
-    offline: "Could not reach translator server.",
+    offline: "Could not reach translator server. Showing backup.",
     done: "Done."
   },
   es: {
     empty: "Por favor escribe un texto para traducir.",
     translating: "Traduciendo…",
     error: "Error del servidor.",
-    offline: "No se pudo conectar con el traductor.",
+    offline: "No se pudo conectar con el traductor. Mostrando respaldo.",
     done: "Hecho."
   }
 };
 
 document.addEventListener("DOMContentLoaded", function () {
-  // upload / camera
+  // --- file / camera buttons ---
   const btnUpload = document.getElementById("btn-upload");
   const btnCamera = document.getElementById("btn-camera");
   const fileInput = document.getElementById("file-input");
@@ -38,15 +38,17 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // translator elements
+  // --- translator elements ---
   const source = document.getElementById("source-text");
   const target = document.getElementById("target-text");
-  const runBtn = document.getElementById("translate-run"); // now in top row
+  const runBtn = document.getElementById("translate-run");
   const status = document.getElementById("translator-status");
   const srcLang = document.getElementById("src-lang");
   const tgtLang = document.getElementById("tgt-lang");
   const swapBtn = document.getElementById("swap-langs");
+  const fallback = document.getElementById("iframe-fallback");
 
+  // try hitting the API directly
   const API_URL = "https://ai-translator-i5jb.onrender.com/api/translate";
 
   if (swapBtn) {
@@ -86,8 +88,11 @@ document.addEventListener("DOMContentLoaded", function () {
           })
         });
 
+        // if backend says no
         if (!res.ok) {
           if (status) status.textContent = dict.error;
+          // show fallback
+          if (fallback) fallback.style.display = "block";
           return;
         }
 
@@ -97,7 +102,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (status) status.textContent = dict.done;
       } catch (err) {
+        // network / CORS / blocked
         if (status) status.textContent = dict.offline;
+        if (fallback) fallback.style.display = "block";
       }
     });
   }
