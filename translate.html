@@ -11,9 +11,9 @@
   <link rel="icon" href="assets/img/favicon.ico">
   <meta name="theme-color" content="#ffffff">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="assets/css/styles.css?v=5">
+  <link rel="stylesheet" href="assets/css/styles.css?v=6">
   <script defer src="assets/js/main.js?v=2"></script>
-  <script defer src="assets/js/translate.js?v=2"></script>
+  <script defer src="assets/js/translate.js?v=3"></script>
 </head>
 <body>
   <header>
@@ -55,13 +55,18 @@
           <span>Take picture</span>
         </button>
 
+        <!-- moved translate here -->
+        <button class="translate-btn" id="translate-run" data-i18n="translate.run">
+          <span>Translate</span>
+        </button>
+
         <button class="translate-btn secondary" id="btn-listen" disabled title="Coming soon" data-i18n="translate.listen">
           <span class="icon-audio"></span>
           <span>Read it to me (soon)</span>
         </button>
       </div>
 
-      <!-- NEW translator box -->
+      <!-- centered translator panel -->
       <div class="translate-panel translator-ui">
         <div class="translator-topbar">
           <div class="translator-lang">
@@ -86,7 +91,6 @@
               </select>
             </label>
           </div>
-          <button id="translate-run" class="translate-run-btn" data-i18n="translate.run">Translate</button>
         </div>
 
         <div class="translator-panels">
