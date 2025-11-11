@@ -6,8 +6,8 @@ const TRANSLATOR_LOCAL = {
     error: "Error from server.",
     offline: "Could not reach translator server. Showing backup.",
     done: "Done.",
-    uploading: "Uploading and reading document…",
-    ocr_warning: "Server received file but OCR is not set up.",
+    uploading: "Uploading and reading…",
+    ocr_warning: "Server received file but OCR is not set up yet.",
   },
   es: {
     empty: "Por favor escribe un texto para traducir.",
@@ -15,12 +15,12 @@ const TRANSLATOR_LOCAL = {
     error: "Error del servidor.",
     offline: "No se pudo conectar con el traductor. Mostrando respaldo.",
     done: "Listo.",
-    uploading: "Subiendo y leyendo documento…",
-    ocr_warning: "El servidor recibió el archivo pero el OCR no está configurado.",
+    uploading: "Subiendo y leyendo…",
+    ocr_warning: "El servidor recibió el archivo pero el OCR aún no está activo.",
   },
 };
 
-// !!! make sure this matches your Render backend URL
+// <<< make sure this matches your translator service on Render
 const API_BASE = "https://ai-translator-i5jb.onrender.com";
 
 const TRANSLATOR_API = `${API_BASE}/api/translate`;
@@ -47,13 +47,13 @@ document.addEventListener("DOMContentLoaded", function () {
     return TRANSLATOR_LOCAL[lang] || TRANSLATOR_LOCAL.en;
   }
 
-  // swap languages
+  // swap From/To
   if (swapBtn && srcLang && tgtLang) {
     swapBtn.addEventListener("click", () => {
-      const sVal = srcLang.value;
-      const tVal = tgtLang.value;
-      srcLang.value = tVal;
-      tgtLang.value = sVal;
+      const s = srcLang.value;
+      const t = tgtLang.value;
+      srcLang.value = t;
+      tgtLang.value = s;
     });
   }
 
@@ -78,13 +78,14 @@ document.addEventListener("DOMContentLoaded", function () {
           }),
         });
 
+        const data = await res.json().catch(() => ({}));
+
         if (!res.ok) {
-          if (status) status.textContent = dict.error;
+          if (status) status.textContent = data.error || dict.error;
           if (fallback) fallback.style.display = "block";
           return;
         }
 
-        const data = await res.json();
         if (target) {
           target.value =
             data.translated_text ||
@@ -99,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // upload document → /translate-pdf
+  // upload PDF/doc
   if (btnUpload && fileInput) {
     btnUpload.addEventListener("click", () => fileInput.click());
 
@@ -119,16 +120,14 @@ document.addEventListener("DOMContentLoaded", function () {
           method: "POST",
           body: formData,
         });
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
 
         if (data.translated_text && target) {
           target.value = data.translated_text;
-          if (source && data.source_text) {
-            source.value = data.source_text;
-          }
+          if (source && data.source_text) source.value = data.source_text;
           if (status) status.textContent = dict.done;
         } else if (data.warning) {
-          if (status) status.textContent = dict.ocr_warning;
+          if (status) status.textContent = data.warning;
         } else {
           if (status) status.textContent = dict.error;
         }
@@ -140,7 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // camera → /translate-image
+  // image / camera
   if (btnCamera && cameraInput) {
     btnCamera.addEventListener("click", () => cameraInput.click());
 
@@ -160,16 +159,20 @@ document.addEventListener("DOMContentLoaded", function () {
           method: "POST",
           body: formData,
         });
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
+
+        // even if the server replies 500, try to show what it said
+        if (!res.ok) {
+          if (status) status.textContent = data.error || data.warning || dict.error;
+          return;
+        }
 
         if (data.translated_text && target) {
           target.value = data.translated_text;
-          if (source && data.source_text) {
-            source.value = data.source_text;
-          }
+          if (source && data.source_text) source.value = data.source_text;
           if (status) status.textContent = dict.done;
         } else if (data.warning) {
-          if (status) status.textContent = dict.ocr_warning;
+          if (status) status.textContent = data.warning;
         } else {
           if (status) status.textContent = dict.error;
         }
