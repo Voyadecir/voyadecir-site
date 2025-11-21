@@ -41,3 +41,17 @@
   "translate.status": "Ready.",
   "translate.hint": "Coming soon: OCR from camera / upload, and “Read it to me.”"
 }
+{
+  "nav.mailbills": "Mail & Bills",
+  "mb.title": "Mail & Bills Helper",
+  "mb.sub": "Upload a bill or letter. We’ll read it, extract key info, and summarize it in your language.",
+  "mb.btnUpload": "Upload document",
+  "mb.btnCamera": "Take picture",
+  "mb.btnListen": "Read it to me (soon)",
+  "mb.hint": "Tip: clear, well-lit photos give the best results.",
+  "mb.amount": "Amount due:",
+  "mb.duedate": "Due date:",
+  "mb.account": "Account #:",
+  "mb.sender": "Sender:",
+  "mb.address": "Service address:"
+}
