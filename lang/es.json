@@ -55,3 +55,11 @@
   "mb.sender": "Remitente:",
   "mb.address": "Dirección del servicio:"
 }
+{
+  "nav.assistant": "Asistente",
+  "asst.title": "Asistente",
+  "asst.sub": "Haz preguntas rápidas. Si el cerebro inteligente está sin conexión, usaré un ayudante simple.",
+  "asst.placeholder": "Escribe tu pregunta…",
+  "asst.send": "Enviar",
+  "asst.hint": "Consejo: pregunta sobre facturas, cargas, cámara u OCR."
+}
