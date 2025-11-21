@@ -55,3 +55,11 @@
   "mb.sender": "Sender:",
   "mb.address": "Service address:"
 }
+{
+  "nav.assistant": "Assistant",
+  "asst.title": "Assistant",
+  "asst.sub": "Ask quick questions. If the smart brain is offline, I’ll use a simple helper.",
+  "asst.placeholder": "Type your question…",
+  "asst.send": "Send",
+  "asst.hint": "Tip: ask about bills, uploads, camera, or OCR."
+}
