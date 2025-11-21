@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voyadecir — Mail & Bills Helper</title>
+  <meta name="description" content="Upload or snap a photo of your bill or mail. We’ll read it, extract key info, and summarize it in your language.">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
+  <link rel="alternate icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/img/favicon.ico">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="assets/css/styles.css?v=mb1">
+  <script defer src="assets/js/main.js?v=mb1"></script>
+  <script defer src="assets/js/mailbills.js?v=mb3"></script>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="brand">
+        <img src="assets/img/logo.png" alt="Voyadecir Logo" class="logo" onerror="this.onerror=null;this.src='assets/img/logo.svg';">
+        <div>
+          <div data-i18n="brand.title">Voyadecir</div>
+          <small class="tagline" data-i18n="brand.tagline">Translate. Understand. Connect.</small>
+        </div>
+      </div>
+      <nav>
+        <a href="index.html" data-i18n="nav.home">Home</a>
+        <a href="translate.html" data-i18n="nav.translate">Translate</a>
+        <a href="mail-bills.html" data-i18n="nav.mailbills">Mail & Bills</a>
+        <a href="about.html" data-i18n="nav.about">About</a>
+        <a href="contact.html" data-i18n="nav.contact">Contact</a>
+        <button id="lang-toggle" class="lang" aria-label="Toggle language">EN | ES</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container section">
+    <div class="translate-shell">
+      <h1 class="translate-title" data-i18n="mb.title">Mail & Bills Helper</h1>
+      <p class="translate-sub" data-i18n="mb.sub">Upload a bill or letter. We’ll read it, extract key info, and summarize it in your language.</p>
+
+      <div class="translate-actions">
+        <input type="file" id="file-input" accept=".pdf,image/*" style="display:none;">
+        <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;">
+
+        <button class="translate-btn" id="btn-upload">
+          <span class="icon-doc"></span>
+          <span data-i18n="mb.btnUpload">Upload document</span>
+        </button>
+
+        <button class="translate-btn" id="btn-camera">
+          <span class="icon-camera"></span>
+          <span data-i18n="mb.btnCamera">Take picture</span>
+        </button>
+
+        <button class="translate-btn secondary" id="btn-listen" disabled title="Coming soon">
+          <span class="icon-audio"></span>
+          <span data-i18n="mb.btnListen">Read it to me (soon)</span>
+        </button>
+      </div>
+
+      <div class="translator-ui">
+        <div class="translator-topbar">
+          <div class="translator-lang">
+            <label data-i18n="translate.from">
+              From
+              <select id="src-lang" disabled>
+                <option value="auto">Auto</option>
+              </select>
+            </label>
+            <button id="swap-langs" class="swap-btn" title="Swap languages" data-i18n="translate.swap">⇄</button>
+            <label data-i18n="translate.to">
+              To
+              <select id="tgt-lang">
+                <option value="es">Spanish</option>
+                <option value="en">English</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="translator-panels">
+          <div class="translator-box">
+            <textarea id="ocr-text" placeholder="OCR text will appear here..." readonly></textarea>
+          </div>
+          <div class="translator-box">
+            <textarea id="summary-text" placeholder="Summary will appear here..." readonly></textarea>
+          </div>
+        </div>
+
+        <div class="translator-foot">
+          <span class="translator-hint" data-i18n="mb.hint">Tip: clear, well-lit photos give the best results.</span>
+          <span id="status-line">Ready</span>
+        </div>
+      </div>
+
+      <div class="results-card" id="results-card" style="display:none;">
+        <div class="result-row"><strong data-i18n="mb.amount">Amount due:</strong> <span id="r-amount"></span></div>
+        <div class="result-row"><strong data-i18n="mb.duedate">Due date:</strong> <span id="r-duedate"></span></div>
+        <div class="result-row"><strong data-i18n="mb.account">Account #:</strong> <span id="r-acct"></span></div>
+        <div class="result-row"><strong data-i18n="mb.sender">Sender:</strong> <span id="r-sender"></span></div>
+        <div class="result-row"><strong data-i18n="mb.address">Service address:</strong> <span id="r-address"></span></div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">© 2025 Voyadecir — All rights reserved.</div>
+  </footer>
+</body>
+</html>
