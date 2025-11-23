@@ -4,6 +4,8 @@
 
   "nav.home": "Home",
   "nav.translate": "Translate",
+  "nav.mailbills": "Mail & Bills",
+  "nav.assistant": "Assistant",
   "nav.about": "About",
   "nav.contact": "Contact",
 
@@ -39,10 +41,8 @@
   "translate.sourcePlaceholder": "Type or paste text here…",
   "translate.targetPlaceholder": "Translation will appear here…",
   "translate.status": "Ready.",
-  "translate.hint": "Coming soon: OCR from camera / upload, and “Read it to me.”"
-}
-{
-  "nav.mailbills": "Mail & Bills",
+  "translate.hint": "Coming soon: OCR from camera / upload, and “Read it to me.”",
+
   "mb.title": "Mail & Bills Helper",
   "mb.sub": "Upload a bill or letter. We’ll read it, extract key info, and summarize it in your language.",
   "mb.btnUpload": "Upload document",
@@ -53,10 +53,8 @@
   "mb.duedate": "Due date:",
   "mb.account": "Account #:",
   "mb.sender": "Sender:",
-  "mb.address": "Service address:"
-}
-{
-  "nav.assistant": "Assistant",
+  "mb.address": "Service address:",
+
   "asst.title": "Assistant",
   "asst.sub": "Ask quick questions. If the smart brain is offline, I’ll use a simple helper.",
   "asst.placeholder": "Type your question…",
