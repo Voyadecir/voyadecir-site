@@ -4,6 +4,8 @@
 
   "nav.home": "Inicio",
   "nav.translate": "Traducir",
+  "nav.mailbills": "Correo y Facturas",
+  "nav.assistant": "Asistente",
   "nav.about": "Acerca",
   "nav.contact": "Contacto",
 
@@ -39,10 +41,8 @@
   "translate.sourcePlaceholder": "Escribe o pega tu texto aquí…",
   "translate.targetPlaceholder": "La traducción aparecerá aquí…",
   "translate.status": "Listo.",
-  "translate.hint": "Muy pronto: OCR desde cámara/subida y ‘Léemelo’."
-}
-{
-  "nav.mailbills": "Correo y Facturas",
+  "translate.hint": "Muy pronto: OCR desde cámara/subida y “Léemelo”",
+
   "mb.title": "Asistente de Correo y Facturas",
   "mb.sub": "Sube una factura o carta. La leeremos, extraeremos datos clave y la resumiremos en tu idioma.",
   "mb.btnUpload": "Subir documento",
@@ -53,10 +53,8 @@
   "mb.duedate": "Fecha de vencimiento:",
   "mb.account": "N.º de cuenta:",
   "mb.sender": "Remitente:",
-  "mb.address": "Dirección del servicio:"
-}
-{
-  "nav.assistant": "Asistente",
+  "mb.address": "Dirección del servicio:",
+
   "asst.title": "Asistente",
   "asst.sub": "Haz preguntas rápidas. Si el cerebro inteligente está sin conexión, usaré un ayudante simple.",
   "asst.placeholder": "Escribe tu pregunta…",
