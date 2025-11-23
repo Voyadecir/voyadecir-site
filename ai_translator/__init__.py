@@ -1,1 +1,0 @@
-"""Voyadecir OCR backend package."""
