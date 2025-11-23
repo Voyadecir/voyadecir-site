@@ -1,26 +1,70 @@
-// If you wire a real endpoint later, set this to your Azure Function base URL.
+// Set this when your real assistant endpoint exists:
 // Example: const ASSISTANT_BASE = "https://voyadecir-ai-functions.azurewebsites.net";
-// Then the code will POST to `${ASSISTANT_BASE}/api/assistant`.
+// It will POST to `${ASSISTANT_BASE}/api/assistant`.
 const ASSISTANT_BASE = ""; // keep empty for now → uses safe local helper
 
 const $ = (s) => document.querySelector(s);
+
+// language helper (from main.js convention)
 function getLang() {
   try { return sessionStorage.getItem('voyadecir_lang') || 'en'; }
   catch (_) { return 'en'; }
 }
-function setStatus(msg){ const el = $('#asst-status'); if (el) el.textContent = msg; }
 
-function appendMsg(role, text){
+function setStatus(msg) { const el = $('#asst-status'); if (el) el.textContent = msg; }
+
+function appendMsg(role, text) {
   const win = $('#chat-window');
   const row = document.createElement('div');
   row.className = `msg ${role}`;
   row.innerText = text;
   win.appendChild(row);
   win.scrollTop = win.scrollHeight;
+  persistChat();
+}
+
+function showTyping(show) {
+  const win = $('#chat-window');
+  let t = $('#typing-dot');
+  if (show) {
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'typing-dot';
+      t.className = 'msg bot';
+      t.textContent = getLang() === 'es' ? 'Escribiendo…' : 'Typing…';
+      win.appendChild(t);
+      win.scrollTop = win.scrollHeight;
+    }
+  } else if (t) {
+    t.remove();
+  }
+}
+
+function loadChat() {
+  try {
+    const raw = sessionStorage.getItem('asst_chat');
+    if (!raw) return;
+    const items = JSON.parse(raw);
+    items.forEach(m => appendMsg(m.role, m.text));
+  } catch (_) {}
+}
+
+function persistChat() {
+  try {
+    const win = $('#chat-window');
+    const nodes = [...win.querySelectorAll('.msg')];
+    const items = nodes.map(n => ({
+      role: n.classList.contains('user') ? 'user' : 'bot',
+      text: n.innerText || ''
+    }));
+    // keep last 20
+    const last = items.slice(-20);
+    sessionStorage.setItem('asst_chat', JSON.stringify(last));
+  } catch (_) {}
 }
 
 // very basic built-in helper so this page works today
-function localHelper(question, lang){
+function localHelper(question, lang) {
   const q = (question || "").toLowerCase();
   const en = {
     hello: "Hi! Ask me about translating bills, taking a photo, or supported file types. Try: “Can I upload a PDF?”",
@@ -44,15 +88,27 @@ function localHelper(question, lang){
   return t.default;
 }
 
-async function callAssistantAPI(message, lang){
+// fetch with timeout wrapper
+async function fetchWithTimeout(url, opts = {}, ms = 12000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const res = await fetch(url, { ...opts, signal: ctrl.signal });
+    return res;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+async function callAssistantAPI(message, lang) {
   if (!ASSISTANT_BASE) {
     // no backend yet → local helper
     return { reply: localHelper(message, lang), backend: "local" };
   }
   const url = `${ASSISTANT_BASE}/api/assistant`;
-  const res = await fetch(url, {
+  const res = await fetchWithTimeout(url, {
     method: 'POST',
-    headers: { 'Content-Type':'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, lang })
   });
   if (!res.ok) {
@@ -62,34 +118,61 @@ async function callAssistantAPI(message, lang){
   return res.json();
 }
 
-window.addEventListener('DOMContentLoaded', function(){
+// prevent parallel requests
+let pending = false;
+
+window.addEventListener('DOMContentLoaded', function () {
   const form = $('#chat-form');
   const input = $('#chat-text');
-  appendMsg('bot', getLang()==='es'
-    ? "Soy tu asistente de Voyadecir. Pregúntame sobre facturas, correo, OCR o cargas."
-    : "I’m your Voyadecir assistant. Ask me about bills, mail, OCR, or uploads.");
+  const btn = $('#chat-send');
 
-  form.addEventListener('submit', async function(e){
+  // restore previous chat
+  loadChat();
+
+  // greeting
+  if (!$('#chat-window')?.querySelector('.msg')) {
+    appendMsg('bot', getLang() === 'es'
+      ? "Soy tu asistente de Voyadecir. Pregúntame sobre facturas, correo, OCR o cargas."
+      : "I’m your Voyadecir assistant. Ask me about bills, mail, OCR, or uploads.");
+  }
+
+  // Enter submits, Shift+Enter makes a newline
+  input?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      btn?.click();
+    }
+  });
+
+  form?.addEventListener('submit', async function (e) {
     e.preventDefault();
+    if (pending) return;
     const text = input.value.trim();
     if (!text) return;
+
     appendMsg('user', text);
     input.value = "";
-    setStatus('Thinking…');
-    try{
+    setStatus(getLang() === 'es' ? 'Pensando…' : 'Thinking…');
+    showTyping(true);
+    pending = true;
+
+    try {
       const lang = getLang();
       const data = await callAssistantAPI(text, lang);
-      const reply = data?.reply || (lang==='es' ? "Lo siento, no pude responder." : "Sorry, I couldn’t answer.");
+      const reply = data?.reply || (lang === 'es' ? "Lo siento, no pude responder." : "Sorry, I couldn’t answer.");
+      showTyping(false);
       appendMsg('bot', reply);
-      setStatus('Ready');
-    }catch(err){
+      setStatus(getLang() === 'es' ? 'Listo' : 'Ready');
+    } catch (err) {
       console.error(err);
-      appendMsg('bot', getLang()==='es'
+      showTyping(false);
+      appendMsg('bot', getLang() === 'es'
         ? "Error del servidor. Intentaré el modo básico."
         : "Server error. I’ll fall back to the basic mode.");
-      // fallback to local helper
       appendMsg('bot', localHelper(text, getLang()));
-      setStatus('Ready');
+      setStatus(getLang() === 'es' ? 'Listo' : 'Ready');
+    } finally {
+      pending = false;
     }
   });
 });
