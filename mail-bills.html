@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="assets/css/styles.css?v=mb1">
   <script defer src="assets/js/main.js?v=mb1"></script>
   <script defer src="assets/js/mailbills.js?v=mb3"></script>
+  <script defer src="assets/js/translate.js?v=10"></script>
 </head>
 <body>
   <header>
@@ -103,6 +104,72 @@
         <div class="result-row"><strong data-i18n="mb.sender">Sender:</strong> <span id="r-sender"></span></div>
         <div class="result-row"><strong data-i18n="mb.address">Service address:</strong> <span id="r-address"></span></div>
       </div>
+
+      <section class="translate-section">
+        <h2 class="translate-title" data-i18n="translate.title">Translate a document</h2>
+        <p class="translate-sub" data-i18n="translate.subtitle">Upload, snap a photo, or use the AI translator below.</p>
+
+        <div class="translate-panel translator-ui">
+          <div class="translator-topbar">
+            <div class="translator-lang">
+              <label data-i18n="translate.from">
+                From
+                <select id="src-lang">
+                  <option value="auto">Auto</option>
+                  <option value="en">English</option>
+                  <option value="es">Spanish</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                </select>
+              </label>
+              <button id="swap-langs" class="swap-btn" data-i18n="translate.swap" title="Swap languages">⇄</button>
+              <label data-i18n="translate.to">
+                To
+                <select id="tgt-lang">
+                  <option value="es">Spanish</option>
+                  <option value="en">English</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="translator-panels">
+            <div class="translator-box">
+              <textarea id="source-text" data-i18n-placeholder="translate.sourcePlaceholder" placeholder="Type or paste text here…"></textarea>
+            </div>
+            <div class="translator-box">
+              <textarea id="target-text" data-i18n-placeholder="translate.targetPlaceholder" placeholder="Translation will appear here…" readonly></textarea>
+            </div>
+          </div>
+
+          <div class="translator-foot">
+            <span id="translator-status" data-i18n="translate.status">Ready.</span>
+            <span class="translator-hint" data-i18n="translate.hint">Coming soon: OCR from camera / upload, and “Read it to me.”</span>
+          </div>
+        </div>
+
+        <div class="translate-actions" style="margin-top: 16px;">
+          <button class="translate-btn" id="translate-run" data-i18n="translate.run">
+            <span>Translate</span>
+          </button>
+        </div>
+
+        <div class="translate-panel" id="iframe-fallback" style="display:none; margin-top:16px;">
+          <iframe
+            class="appframe"
+            src="https://ai-translator-i5jb.onrender.com"
+            frameborder="0"
+            referrerpolicy="no-referrer"
+            sandbox="allow-scripts allow-forms allow-same-origin">
+          </iframe>
+          <div class="notice" style="display:block;">
+            If the translator doesn’t load,
+            <a href="https://ai-translator-i5jb.onrender.com" target="_blank" rel="nofollow noopener">open it in a new tab.</a>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
 
