@@ -42,7 +42,12 @@
       <a href="translate.html" data-i18n="nav.translate">Translate</a>
       <a href="about.html" data-i18n="nav.about">About</a>
       <a href="contact.html" data-i18n="nav.contact">Contact</a>
-      <button id="lang-toggle" class="lang glass-btn" aria-label="Toggle language">EN | ES</button>
+      <div class="button-wrap">
+        <button id="lang-toggle" class="lang glass-btn" aria-label="Toggle language" type="button">
+          <span>EN | ES</span>
+        </button>
+        <div class="button-shadow"></div>
+      </div>
     </nav>
   </div>
 </header>
@@ -50,7 +55,12 @@
     <section class="hero">
       <h1 data-i18n="hero.h1">Voyadecir — Translate. Understand. Connect.</h1>
       <p data-i18n="hero.sub">Powered by the latest advancements in AI technology, Voyadecir bridges languages through intelligent translation and interpretation — helping you translate, understand, and connect effortlessly across the world.</p>
-      <a class="btn glass-btn" href="translate.html" data-i18n="cta.start">Start Translating</a>
+      <div class="button-wrap">
+        <button class="btn glass-btn" type="button" onclick="window.location.href='translate.html'">
+          <span data-i18n="cta.start">Start Translating</span>
+        </button>
+        <div class="button-shadow"></div>
+      </div>
     </section>
     <section class="section">
       <div class="card">

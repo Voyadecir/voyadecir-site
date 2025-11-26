@@ -31,7 +31,12 @@
         <a href="translate.html" data-i18n="nav.translate">Translate</a>
         <a href="about.html" data-i18n="nav.about">About</a>
         <a href="contact.html" data-i18n="nav.contact">Contact</a>
-        <button id="lang-toggle" class="lang glass-btn" aria-label="Toggle language">EN | ES</button>
+        <div class="button-wrap">
+          <button id="lang-toggle" class="lang glass-btn" aria-label="Toggle language" type="button">
+            <span>EN | ES</span>
+          </button>
+          <div class="button-shadow"></div>
+        </div>
       </nav>
     </div>
   </header>
@@ -45,68 +50,84 @@
         <input type="file" id="file-input" accept=".pdf,image/*" style="display:none;">
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;">
 
-        <button class="translate-btn glass-btn" id="btn-upload" data-i18n="translate.upload">
-          <span class="icon-doc"></span>
-          <span>Upload document</span>
-        </button>
+        <div class="button-wrap">
+          <button type="button" class="translate-btn glass-btn" id="btn-upload">
+            <span><span class="icon-doc"></span><span data-i18n="translate.upload">Upload document</span></span>
+          </button>
+          <div class="button-shadow"></div>
+        </div>
 
-        <button class="translate-btn glass-btn" id="btn-camera" data-i18n="translate.camera">
-          <span class="icon-camera"></span>
-          <span>Take picture</span>
-        </button>
+        <div class="button-wrap">
+          <button type="button" class="translate-btn glass-btn" id="btn-camera">
+            <span><span class="icon-camera"></span><span data-i18n="translate.camera">Take picture</span></span>
+          </button>
+          <div class="button-shadow"></div>
+        </div>
 
         <!-- translate button in the row -->
-        <button class="translate-btn glass-btn" id="translate-run" data-i18n="translate.run">
-          <span>Translate</span>
-        </button>
+        <div class="button-wrap">
+          <button type="button" class="translate-btn glass-btn" id="translate-run">
+            <span data-i18n="translate.run">Translate</span>
+          </button>
+          <div class="button-shadow"></div>
+        </div>
 
-        <button class="translate-btn glass-btn secondary" id="btn-listen" disabled title="Coming soon" data-i18n="translate.listen">
-          <span class="icon-audio"></span>
-          <span>Read it to me (soon)</span>
-        </button>
+        <div class="button-wrap">
+          <button type="button" class="translate-btn glass-btn secondary" id="btn-listen" disabled title="Coming soon">
+            <span><span class="icon-audio"></span><span data-i18n="translate.listen">Read it to me (soon)</span></span>
+          </button>
+          <div class="button-shadow"></div>
+        </div>
       </div>
 
       <!-- black translator area -->
-      <div class="translate-panel translator-ui glass-card-dark">
-        <div class="translator-topbar">
-          <div class="translator-lang">
-            <label data-i18n="translate.from">
-              From
-              <select id="src-lang">
-                <option value="auto">Auto</option>
-                <option value="en">English</option>
-                <option value="es">Spanish</option>
-                <option value="fr">French</option>
-                <option value="de">German</option>
-              </select>
-            </label>
-            <button id="swap-langs" class="swap-btn" data-i18n="translate.swap" title="Swap languages">⇄</button>
-            <label data-i18n="translate.to">
-              To
-              <select id="tgt-lang">
-                <option value="es">Spanish</option>
-                <option value="en">English</option>
-                <option value="fr">French</option>
-                <option value="de">German</option>
-              </select>
-            </label>
+      <div class="translate-panel translator-ui glass-card-dark translate-card">
+        <div class="translate-card-inner">
+          <div class="translator-topbar">
+            <div class="translator-lang">
+              <label data-i18n="translate.from">
+                From
+                <select id="src-lang">
+                  <option value="auto">Auto</option>
+                  <option value="en">English</option>
+                  <option value="es">Spanish</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                </select>
+              </label>
+              <div class="button-wrap">
+                <button type="button" id="swap-langs" class="swap-btn" title="Swap languages">
+                  <span data-i18n="translate.swap">⇄</span>
+                </button>
+                <div class="button-shadow"></div>
+              </div>
+              <label data-i18n="translate.to">
+                To
+                <select id="tgt-lang">
+                  <option value="es">Spanish</option>
+                  <option value="en">English</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                </select>
+              </label>
+            </div>
           </div>
-        </div>
 
-        <div class="translator-panels">
-          <div class="translator-box">
-            <textarea id="source-text" data-i18n-placeholder="translate.sourcePlaceholder"
-                      placeholder="Type or paste text here…"></textarea>
+          <div class="translator-panels">
+            <div class="translator-box">
+              <textarea id="source-text" data-i18n-placeholder="translate.sourcePlaceholder"
+                        placeholder="Type or paste text here…"></textarea>
+            </div>
+            <div class="translator-box">
+              <textarea id="target-text" data-i18n-placeholder="translate.targetPlaceholder"
+                        placeholder="Translation will appear here…" readonly></textarea>
+            </div>
           </div>
-          <div class="translator-box">
-            <textarea id="target-text" data-i18n-placeholder="translate.targetPlaceholder"
-                      placeholder="Translation will appear here…" readonly></textarea>
-          </div>
-        </div>
 
-        <div class="translator-foot">
-          <span id="translator-status" data-i18n="translate.status">Ready.</span>
-          <span class="translator-hint" data-i18n="translate.hint">Coming soon: OCR from camera / upload, and “Read it to me.”</span>
+          <div class="translator-foot">
+            <span id="translator-status" data-i18n="translate.status">Ready.</span>
+            <span class="translator-hint" data-i18n="translate.hint">Coming soon: OCR from camera / upload, and “Read it to me.”</span>
+          </div>
         </div>
       </div>
 
