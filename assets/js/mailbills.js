@@ -4,6 +4,7 @@
 
 // 1) Use your actual Function App default domain
 const API_BASE = "https://voyadecir-ai-functions-aze4fqhjdcbzfkdu.centralus-01.azurewebsites.net";
+const TRANSLATE_API = "https://ai-translator-i5jb.onrender.com/api/translate";
 
 // 2) Site language helper (from main.js session key)
 function getLang() {
@@ -84,7 +85,57 @@ async function handleFile(file) {
   }
 }
 
-// 7) UI wiring
+// 7) Translate OCR text into target language
+async function translateOcrText() {
+  const srcEl = $('#ocr-text');
+  const outEl = $('#summary-text');
+  const langSelect = $('#mb-tgt-lang');
+
+  if (!srcEl || !outEl) {
+    return;
+  }
+
+  const text = (srcEl.value || '').trim();
+  if (!text) {
+    setStatus('No text to translate.');
+    return;
+  }
+
+  const target_lang = (langSelect?.value || (getLang() === 'es' ? 'es' : 'en')).trim();
+
+  setStatus('Translating…');
+
+  try {
+    const res = await fetch(TRANSLATE_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, target_lang })
+    });
+
+    if (!res.ok) {
+      let body;
+      try { body = await res.json(); } catch { body = await res.text(); }
+      console.error('Translator error', res.status, body);
+      setStatus('Translation failed.');
+      return;
+    }
+
+    const data = await res.json();
+    const out = data.translated_text || data.translation || '';
+    if (!out) {
+      setStatus('Empty translation.');
+      return;
+    }
+
+    outEl.value = out;
+    setStatus('Translated.');
+  } catch (err) {
+    console.error('Translation network error', err);
+    setStatus('Translation error.');
+  }
+}
+
+// 8) UI wiring
 window.addEventListener('DOMContentLoaded', function () {
   const tgt = $('#mb-tgt-lang');
   if (tgt) tgt.value = getLang() === 'es' ? 'es' : 'en';
@@ -101,6 +152,11 @@ window.addEventListener('DOMContentLoaded', function () {
     if (!t) return;
     t.value = t.value === 'es' ? 'en' : 'es';
     try { sessionStorage.setItem('voyadecir_lang', t.value); } catch (_) {}
+  });
+
+  $('#mb-translate-run')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    translateOcrText();
   });
 
   setStatus('Ready');
