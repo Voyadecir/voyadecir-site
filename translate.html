@@ -32,7 +32,7 @@
         <a href="about.html" data-i18n="nav.about">About</a>
         <a href="contact.html" data-i18n="nav.contact">Contact</a>
         <div class="button-wrap">
-          <button id="lang-toggle" class="lang glass-btn" aria-label="Toggle language" type="button">
+          <button id="lang-toggle" class="lang glass-btn glass-button" aria-label="Toggle language" type="button">
             <span>EN | ES</span>
           </button>
           <div class="button-shadow"></div>
@@ -51,14 +51,14 @@
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;">
 
         <div class="button-wrap">
-          <button type="button" class="translate-btn glass-btn" id="btn-upload">
+          <button type="button" class="translate-btn glass-btn glass-button" id="btn-upload">
             <span><span class="icon-doc"></span><span data-i18n="translate.upload">Upload document</span></span>
           </button>
           <div class="button-shadow"></div>
         </div>
 
         <div class="button-wrap">
-          <button type="button" class="translate-btn glass-btn" id="btn-camera">
+          <button type="button" class="translate-btn glass-btn glass-button" id="btn-camera">
             <span><span class="icon-camera"></span><span data-i18n="translate.camera">Take picture</span></span>
           </button>
           <div class="button-shadow"></div>
@@ -66,14 +66,14 @@
 
         <!-- translate button in the row -->
         <div class="button-wrap">
-          <button type="button" class="translate-btn glass-btn" id="translate-run">
+          <button type="button" class="translate-btn glass-btn glass-button" id="translate-run">
             <span data-i18n="translate.run">Translate</span>
           </button>
           <div class="button-shadow"></div>
         </div>
 
         <div class="button-wrap">
-          <button type="button" class="translate-btn glass-btn secondary" id="btn-listen" disabled title="Coming soon">
+          <button type="button" class="translate-btn glass-btn glass-button secondary" id="btn-listen" disabled title="Coming soon">
             <span><span class="icon-audio"></span><span data-i18n="translate.listen">Read it to me (soon)</span></span>
           </button>
           <div class="button-shadow"></div>
@@ -81,8 +81,9 @@
       </div>
 
       <!-- black translator area -->
-      <div class="translate-panel translator-ui glass-card-dark translate-card">
-        <div class="translate-card-inner">
+      <div class="translator-outer glass-panel">
+        <div class="translate-panel translator-ui glass-card-dark translate-card translator-inner">
+          <div class="translate-card-inner">
           <div class="translator-topbar">
             <div class="translator-lang">
               <label data-i18n="translate.from">
@@ -113,20 +114,21 @@
             </div>
           </div>
 
-          <div class="translator-panels">
-            <div class="translator-box">
-              <textarea id="source-text" data-i18n-placeholder="translate.sourcePlaceholder"
-                        placeholder="Type or paste text here…"></textarea>
+            <div class="translator-panels">
+              <div class="translator-box">
+                <textarea id="source-text" data-i18n-placeholder="translate.sourcePlaceholder"
+                          placeholder="Type or paste text here…"></textarea>
+              </div>
+              <div class="translator-box">
+                <textarea id="target-text" data-i18n-placeholder="translate.targetPlaceholder"
+                          placeholder="Translation will appear here…" readonly></textarea>
+              </div>
             </div>
-            <div class="translator-box">
-              <textarea id="target-text" data-i18n-placeholder="translate.targetPlaceholder"
-                        placeholder="Translation will appear here…" readonly></textarea>
-            </div>
-          </div>
 
-          <div class="translator-foot">
-            <span id="translator-status" data-i18n="translate.status">Ready.</span>
-            <span class="translator-hint" data-i18n="translate.hint">Coming soon: OCR from camera / upload, and “Read it to me.”</span>
+            <div class="translator-foot">
+              <span id="translator-status" data-i18n="translate.status">Ready.</span>
+              <span class="translator-hint" data-i18n="translate.hint">Coming soon: OCR from camera / upload, and “Read it to me.”</span>
+            </div>
           </div>
         </div>
       </div>
