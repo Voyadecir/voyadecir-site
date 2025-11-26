@@ -17,6 +17,19 @@ const $ = (s) => document.querySelector(s);
 function setStatus(msg) { const el = $('#status-line'); if (el) el.textContent = msg; }
 function valOrDash(v) { return (v !== undefined && v !== null && String(v).trim() !== "") ? String(v) : '—'; }
 
+function copyTextFrom(el) {
+  if (!el) return;
+  const value = (el.value || '').trim();
+  if (!value) {
+    setStatus('Nothing to copy.');
+    return;
+  }
+
+  navigator.clipboard?.writeText(value)
+    .then(() => setStatus('Copied to clipboard.'))
+    .catch(() => setStatus('Could not copy.'));
+}
+
 // 4) Render extracted fields card
 function showResults(fields) {
   const card = $('#results-card');
@@ -66,11 +79,11 @@ async function sendBytes(file) {
 // 6) Main handler
 async function handleFile(file) {
   if (!file) return;
-  setStatus('Uploading…');
+  setStatus('Uploading document…');
 
   try {
     const data = await sendBytes(file);
-    setStatus('Processed.');
+    setStatus('Done.');
 
     // Text areas
     $('#ocr-text').value     = data.ocr_text_snippet || '';
@@ -80,7 +93,7 @@ async function handleFile(file) {
     showResults(data.fields || {});
   } catch (err) {
     console.error(err);
-    setStatus('Error from server.');
+    setStatus('Server error. Try again.');
     alert('Server error. Please check Azure Function logs, keys/endpoints, and CORS.');
   }
 }
@@ -157,6 +170,30 @@ window.addEventListener('DOMContentLoaded', function () {
   $('#mb-translate-run')?.addEventListener('click', (e) => {
     e.preventDefault();
     translateOcrText();
+  });
+
+  $('#mb-copy-ocr')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    copyTextFrom($('#ocr-text'));
+  });
+
+  $('#mb-copy-summary')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    copyTextFrom($('#summary-text'));
+  });
+
+  $('#mb-clear')?.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    const ocr = $('#ocr-text');
+    const sum = $('#summary-text');
+    if (ocr) ocr.value = '';
+    if (sum) sum.value = '';
+
+    const card = $('#results-card');
+    if (card) card.style.display = 'none';
+
+    setStatus('Cleared.');
   });
 
   setStatus('Ready');
