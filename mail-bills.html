@@ -31,7 +31,12 @@
         <a href="mail-bills.html" data-i18n="nav.mailbills">Mail & Bills</a>
         <a href="about.html" data-i18n="nav.about">About</a>
         <a href="contact.html" data-i18n="nav.contact">Contact</a>
-        <button id="lang-toggle" class="lang glass-btn" aria-label="Toggle language">EN | ES</button>
+        <div class="button-wrap">
+          <button id="lang-toggle" class="lang glass-btn" aria-label="Toggle language" type="button">
+            <span>EN | ES</span>
+          </button>
+          <div class="button-shadow"></div>
+        </div>
       </nav>
     </div>
   </header>
@@ -45,73 +50,97 @@
         <input type="file" id="file-input" accept=".pdf,image/*" style="display:none;">
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;">
 
-        <button class="translate-btn glass-btn" id="btn-upload">
-          <span class="icon-doc"></span>
-          <span data-i18n="mb.btnUpload">Upload document</span>
-        </button>
+        <div class="button-wrap">
+          <button type="button" class="translate-btn glass-btn" id="btn-upload">
+            <span><span class="icon-doc"></span><span data-i18n="mb.btnUpload">Upload document</span></span>
+          </button>
+          <div class="button-shadow"></div>
+        </div>
 
-        <button class="translate-btn glass-btn" id="btn-camera">
-          <span class="icon-camera"></span>
-          <span data-i18n="mb.btnCamera">Take picture</span>
-        </button>
+        <div class="button-wrap">
+          <button type="button" class="translate-btn glass-btn" id="btn-camera">
+            <span><span class="icon-camera"></span><span data-i18n="mb.btnCamera">Take picture</span></span>
+          </button>
+          <div class="button-shadow"></div>
+        </div>
 
-        <button class="translate-btn glass-btn secondary" id="btn-listen" disabled title="Coming soon">
-          <span class="icon-audio"></span>
-          <span data-i18n="mb.btnListen">Read it to me (soon)</span>
-        </button>
+        <div class="button-wrap">
+          <button type="button" class="translate-btn glass-btn secondary" id="btn-listen" disabled title="Coming soon">
+            <span><span class="icon-audio"></span><span data-i18n="mb.btnListen">Read it to me (soon)</span></span>
+          </button>
+          <div class="button-shadow"></div>
+        </div>
 
-        <button class="translate-btn glass-btn" id="mb-translate-run">
-          <span class="icon-doc"></span>
-          <span data-i18n="translate.run">Translate</span>
-        </button>
+        <div class="button-wrap">
+          <button type="button" class="translate-btn glass-btn" id="mb-translate-run">
+            <span><span class="icon-doc"></span><span data-i18n="translate.run">Translate</span></span>
+          </button>
+          <div class="button-shadow"></div>
+        </div>
 
-        <button class="translate-btn glass-btn secondary" id="mb-clear">
-          <span data-i18n="mb.btnClear">Clear</span>
-        </button>
+        <div class="button-wrap">
+          <button type="button" class="translate-btn glass-btn secondary" id="mb-clear">
+            <span data-i18n="mb.btnClear">Clear</span>
+          </button>
+          <div class="button-shadow"></div>
+        </div>
       </div>
 
-      <div class="translator-ui glass-card-dark">
-        <div class="translator-topbar">
-          <div class="translator-lang">
-            <label data-i18n="translate.from">
-              From
-              <select id="mb-src-lang" disabled>
-                <option value="auto">Auto</option>
-              </select>
-            </label>
-            <button id="mb-swap-langs" class="swap-btn" title="Swap languages" data-i18n="translate.swap">⇄</button>
-            <label data-i18n="translate.to">
-              To
-              <select id="mb-tgt-lang">
-                <option value="es">Spanish</option>
-                <option value="en">English</option>
-              </select>
-            </label>
-          </div>
-        </div>
-
-        <div class="translator-panels">
-          <div class="translator-box">
-            <textarea id="ocr-text" placeholder="OCR text will appear here..."></textarea>
-            <div>
-              <button type="button" class="inline-btn" id="mb-copy-ocr">
-                <span data-i18n="mb.copyOcr">Copy OCR</span>
-              </button>
+      <div class="translator-ui glass-card-dark translate-card">
+        <div class="translate-card-inner">
+          <div class="translator-topbar">
+            <div class="translator-lang">
+              <label data-i18n="translate.from">
+                From
+                <select id="mb-src-lang" disabled>
+                  <option value="auto">Auto</option>
+                </select>
+              </label>
+              <div class="button-wrap">
+                <button type="button" id="mb-swap-langs" class="swap-btn" title="Swap languages">
+                  <span data-i18n="translate.swap">⇄</span>
+                </button>
+                <div class="button-shadow"></div>
+              </div>
+              <label data-i18n="translate.to">
+                To
+                <select id="mb-tgt-lang">
+                  <option value="es">Spanish</option>
+                  <option value="en">English</option>
+                </select>
+              </label>
             </div>
           </div>
-          <div class="translator-box">
-            <textarea id="summary-text" placeholder="Summary will appear here..." readonly></textarea>
-            <div>
-              <button type="button" class="inline-btn" id="mb-copy-summary">
-                <span data-i18n="mb.copySummary">Copy summary</span>
-              </button>
+
+          <div class="translator-panels">
+            <div class="translator-box">
+              <textarea id="ocr-text" placeholder="OCR text will appear here..."></textarea>
+              <div>
+                <div class="button-wrap">
+                  <button type="button" class="inline-btn" id="mb-copy-ocr">
+                    <span data-i18n="mb.copyOcr">Copy OCR</span>
+                  </button>
+                  <div class="button-shadow"></div>
+                </div>
+              </div>
+            </div>
+            <div class="translator-box">
+              <textarea id="summary-text" placeholder="Summary will appear here..." readonly></textarea>
+              <div>
+                <div class="button-wrap">
+                  <button type="button" class="inline-btn" id="mb-copy-summary">
+                    <span data-i18n="mb.copySummary">Copy summary</span>
+                  </button>
+                  <div class="button-shadow"></div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="translator-foot">
-          <span class="translator-hint" data-i18n="mb.hint">Tip: clear, well-lit photos give the best results.</span>
-          <span id="status-line">Ready</span>
+          <div class="translator-foot">
+            <span class="translator-hint" data-i18n="mb.hint">Tip: clear, well-lit photos give the best results.</span>
+            <span id="status-line">Ready</span>
+          </div>
         </div>
       </div>
 
