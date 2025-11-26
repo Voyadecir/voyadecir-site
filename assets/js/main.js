@@ -1,6 +1,19 @@
 (function () {
   const LS_KEY = "voyadecir_lang";
   const $ = (s) => document.querySelector(s);
+  let CURRENT_DICT = {};
+
+  function t(key, fallback) {
+    try {
+      const dict = window.VD_I18N || CURRENT_DICT || {};
+      if (dict && Object.prototype.hasOwnProperty.call(dict, key)) {
+        return dict[key];
+      }
+      return fallback || key;
+    } catch (_) {
+      return fallback || key;
+    }
+  }
 
   async function loadDict(lang) {
     const ok = ["en", "es"].includes(lang) ? lang : "en";
@@ -17,6 +30,8 @@
 
   async function apply(lang) {
     const dict = await loadDict(lang);
+    CURRENT_DICT = dict;
+    window.VD_I18N = dict;
 
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       const key = el.getAttribute("data-i18n");
@@ -43,6 +58,16 @@
 
     // expose current lang for other scripts (translate.js uses this)
     window.VD_LANG = lang;
+
+    // update any ready status lines to current locale
+    const statusLine = document.querySelector("#status-line");
+    if (statusLine && statusLine.textContent) {
+      const cur = statusLine.textContent.trim().toLowerCase();
+      const readyVariants = ["ready", "ready.", "listo", "listo."];
+      if (readyVariants.includes(cur)) {
+        statusLine.textContent = t("mb.status.ready", statusLine.textContent);
+      }
+    }
   }
 
   async function init() {
@@ -61,5 +86,6 @@
     }
   }
 
+  window.VD_T = t;
   window.addEventListener("DOMContentLoaded", init);
 })();

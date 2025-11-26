@@ -14,6 +14,7 @@ function getLang() {
 
 // 3) Tiny DOM helpers
 const $ = (s) => document.querySelector(s);
+const t = (window.VD_T) ? window.VD_T : (k, f) => f || k;
 function setStatus(msg) { const el = $('#status-line'); if (el) el.textContent = msg; }
 function valOrDash(v) { return (v !== undefined && v !== null && String(v).trim() !== "") ? String(v) : '—'; }
 
@@ -21,13 +22,13 @@ function copyTextFrom(el) {
   if (!el) return;
   const value = (el.value || '').trim();
   if (!value) {
-    setStatus('Nothing to copy.');
+    setStatus(t('mb.status.nothingToCopy', 'Nothing to copy.'));
     return;
   }
 
   navigator.clipboard?.writeText(value)
-    .then(() => setStatus('Copied to clipboard.'))
-    .catch(() => setStatus('Could not copy.'));
+    .then(() => setStatus(t('mb.status.copied', 'Copied to clipboard.')))
+    .catch(() => setStatus(t('mb.status.copyFailed', 'Could not copy.')));
 }
 
 // 4) Render extracted fields card
@@ -79,11 +80,11 @@ async function sendBytes(file) {
 // 6) Main handler
 async function handleFile(file) {
   if (!file) return;
-  setStatus('Uploading document…');
+  setStatus(t('mb.status.uploading', 'Uploading document…'));
 
   try {
     const data = await sendBytes(file);
-    setStatus('Done.');
+    setStatus(t('mb.status.done', 'Done.'));
 
     // Text areas
     $('#ocr-text').value     = data.ocr_text_snippet || '';
@@ -93,7 +94,7 @@ async function handleFile(file) {
     showResults(data.fields || {});
   } catch (err) {
     console.error(err);
-    setStatus('Server error. Try again.');
+    setStatus(t('mb.status.serverError', 'Server error. Try again.'));
     alert('Server error. Please check Azure Function logs, keys/endpoints, and CORS.');
   }
 }
@@ -110,13 +111,13 @@ async function translateOcrText() {
 
   const text = (srcEl.value || '').trim();
   if (!text) {
-    setStatus('No text to translate.');
+    setStatus(t('mb.status.noText', 'No text to translate.'));
     return;
   }
 
   const target_lang = (langSelect?.value || (getLang() === 'es' ? 'es' : 'en')).trim();
 
-  setStatus('Translating…');
+  setStatus(t('mb.status.translating', 'Translating…'));
 
   try {
     const res = await fetch(TRANSLATE_API, {
@@ -129,22 +130,22 @@ async function translateOcrText() {
       let body;
       try { body = await res.json(); } catch { body = await res.text(); }
       console.error('Translator error', res.status, body);
-      setStatus('Translation failed.');
+      setStatus(t('mb.status.translationFailed', 'Translation failed.'));
       return;
     }
 
     const data = await res.json();
     const out = data.translated_text || data.translation || '';
     if (!out) {
-      setStatus('Empty translation.');
+      setStatus(t('mb.status.emptyTranslation', 'Empty translation.'));
       return;
     }
 
     outEl.value = out;
-    setStatus('Translated.');
+    setStatus(t('mb.status.translated', 'Translated.'));
   } catch (err) {
     console.error('Translation network error', err);
-    setStatus('Translation error.');
+    setStatus(t('mb.status.translationError', 'Translation error.'));
   }
 }
 
@@ -193,8 +194,8 @@ window.addEventListener('DOMContentLoaded', function () {
     const card = $('#results-card');
     if (card) card.style.display = 'none';
 
-    setStatus('Cleared.');
+    setStatus(t('mb.status.cleared', 'Cleared.'));
   });
 
-  setStatus('Ready');
+  setStatus(t('mb.status.ready', 'Ready'));
 });
