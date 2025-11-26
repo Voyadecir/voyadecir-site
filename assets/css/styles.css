@@ -448,54 +448,20 @@ button:active::after {
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  gap:10px;
-  padding:10px 16px;
-  border-radius:999px;
-  background:var(--glass-btn-bg);
-  border:1px solid var(--glass-btn-border);
-  color:#f5f5f5;
-  backdrop-filter:blur(calc(var(--glass-blur) + 2px));
-  -webkit-backdrop-filter:blur(calc(var(--glass-blur) + 2px));
-  cursor:pointer;
-  box-shadow:0 6px 20px rgba(0,0,0,0.25);
-  transition:transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+  gap:8px;
+  padding:0;
+  background:none;
+  border:none;
+  box-shadow:none;
   text-decoration:none;
-}
-
-.glass-btn:hover,
-.translate-btn:hover,
-.lang:hover,
-.btn:hover{
-  transform:translateY(-1px);
-  box-shadow:0 8px 24px rgba(0,0,0,0.32);
-}
-
-.glass-btn:active,
-.translate-btn:active,
-.lang:active,
-.btn:active{
-  transform:translateY(0);
-  box-shadow:0 3px 12px rgba(0,0,0,0.38);
-}
-
-.glass-btn:focus-visible,
-.translate-btn:focus-visible,
-.lang:focus-visible,
-.btn:focus-visible{
-  outline:2px solid rgba(255,255,255,0.75);
-  outline-offset:2px;
+  color:inherit;
 }
 
 .lang{
   margin-left:12px;
-  color:#f5f5f5;
-  background:rgba(0,0,0,0.7);
-  border:1px solid rgba(255,255,255,0.18);
-  padding:8px 14px;
 }
 
 .btn{
-  border-radius:999px;
   font-weight:600;
 }
 
@@ -522,7 +488,7 @@ button:active::after {
  .btn{
    display:inline-flex;
    margin-top:24px;
-   padding:12px 18px;
+   padding:0;
  }
 
 .section{
@@ -684,15 +650,6 @@ small.tagline{
   max-width: 960px;
   margin: 18px auto 0;
   border-radius: 0.8rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: linear-gradient(
-    0deg,
-    rgba(40, 44, 52, 0.95) 0%,
-    rgba(17, 0, 32, 0.75) 100%
-  );
-  box-shadow: 0 7px 30px 5px rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   overflow: hidden;
   transition: 0.4s ease;
   color: #f5f5f5;
@@ -768,11 +725,11 @@ small.tagline{
 }
 
 .swap-btn{
-  background:rgba(255,255,255,0.08);
-  color:#f5f5f5;
-  border:1px solid rgba(255,255,255,0.18);
+  background:none;
+  color:inherit;
+  border:none;
   border-radius:10px;
-  padding:6px 10px;
+  padding:0;
   cursor:pointer;
 }
 
@@ -804,23 +761,10 @@ small.tagline{
 
 .inline-btn{
   margin-top:8px;
-  padding:8px 12px;
-  border-radius:10px;
-  background:rgba(255,255,255,0.08);
-  color:#f5f5f5;
-  border:1px solid rgba(255,255,255,0.18);
-  cursor:pointer;
-  transition:transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.inline-btn:hover{
-  transform:translateY(-1px);
-  box-shadow:0 6px 16px rgba(0,0,0,0.25);
-}
-
-.inline-btn:focus-visible{
-  outline:2px solid rgba(255,255,255,0.75);
-  outline-offset:2px;
+  padding:0;
+  border:none;
+  background:none;
+  color:inherit;
 }
 
 .translator-foot{
@@ -846,10 +790,6 @@ small.tagline{
   .translate-actions{
     flex-direction:column;
     align-items:center;
-  }
-  .translate-btn{
-    width:100%;
-    justify-content:center;
   }
   .translator-ui{
     max-width:100%;
@@ -947,8 +887,10 @@ small.tagline{
 
 /* Inner translator area remains black with white text */
 .translator-inner {
-  background-color: #000000;
+  background: #000000;
   color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: none;
 }
 
 /* Reusable glass pill button */
@@ -957,16 +899,17 @@ small.tagline{
   align-items: center;
   justify-content: center;
 
-  padding: 0.4rem 1.0rem;
+  /* IMPORTANT: Use size similar to the current EN|ES button */
+  padding: 0.35rem 0.9rem;
   border-radius: 999px;
 
   background-color: rgba(255, 255, 255, 0.10);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
 
   color: rgba(255, 255, 255, 0.9);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   text-decoration: none;
