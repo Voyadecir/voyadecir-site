@@ -1,6 +1,16 @@
 (function () {
   const LS_KEY = "voyadecir_lang";
   const $ = (s) => document.querySelector(s);
+  let currentDict = {};
+
+  function t(key, fallback) {
+    try {
+      const dict = window.VOY_LANGUAGE_MAP || currentDict || {};
+      return dict[key] || fallback || key;
+    } catch (_) {
+      return fallback || key;
+    }
+  }
 
   async function loadDict(lang) {
     const ok = ["en", "es"].includes(lang) ? lang : "en";
@@ -17,6 +27,9 @@
 
   async function apply(lang) {
     const dict = await loadDict(lang);
+    currentDict = dict;
+    window.VOY_LANGUAGE_MAP = dict;
+    window.voyT = t;
 
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       const key = el.getAttribute("data-i18n");

@@ -6,6 +6,15 @@
 const API_BASE = "https://voyadecir-ai-functions-aze4fqhjdcbzfkdu.centralus-01.azurewebsites.net";
 const TRANSLATE_API = "https://ai-translator-i5jb.onrender.com/api/translate";
 
+const translateKey = (key, fallback) => {
+  try {
+    if (typeof window !== 'undefined' && typeof window.voyT === 'function') {
+      return window.voyT(key, fallback);
+    }
+  } catch (_) {}
+  return fallback || key;
+};
+
 // 2) Site language helper (from main.js session key)
 function getLang() {
   try { return sessionStorage.getItem('voyadecir_lang') || 'en'; }
@@ -21,13 +30,13 @@ function copyTextFrom(el) {
   if (!el) return;
   const value = (el.value || '').trim();
   if (!value) {
-    setStatus('Nothing to copy.');
+    setStatus(translateKey('mb.status.nothingToCopy', 'Nothing to copy.'));
     return;
   }
 
   navigator.clipboard?.writeText(value)
-    .then(() => setStatus('Copied to clipboard.'))
-    .catch(() => setStatus('Could not copy.'));
+    .then(() => setStatus(translateKey('mb.status.copied', 'Copied to clipboard.')))
+    .catch(() => setStatus(translateKey('mb.status.copyFailed', 'Could not copy.')));
 }
 
 // 4) Render extracted fields card
@@ -79,11 +88,11 @@ async function sendBytes(file) {
 // 6) Main handler
 async function handleFile(file) {
   if (!file) return;
-  setStatus('Uploading document…');
+  setStatus(translateKey('mb.status.uploading', 'Uploading document…'));
 
   try {
     const data = await sendBytes(file);
-    setStatus('Done.');
+    setStatus(translateKey('mb.status.done', 'Done.'));
 
     // Text areas
     $('#ocr-text').value     = data.ocr_text_snippet || '';
@@ -93,7 +102,7 @@ async function handleFile(file) {
     showResults(data.fields || {});
   } catch (err) {
     console.error(err);
-    setStatus('Server error. Try again.');
+    setStatus(translateKey('mb.status.serverError', 'Server error. Try again.'));
     alert('Server error. Please check Azure Function logs, keys/endpoints, and CORS.');
   }
 }
@@ -110,13 +119,13 @@ async function translateOcrText() {
 
   const text = (srcEl.value || '').trim();
   if (!text) {
-    setStatus('No text to translate.');
+    setStatus(translateKey('mb.status.noText', 'No text to translate.'));
     return;
   }
 
   const target_lang = (langSelect?.value || (getLang() === 'es' ? 'es' : 'en')).trim();
 
-  setStatus('Translating…');
+  setStatus(translateKey('mb.status.translating', 'Translating…'));
 
   try {
     const res = await fetch(TRANSLATE_API, {
@@ -129,22 +138,22 @@ async function translateOcrText() {
       let body;
       try { body = await res.json(); } catch { body = await res.text(); }
       console.error('Translator error', res.status, body);
-      setStatus('Translation failed.');
+      setStatus(translateKey('mb.status.translationFailed', 'Translation failed.'));
       return;
     }
 
     const data = await res.json();
     const out = data.translated_text || data.translation || '';
     if (!out) {
-      setStatus('Empty translation.');
+      setStatus(translateKey('mb.status.emptyTranslation', 'Empty translation.'));
       return;
     }
 
     outEl.value = out;
-    setStatus('Translated.');
+    setStatus(translateKey('mb.status.translated', 'Translated.'));
   } catch (err) {
     console.error('Translation network error', err);
-    setStatus('Translation error.');
+    setStatus(translateKey('mb.status.translationError', 'Translation error.'));
   }
 }
 
@@ -193,8 +202,8 @@ window.addEventListener('DOMContentLoaded', function () {
     const card = $('#results-card');
     if (card) card.style.display = 'none';
 
-    setStatus('Cleared.');
+    setStatus(translateKey('mb.status.cleared', 'Cleared.'));
   });
 
-  setStatus('Ready');
+  setStatus(translateKey('mb.status.ready', 'Ready'));
 });
