@@ -64,6 +64,10 @@
           <span class="icon-doc"></span>
           <span data-i18n="mb.btnTranslate">Translate</span>
         </button>
+
+        <button class="translate-btn secondary" id="mb-clear">
+          <span>Clear</span>
+        </button>
       </div>
 
       <div class="translator-ui">
@@ -89,9 +93,19 @@
         <div class="translator-panels">
           <div class="translator-box">
             <textarea id="ocr-text" placeholder="OCR text will appear here..." readonly></textarea>
+            <div>
+              <button type="button" class="inline-btn" id="mb-copy-ocr">
+                Copy OCR
+              </button>
+            </div>
           </div>
           <div class="translator-box">
             <textarea id="summary-text" placeholder="Summary will appear here..." readonly></textarea>
+            <div>
+              <button type="button" class="inline-btn" id="mb-copy-summary">
+                Copy summary
+              </button>
+            </div>
           </div>
         </div>
 
