@@ -86,7 +86,7 @@ async function handleFile(file) {
 
 // 7) UI wiring
 window.addEventListener('DOMContentLoaded', function () {
-  const tgt = $('#tgt-lang');
+  const tgt = $('#mb-tgt-lang');
   if (tgt) tgt.value = getLang() === 'es' ? 'es' : 'en';
 
   $('#btn-upload')?.addEventListener('click', () => $('#file-input').click());
@@ -96,8 +96,8 @@ window.addEventListener('DOMContentLoaded', function () {
   $('#camera-input')?.addEventListener('change', (e) => handleFile(e.target.files?.[0]));
 
   // quick flip EN↔ES for "To"
-  $('#swap-langs')?.addEventListener('click', () => {
-    const t = $('#tgt-lang');
+  $('#mb-swap-langs')?.addEventListener('click', () => {
+    const t = $('#mb-tgt-lang');
     if (!t) return;
     t.value = t.value === 'es' ? 'en' : 'es';
     try { sessionStorage.setItem('voyadecir_lang', t.value); } catch (_) {}
