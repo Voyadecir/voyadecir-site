@@ -5,8 +5,8 @@
 :root {
   --bg:#ffffff;
   --fg:#111111;
-  --muted:#555555;
-  --accent:#111111;
+  --muted:#ffffff;
+  --accent:#000000;
 
   --glass-blur:10px;
   --glass-card-bg: rgba(0, 0, 0, 0.65);
