@@ -25,31 +25,32 @@
 html, body {
   margin:0;
   padding:0;
-  font-family:Inter, "Helvetica Neue", Arial, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background:#ffffff;
   color:var(--fg);
+  font-family:Inter, "Helvetica Neue", Arial, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
-/* Dark, moody background with ink texture */
+/* Dark ink background so glass stands out */
 body {
   position:relative;
   min-height:100vh;
 
-  background-color:#020617; /* deep navy/charcoal base */
+  background-color:#020617;
   background-image:
-    radial-gradient(circle at 0 0, rgba(148,163,184,0.35), transparent 55%),
+    radial-gradient(circle at 0 0, rgba(148,163,184,0.25), transparent 55%),
     url("assets/img/bg-ink.jpg");
   background-size:600px 600px, cover;
   background-position:0 0, center;
   background-attachment:fixed, fixed;
 }
 
-/* Dark overlay to make glass + text pop */
+/* Slight overlay, not enough to kill the glass */
 body::before {
   content:"";
   position:fixed;
   inset:0;
   background:
-    radial-gradient(circle at top, rgba(15,23,42,0.80), rgba(15,23,42,0.95));
+    radial-gradient(circle at top, rgba(15,23,42,0.70), rgba(15,23,42,0.92));
   pointer-events:none;
   z-index:0;
 }
@@ -138,7 +139,7 @@ button {
   color:inherit;
 }
 
-/* One look for every CTA, everywhere */
+/* One look for every CTA, everywhere – clear frosted glass */
 .glass-button {
   display:inline-flex;
   align-items:center;
@@ -148,9 +149,8 @@ button {
   padding:0.45rem 1.1rem;       /* similar to EN|ES pill size but slightly more rectangular */
   border-radius:var(--radius-button);
 
-  /* Black glass */
-  background-color:rgba(0, 0, 0, 0.7);
-  border:1px solid rgba(255, 255, 255, 0.22);
+  background-color:rgba(255, 255, 255, 0.10);
+  border:1px solid rgba(255, 255, 255, 0.26);
   backdrop-filter:blur(30px);
   -webkit-backdrop-filter:blur(30px);
 
@@ -164,7 +164,7 @@ button {
 }
 
 .glass-button:hover {
-  background-color:rgba(0, 0, 0, 0.85);
+  background-color:rgba(255, 255, 255, 0.20);
 }
 
 /* Layout tweaks for where buttons live */
@@ -199,20 +199,12 @@ button {
   width:100%;
   max-width:960px;
 
-  background-color:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.12);
   border-radius:var(--radius-card);
   padding:32px;
-
-  backdrop-filter:blur(var(--glass-blur));
-  -webkit-backdrop-filter:blur(var(--glass-blur));
-
-  box-shadow:var(--panel-shadow);
-  color:#ffffff;
 }
 
 /* =========================================
-   TYPOGRAPHY / HERO
+   TYPOGRAPHY / HERO / CARDS
    ========================================= */
 
 .hero {
@@ -220,25 +212,16 @@ button {
   text-align:center;
   max-width:760px;
   margin:40px auto 0;
-
-  /* frosted white card sitting on dark ink background */
-  background:rgba(255,255,255,0.9);
-  border-radius:var(--radius-card);
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
-  box-shadow:var(--panel-shadow);
 }
 
 .hero h1 {
   font-size:36px;
   margin:0 0 8px;
   font-weight:600;
-  color:#050816;
 }
 
 .hero p {
   font-size:18px;
-  color:#333;
   margin:0;
 }
 
@@ -249,10 +232,6 @@ button {
 .card {
   border-radius:var(--radius-card);
   padding:24px;
-  background:rgba(255,255,255,0.85);
-  backdrop-filter:blur(6px);
-  -webkit-backdrop-filter:blur(6px);
-  box-shadow:var(--panel-shadow);
 }
 
 /* =========================================
@@ -268,7 +247,7 @@ button {
   text-align:center;
   margin:0;
   font-size:26px;
-  color:#f9fafb; /* light text on dark background */
+  color:#f9fafb;
 }
 
 .translate-sub {
@@ -292,23 +271,17 @@ button {
 }
 
 /* =========================================
-   TRANSLATOR: GLASS OUTER, BLACK INNER
+   TRANSLATOR: OUTER GLASS, INNER BLACK
    ========================================= */
 
+/* translator-outer uses .glass-panel, so this becomes layout-only */
 .translator-ui {
-  margin:18px auto 0;
-  max-width:960px;
-
-  /* clear frosted frame */
-  background-color:rgba(255,255,255,0.06);
-  border-radius:var(--radius-card);
-  border:1px solid rgba(255,255,255,0.18);
-  padding:18px 18px 16px;
-
-  backdrop-filter:blur(var(--glass-blur));
-  -webkit-backdrop-filter:blur(var(--glass-blur));
-
-  box-shadow:var(--panel-shadow);
+  margin:0;
+  max-width:100%;
+  background:transparent;
+  border:none;
+  padding:0;
+  box-shadow:none;
   color:#f5f5f5;
 }
 
@@ -342,7 +315,7 @@ button {
   padding:6px 8px;
 }
 
-/* swap button: behavior/layout only, visual comes from .glass-button */
+/* swap button: visual comes from .glass-button in HTML */
 .swap-btn {
   font-size:0.9rem;
 }
@@ -397,7 +370,7 @@ button {
 .translate-footnote {
   margin-top:20px;
   font-size:12px;
-  color:#777;
+  color:#e5e7eb;
   text-align:center;
 }
 
@@ -410,17 +383,14 @@ button {
   margin:16px auto 0;
   border-radius:14px;
   padding:14px 16px;
-  background:rgba(255,255,255,0.9);
-  backdrop-filter:blur(6px);
-  -webkit-backdrop-filter:blur(6px);
-  box-shadow:0 6px 20px rgba(0,0,0,0.12);
 }
 
+/* Keep rows simple; panel style is shared below */
 .result-row {
   display:flex;
   gap:10px;
   padding:6px 0;
-  border-bottom:1px dashed #eee;
+  border-bottom:1px dashed rgba(249,250,251,0.25);
 }
 
 .result-row:last-child {
@@ -436,17 +406,15 @@ button {
   margin:24px auto 0;
   border-radius:20px;
   padding:24px;
-  background:rgba(255,255,255,0.9);
-  box-shadow:var(--panel-shadow);
 }
 
-/* Assistant uses translate-title inside a light card, so override colors there */
+/* Assistant uses translate-title class; override colors inside light-ish glass */
 .chat-shell .translate-title {
-  color:#050816;
+  color:#f9fafb;
 }
 
 .chat-shell .translate-sub {
-  color:#555;
+  color:#e5e7eb;
 }
 
 .chat-window {
@@ -507,7 +475,7 @@ footer {
   border-top:1px solid #eee;
   margin-top:64px;
   padding:24px 0;
-  color:#666;
+  color:#e5e7eb;
   font-size:14px;
 }
 
@@ -516,6 +484,25 @@ small.tagline {
   color:#666;
   margin-top:2px;
   font-weight:400;
+}
+
+/* =========================================
+   GLASS LOOK SHARED ACROSS PANELS
+   (hero, cards, chat-shell, results, contact, translator-outer)
+   ========================================= */
+
+.glass-panel,
+.hero,
+.card,
+.chat-shell,
+.results-card,
+.contact-form {
+  background-color:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.22);
+  backdrop-filter:blur(var(--glass-blur));
+  -webkit-backdrop-filter:blur(var(--glass-blur));
+  box-shadow:var(--panel-shadow);
+  color:#f9fafb;
 }
 
 /* =========================================
@@ -536,10 +523,6 @@ small.tagline {
 
   .translate-shell {
     padding:0 4px;
-  }
-
-  .translator-ui {
-    padding:14px;
   }
 
   .chat-shell {
