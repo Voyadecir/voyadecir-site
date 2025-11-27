@@ -1,4 +1,4 @@
-<!doctype html>
+<!doctype html> 
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -42,32 +42,42 @@
       <a href="translate.html" data-i18n="nav.translate">Translate</a>
       <a href="about.html" data-i18n="nav.about">About</a>
       <a href="contact.html" data-i18n="nav.contact">Contact</a>
-        <div class="button-wrap">
-          <button id="lang-toggle" class="lang glass-btn glass-button" aria-label="Toggle language" type="button">
-            <span>EN | ES</span>
-          </button>
-          <div class="button-shadow"></div>
-      </div>
+
+      <!-- Language toggle: unified glass button -->
+      <button
+        id="lang-toggle"
+        class="glass-button lang"
+        aria-label="Toggle language"
+        type="button">
+        <span>EN | ES</span>
+      </button>
     </nav>
   </div>
 </header>
-  <main class="container">
-    <section class="hero">
-      <h1 data-i18n="hero.h1">Voyadecir — Translate. Understand. Connect.</h1>
-      <p data-i18n="hero.sub">Powered by the latest advancements in AI technology, Voyadecir bridges languages through intelligent translation and interpretation — helping you translate, understand, and connect effortlessly across the world.</p>
-        <div class="button-wrap">
-          <button class="btn glass-btn glass-button" type="button" onclick="window.location.href='translate.html'">
-            <span data-i18n="cta.start">Start Translating</span>
-          </button>
-          <div class="button-shadow"></div>
-      </div>
-    </section>
-    <section class="section">
-      <div class="card">
-        <p>Minimalist, fast, and privacy‑respecting. Built with a focus on clarity and connection.</p>
-      </div>
-    </section>
-  </main>
+
+<main class="container">
+  <section class="hero">
+    <h1 data-i18n="hero.h1">Voyadecir — Translate. Understand. Connect.</h1>
+    <p data-i18n="hero.sub">
+      Powered by the latest advancements in AI technology, Voyadecir bridges languages through intelligent
+      translation and interpretation — helping you translate, understand, and connect effortlessly across the world.
+    </p>
+
+    <!-- Hero CTA: glass button, no wrapper -->
+    <button
+      class="glass-button btn"
+      type="button"
+      onclick="window.location.href='translate.html'">
+      <span data-i18n="cta.start">Start Translating</span>
+    </button>
+  </section>
+
+  <section class="section">
+    <div class="card">
+      <p>Minimalist, fast, and privacy-respecting. Built with a focus on clarity and connection.</p>
+    </div>
+  </section>
+</main>
   
 <footer>
   <div class="container">© 2025 Voyadecir — All rights reserved.</div>
