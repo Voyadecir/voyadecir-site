@@ -61,9 +61,14 @@ body > * {
   padding:0 24px;
 }
 
-/* Center short pages vertically (e.g. homepage) */
+/* Make main tall enough so footer doesn’t float halfway up */
 main {
   min-height:calc(100vh - 180px);
+}
+
+/* Only the HOMEPAGE main gets vertical centering.
+   In index.html: <main class="container home-main"> */
+.home-main {
   display:flex;
   flex-direction:column;
   justify-content:center;
@@ -76,7 +81,7 @@ main {
 header {
   position:sticky;
   top:0;
-  /* let wallpaper show through – just a subtle divider */
+  /* transparent so wallpaper shows, but with subtle divider */
   background:transparent;
   backdrop-filter:none;
   -webkit-backdrop-filter:none;
@@ -309,18 +314,18 @@ button {
 .translate-btn {}
 
 /* =========================================
-   TRANSLATOR: CLEAR GLASS OUTER, BLACK INNER
+   TRANSLATOR: CLEAR GLASS OUTER, BLACK INNER TEXTAREAS
    ========================================= */
 
+/* OUTER: CLEAR GLASS FRAME */
 .translator-outer {
   max-width:960px;
   margin:18px auto 0;
 
-  /* ensure outer shell is nicely rounded and clips contents,
-     and give it the same glass effect as other panels */
   border-radius:var(--radius-card);
   overflow:hidden;
 
+  /* same clear-glass look as glass-panel */
   background:rgba(255, 255, 255, 0.14);
   backdrop-filter:blur(2px) saturate(180%);
   -webkit-backdrop-filter:blur(2px) saturate(180%);
@@ -330,20 +335,20 @@ button {
     inset 0 4px 18px rgba(255, 255, 255, 0.35);
 }
 
-/* kill any leftover ::after from .glass-panel on this one,
-   since we’re defining the frame directly above */
+/* Kill the generic glass-panel ::after on this one,
+   since we defined its frame explicitly above */
 .translator-outer::after {
   content:none;
 }
 
-/* inner black panel, rounded so it looks like a card inside the glass */
+/* INNER: NO BACKGROUND — just a container so outer glass stays visible */
 .translator-ui {
   padding:18px 18px 16px;
   color:#f5f5f5;
 
-  background:rgba(0,0,0,0.9);
-  border-radius:calc(var(--radius-card) - 6px);
-  box-shadow:0 0 0 1px rgba(255,255,255,0.16) inset;
+  background:transparent;              /* <-- no black background */
+  border-radius:0;                     /* outer handles rounding */
+  box-shadow:none;                     /* no inset on inner wrapper */
 }
 
 .translator-topbar {
@@ -392,7 +397,7 @@ button {
   width:100%;
 }
 
-/* INNER BLACK BOXES */
+/* INNER BLACK BOXES (only these are black now) */
 .translator-box textarea {
   width:100%;
   min-height:180px;
