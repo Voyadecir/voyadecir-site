@@ -61,9 +61,12 @@ body > * {
   padding:0 24px;
 }
 
-/* Make main tall enough so footer doesn’t float halfway up on short pages */
+/* Center short pages vertically (e.g. homepage) */
 main {
   min-height:calc(100vh - 180px);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 }
 
 /* =========================================
@@ -138,13 +141,13 @@ nav a:hover {
 .glass-panel,
 .glass-button {
   position:relative;
-  background:rgba(255, 255, 255, 0.15);
+  background:rgba(255, 255, 255, 0.14);   /* neutral clear glass */
   backdrop-filter:blur(2px) saturate(180%);
   -webkit-backdrop-filter:blur(2px) saturate(180%);
   border:1px solid rgba(255, 255, 255, 0.8);
   box-shadow:
-    0 8px 32px rgba(31, 38, 135, 0.2),
-    inset 0 4px 20px rgba(255, 255, 255, 0.3);
+    0 18px 45px rgba(0, 0, 0, 0.55),       /* no blue tint */
+    inset 0 4px 18px rgba(255, 255, 255, 0.35);
   overflow:hidden;
 }
 
@@ -306,16 +309,31 @@ button {
 .translate-btn {}
 
 /* =========================================
-   TRANSLATOR: GLASS OUTER, BLACK INNER
+   TRANSLATOR: CLEAR GLASS OUTER, BLACK INNER
    ========================================= */
 
 .translator-outer {
   max-width:960px;
   margin:18px auto 0;
 
-  /* ensure outer shell is nicely rounded and clips contents */
+  /* ensure outer shell is nicely rounded and clips contents,
+     and give it the same glass effect as other panels */
   border-radius:var(--radius-card);
   overflow:hidden;
+
+  background:rgba(255, 255, 255, 0.14);
+  backdrop-filter:blur(2px) saturate(180%);
+  -webkit-backdrop-filter:blur(2px) saturate(180%);
+  border:1px solid rgba(255, 255, 255, 0.8);
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.55),
+    inset 0 4px 18px rgba(255, 255, 255, 0.35);
+}
+
+/* kill any leftover ::after from .glass-panel on this one,
+   since we’re defining the frame directly above */
+.translator-outer::after {
+  content:none;
 }
 
 /* inner black panel, rounded so it looks like a card inside the glass */
@@ -323,7 +341,7 @@ button {
   padding:18px 18px 16px;
   color:#f5f5f5;
 
-  background:rgba(0,0,0,0.85);
+  background:rgba(0,0,0,0.9);
   border-radius:calc(var(--radius-card) - 6px);
   box-shadow:0 0 0 1px rgba(255,255,255,0.16) inset;
 }
