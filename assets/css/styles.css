@@ -11,7 +11,7 @@
   --panel-shadow:0 18px 45px rgba(0,0,0,0.45);
 
   --radius-card:24px;
-  --radius-button:999px; /* pill-ish but still compact */
+  --radius-button:18px;  /* rounded rectangle, not full pill */
 }
 
 /* Reset & base */
@@ -33,7 +33,7 @@ body {
   background:
     radial-gradient(circle at top, rgba(148,163,184,0.4), transparent 55%),
     radial-gradient(circle at bottom, rgba(15,23,42,0.9), #020617),
-    url("assets/img/bg-ink.jpg") center center / cover fixed no-repeat;
+    url("../img/bg-ink.jpg") center center / cover fixed no-repeat;
 }
 
 /* subtle grid texture overlay */
@@ -122,8 +122,13 @@ nav a:hover {
    LIQUID GLASS BASE (APPLE-STYLE)
    ========================================= */
 
-/* Core liquid glass surface */
-.glass {
+/* Core liquid glass surface:
+   We alias .glass, .glass-panel, and .glass-button
+   so old markup still works and buttons get the effect too.
+*/
+.glass,
+.glass-panel,
+.glass-button {
   position:relative;
   background:rgba(255, 255, 255, 0.15);
   backdrop-filter:blur(2px) saturate(180%);
@@ -136,7 +141,9 @@ nav a:hover {
 }
 
 /* Liquid highlight */
-.glass::after {
+.glass::after,
+.glass-panel::after,
+.glass-button::after {
   content:'';
   position:absolute;
   top:0;
@@ -155,24 +162,15 @@ nav a:hover {
   filter:blur(1px) drop-shadow(10px 4px 6px black) brightness(115%);
 }
 
-/* Common card-like surfaces use larger radius */
+/* card-like surfaces get bigger radius */
 .hero.glass,
 .card.glass,
 .chat-shell.glass,
 .results-card.glass,
 .contact-form.glass,
 .translate-shell.glass,
-.translator-outer.glass {
-  border-radius:var(--radius-card);
-}
-
-.hero.glass::after,
-.card.glass::after,
-.chat-shell.glass::after,
-.results-card.glass::after,
-.contact-form.glass::after,
-.translate-shell.glass::after,
-.translator-outer.glass::after {
+.translator-outer.glass,
+.glass-panel {
   border-radius:var(--radius-card);
 }
 
@@ -207,15 +205,6 @@ button {
   text-decoration:none;
   cursor:pointer;
   white-space:nowrap;
-}
-
-/* give buttons their own glass treatment */
-.glass-button.glass {
-  border-radius:var(--radius-button);
-}
-
-.glass-button.glass::after {
-  border-radius:var(--radius-button);
 }
 
 .glass-button:hover {
@@ -352,12 +341,12 @@ button {
   padding:6px 8px;
 }
 
-/* swap button: visuals from .glass-button when you add it */
+/* swap button: visuals from glass-button */
 .swap-btn {
   font-size:0.9rem;
 }
 
-/* Under-the-hood layout for text boxes */
+/* layout for text boxes */
 .translator-panels {
   display:flex;
   flex-direction:column;
@@ -385,7 +374,7 @@ button {
   color:#cbd5f5;
 }
 
-/* inline buttons just get spacing; visuals from .glass + .glass-button */
+/* inline buttons spacing; visuals from .glass-button */
 .inline-btn {
   margin-top:8px;
 }
