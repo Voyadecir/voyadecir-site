@@ -22,7 +22,8 @@
   <meta name="theme-color" content="#ffffff">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preload" as="image" href="assets/img/logo.png">
-  <link rel="stylesheet" href="assets/css/styles.css?v=3">
+  <!-- bump version so new CSS is used -->
+  <link rel="stylesheet" href="assets/css/styles.css?v=4">
   <script defer src="assets/js/main.js"></script>
 </head>
 <body>
@@ -42,33 +43,51 @@
       <a href="translate.html" data-i18n="nav.translate">Translate</a>
       <a href="about.html" data-i18n="nav.about">About</a>
       <a href="contact.html" data-i18n="nav.contact">Contact</a>
-      <div class="button-wrap">
-        <button id="lang-toggle" class="lang glass-btn glass-button" aria-label="Toggle language" type="button">
-          <span>EN | ES</span>
-        </button>
-        <div class="button-shadow"></div>
-      </div>
+
+      <!-- Language toggle: unified liquid-glass button -->
+      <button id="lang-toggle" class="glass-button lang" aria-label="Toggle language" type="button">
+        <span>EN | ES</span>
+      </button>
     </nav>
   </div>
 </header>
-  <main class="container section">
-    <div class="card">
-      <h2 data-i18n="contact.title">Contact</h2>
-      <p data-i18n="contact.intro">Send us a note. We’ll get back to you soon.</p>
-      <form action="https://formspree.io/f/your-form-id" method="POST" class="contact-form">
-        <label><span data-i18n="contact.name">Name</span><br><input type="text" name="name" required></label><br><br>
-        <label><span data-i18n="contact.email">Email</span><br><input type="email" name="_replyto" required></label><br><br>
-        <label><span data-i18n="contact.msg">Message</span><br><textarea name="message" rows="6" required></textarea></label><br><br>
-        <div class="button-wrap">
-          <button class="btn glass-btn glass-button" type="submit">
-            <span data-i18n="contact.send">Send</span>
-          </button>
-          <div class="button-shadow"></div>
-        </div>
-      </form>
-      <p style="color:#666; font-size:12px; margin-top:12px;">Replace <code>your-form-id</code> with your Formspree endpoint.</p>
-    </div>
-  </main>
+
+<main class="container section">
+  <!-- Contact card now a liquid-glass panel with rounded corners -->
+  <div class="card glass contact-shell">
+    <h2 data-i18n="contact.title">Contact</h2>
+    <p data-i18n="contact.intro">Send us a note. We’ll get back to you soon.</p>
+
+    <form action="https://formspree.io/f/your-form-id" method="POST" class="contact-form">
+      <label>
+        <span data-i18n="contact.name">Name</span><br>
+        <input type="text" name="name" required>
+      </label>
+      <br><br>
+
+      <label>
+        <span data-i18n="contact.email">Email</span><br>
+        <input type="email" name="_replyto" required>
+      </label>
+      <br><br>
+
+      <label>
+        <span data-i18n="contact.msg">Message</span><br>
+        <textarea name="message" rows="6" required></textarea>
+      </label>
+      <br><br>
+
+      <!-- Single glass button, no wrapper clutter -->
+      <button class="glass-button" type="submit">
+        <span data-i18n="contact.send">Send</span>
+      </button>
+    </form>
+
+    <p style="color:#9ca3af; font-size:12px; margin-top:12px;">
+      Replace <code>your-form-id</code> with your Formspree endpoint.
+    </p>
+  </div>
+</main>
   
 <footer>
   <div class="container">© 2025 Voyadecir — All rights reserved.</div>
