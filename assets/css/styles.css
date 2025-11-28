@@ -24,6 +24,8 @@ html, body {
   padding:0;
   color:var(--fg);
   font-family:Inter, "Helvetica Neue", Arial, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  /* stop the page from "overscrolling" past the top bar feeling */
+  overscroll-behavior-y:none;
 }
 
 /* Global wallpaper (ink JPG) – NO blue overlays */
@@ -61,14 +63,10 @@ body > * {
   padding:0 24px;
 }
 
-/* Make main tall enough so footer doesn’t float halfway up */
+/* Make main tall enough so footer doesn’t float halfway up
+   and vertically center content on short pages (all pages). */
 main {
   min-height:calc(100vh - 180px);
-}
-
-/* Only the HOMEPAGE main gets vertical centering.
-   In index.html: <main class="container home-main"> */
-.home-main {
   display:flex;
   flex-direction:column;
   justify-content:center;
@@ -278,6 +276,20 @@ button {
   border-radius:var(--radius-card);
   padding:24px;
   color:#e5e7eb;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+/* =========================================
+   TRANSLATE / MAIL SHELLS CENTERED
+   ========================================= */
+
+.translate-shell,
+.chat-shell,
+.results-card,
+.contact-form {
+  margin-left:auto;
+  margin-right:auto;
 }
 
 /* =========================================
@@ -286,7 +298,7 @@ button {
 
 .translate-shell {
   max-width:960px;
-  margin:24px auto 0;
+  margin-top:24px;
 }
 
 .translate-title {
@@ -317,12 +329,12 @@ button {
    TRANSLATOR: CLEAR GLASS OUTER, BLACK INNER TEXTAREAS
    ========================================= */
 
-/* OUTER: CLEAR GLASS FRAME */
+/* OUTER: CLEAR GLASS FRAME (ALL TRANSLATOR BOXES) */
 .translator-outer {
   max-width:960px;
   margin:18px auto 0;
 
-  border-radius:var(--radius-card);
+  border-radius:var(--radius-card) !important;
   overflow:hidden;
 
   /* same clear-glass look as glass-panel */
@@ -346,9 +358,9 @@ button {
   padding:18px 18px 16px;
   color:#f5f5f5;
 
-  background:transparent;              /* <-- no black background */
-  border-radius:0;                     /* outer handles rounding */
-  box-shadow:none;                     /* no inset on inner wrapper */
+  background:transparent;
+  border-radius:0;
+  box-shadow:none;
 }
 
 .translator-topbar {
