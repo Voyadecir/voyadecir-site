@@ -17,7 +17,7 @@
   <link rel="manifest" href="manifest.webmanifest">
 
   <!-- bump version so browser actually reloads CSS -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=9">
+  <link rel="stylesheet" href="assets/css/styles.css?v=10">
   <script defer src="assets/js/main.js?v=3"></script>
   <script defer src="assets/js/translate.js?v=10"></script>
 </head>
@@ -38,10 +38,10 @@
         <a href="about.html" data-i18n="nav.about">About</a>
         <a href="contact.html" data-i18n="nav.contact">Contact</a>
 
-        <!-- Language toggle: liquid glass button -->
+        <!-- Language toggle: liquid glass button (same as other pages) -->
         <button
           id="lang-toggle"
-          class="glass glass-button lang"
+          class="glass-button lang"
           aria-label="Toggle language"
           type="button">
           <span>EN | ES</span>
@@ -53,30 +53,32 @@
   <main class="container section">
     <div class="translate-shell">
       <h1 class="translate-title" data-i18n="translate.title">Translate a document</h1>
-      <p class="translate-sub" data-i18n="translate.subtitle">Upload, snap a photo, or use the AI translator below.</p>
+      <p class="translate-sub" data-i18n="translate.subtitle">
+        Upload, snap a photo, or use the AI translator below.
+      </p>
 
       <div class="translate-actions">
         <input type="file" id="file-input" accept=".pdf,image/*" style="display:none;">
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;">
 
         <!-- Row of liquid glass buttons -->
-        <button type="button" class="glass glass-button translate-btn" id="btn-upload">
+        <button type="button" class="glass-button translate-btn" id="btn-upload">
           <span class="icon-doc"></span>
           <span data-i18n="translate.upload">Upload document</span>
         </button>
 
-        <button type="button" class="glass glass-button translate-btn" id="btn-camera">
+        <button type="button" class="glass-button translate-btn" id="btn-camera">
           <span class="icon-camera"></span>
           <span data-i18n="translate.camera">Take picture</span>
         </button>
 
-        <button type="button" class="glass glass-button translate-btn" id="translate-run">
+        <button type="button" class="glass-button translate-btn" id="translate-run">
           <span data-i18n="translate.run">Translate</span>
         </button>
 
         <button
           type="button"
-          class="glass glass-button translate-btn secondary"
+          class="glass-button translate-btn secondary"
           id="btn-listen"
           disabled
           title="Coming soon">
@@ -85,9 +87,9 @@
         </button>
       </div>
 
-      <!-- Translator: liquid glass shell + black inner boxes -->
-      <div class="translate-panel translator-ui glass">
-        <div class="translate-card-inner">
+      <!-- Translator: clear glass outer frame + inner content (matching Mail & Bills) -->
+      <div class="translator-outer glass-panel">
+        <div class="translator-ui">
           <div class="translator-topbar">
             <div class="translator-lang">
               <label data-i18n="translate.from">
@@ -105,7 +107,7 @@
               <button
                 type="button"
                 id="swap-langs"
-                class="glass glass-button swap-btn"
+                class="glass-button swap-btn"
                 title="Swap languages">
                 <span data-i18n="translate.swap">⇄</span>
               </button>
