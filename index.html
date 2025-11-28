@@ -1,4 +1,4 @@
-<!doctype html> 
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -6,31 +6,42 @@
   <title>Voyadecir — Translate. Understand. Connect.</title>
   <meta name="description" content="Translate, understand, and connect effortlessly with Voyadecir — the minimalist multilingual AI assistant.">
   <meta name="author" content="Voyadecir">
+
   <meta property="og:title" content="Voyadecir — Translate. Understand. Connect.">
   <meta property="og:description" content="Translate, understand, and connect effortlessly with Voyadecir — the minimalist multilingual AI assistant.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://voyadecir.com/">
   <meta property="og:image" content="https://voyadecir.com/assets/img/favicon-32x32.png">
+
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Voyadecir — Translate. Understand. Connect.">
   <meta name="twitter:description" content="Translate, understand, and connect effortlessly with Voyadecir — the minimalist multilingual AI assistant.">
+
   <link rel="canonical" href="https://voyadecir.com/">
+
   <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
   <link rel="alternate icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/img/favicon.ico">
-  <meta name="theme-color" content="#ffffff">
+
+  <!-- theme color now matches dark ink background -->
+  <meta name="theme-color" content="#020617">
+
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preload" as="image" href="assets/img/logo.png">
-  <link rel="stylesheet" href="assets/css/styles.css?v=3">
+
+  <!-- bump version if needed to bust cache after CSS changes -->
+  <link rel="stylesheet" href="assets/css/styles.css?v=4">
   <script defer src="assets/js/main.js"></script>
 </head>
 <body>
-  
+
 <header>
   <div class="container nav">
     <div class="brand">
-      <img src="assets/img/logo.png" alt="Voyadecir Logo" class="logo"
+      <img src="assets/img/logo.png"
+           alt="Voyadecir Logo"
+           class="logo"
            onerror="this.onerror=null;this.src='assets/img/logo.svg';">
       <div>
         <div data-i18n="brand.title">Voyadecir</div>
@@ -43,10 +54,10 @@
       <a href="about.html" data-i18n="nav.about">About</a>
       <a href="contact.html" data-i18n="nav.contact">Contact</a>
 
-      <!-- Language toggle: unified glass button -->
+      <!-- Language toggle: liquid glass button -->
       <button
         id="lang-toggle"
-        class="glass-button lang"
+        class="lang glass glass-button"
         aria-label="Toggle language"
         type="button">
         <span>EN | ES</span>
@@ -56,16 +67,17 @@
 </header>
 
 <main class="container">
-  <section class="hero">
+  <!-- Hero as a liquid glass panel -->
+  <section class="hero glass">
     <h1 data-i18n="hero.h1">Voyadecir — Translate. Understand. Connect.</h1>
     <p data-i18n="hero.sub">
       Powered by the latest advancements in AI technology, Voyadecir bridges languages through intelligent
       translation and interpretation — helping you translate, understand, and connect effortlessly across the world.
     </p>
 
-    <!-- Hero CTA: glass button, no wrapper -->
+    <!-- Hero CTA: liquid glass button -->
     <button
-      class="glass-button btn"
+      class="btn glass glass-button"
       type="button"
       onclick="window.location.href='translate.html'">
       <span data-i18n="cta.start">Start Translating</span>
@@ -73,12 +85,13 @@
   </section>
 
   <section class="section">
-    <div class="card">
+    <!-- Feature card with liquid glass treatment -->
+    <div class="card glass">
       <p>Minimalist, fast, and privacy-respecting. Built with a focus on clarity and connection.</p>
     </div>
   </section>
 </main>
-  
+
 <footer>
   <div class="container">© 2025 Voyadecir — All rights reserved.</div>
 </footer>
