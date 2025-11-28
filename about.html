@@ -22,7 +22,8 @@
   <meta name="theme-color" content="#ffffff">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preload" as="image" href="assets/img/logo.png">
-  <link rel="stylesheet" href="assets/css/styles.css?v=3">
+  <!-- use latest liquid-glass stylesheet -->
+  <link rel="stylesheet" href="assets/css/styles.css?v=4">
   <script defer src="assets/js/main.js"></script>
 </head>
 <body>
@@ -42,21 +43,25 @@
       <a href="translate.html" data-i18n="nav.translate">Translate</a>
       <a href="about.html" data-i18n="nav.about">About</a>
       <a href="contact.html" data-i18n="nav.contact">Contact</a>
-      <div class="button-wrap">
-        <button id="lang-toggle" class="lang glass-btn glass-button" aria-label="Toggle language" type="button">
-          <span>EN | ES</span>
-        </button>
-        <div class="button-shadow"></div>
-      </div>
+
+      <!-- Language toggle: unified liquid-glass button -->
+      <button id="lang-toggle" class="glass-button lang" aria-label="Toggle language" type="button">
+        <span>EN | ES</span>
+      </button>
     </nav>
   </div>
 </header>
-  <main class="container section">
-    <article class="card">
-      <h2 data-i18n="about.title">About Voyadecir</h2>
-      <p data-i18n="about.body">Voyadecir helps people communicate clearly across languages with a clean, elegant experience. We believe in global connection, intelligent tools, and quiet craftsmanship.</p>
-    </article>
-  </main>
+
+<main class="container section">
+  <!-- About card now uses liquid glass -->
+  <article class="card glass">
+    <h2 data-i18n="about.title">About Voyadecir</h2>
+    <p data-i18n="about.body">
+      Voyadecir helps people communicate clearly across languages with a clean, elegant experience.
+      We believe in global connection, intelligent tools, and quiet craftsmanship.
+    </p>
+  </article>
+</main>
   
 <footer>
   <div class="container">© 2025 Voyadecir — All rights reserved.</div>
