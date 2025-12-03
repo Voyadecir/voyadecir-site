@@ -1,12 +1,16 @@
-// Mail & Bills — client → Azure Function + deep agent
-// Flow:
-//   1) Upload file → /api/mailbills/parse (OCR)
-//   2) Take OCR text → /api/mailbills/interpret (deep agent)
-//   3) Show fields + summaries in UI.
+// Mail & Bills — client → OCR (Azure Functions) + Deep Agent (ai-translator)
 
-// 1) Use your actual Function App default domain
-const API_BASE = "https://voyadecir-ai-functions-aze4fqhjdcbzfkdu.centralus-01.azurewebsites.net";
-const TRANSLATE_API = "https://ai-translator-i5jb.onrender.com/api/translate";
+// ---------- 1) API endpoints ----------
+
+// Azure Functions: OCR only
+const OCR_API_BASE =
+  "https://voyadecir-ai-functions-aze4fqhjdcbzfkdu.centralus-01.azurewebsites.net";
+
+// Render backend: deep agent + translator
+const INTERPRET_API_BASE = "https://ai-translator-i5jb.onrender.com";
+const TRANSLATE_API = `${INTERPRET_API_BASE}/api/translate`;
+
+// ---------- 2) i18n helpers ----------
 
 const translateKey = (key, fallback) => {
   try {
@@ -17,7 +21,6 @@ const translateKey = (key, fallback) => {
   return fallback || key;
 };
 
-// 2) Site language helper (from main.js session key)
 function getLang() {
   try {
     return sessionStorage.getItem("voyadecir_lang") || "en";
@@ -26,12 +29,15 @@ function getLang() {
   }
 }
 
-// 3) Tiny DOM helpers
+// ---------- 3) Tiny DOM helpers ----------
+
 const $ = (s) => document.querySelector(s);
+
 function setStatus(msg) {
   const el = $("#status-line");
   if (el) el.textContent = msg;
 }
+
 function valOrDash(v) {
   return v !== undefined && v !== null && String(v).trim() !== ""
     ? String(v)
@@ -42,34 +48,28 @@ function copyTextFrom(el) {
   if (!el) return;
   const value = (el.value || "").trim();
   if (!value) {
-    setStatus(
-      translateKey("mb.status.nothingToCopy", "Nothing to copy.")
-    );
+    setStatus(translateKey("mb.status.nothingToCopy", "Nothing to copy."));
     return;
   }
 
   navigator.clipboard
     ?.writeText(value)
     .then(() =>
-      setStatus(
-        translateKey("mb.status.copied", "Copied to clipboard.")
-      )
+      setStatus(translateKey("mb.status.copied", "Copied to clipboard."))
     )
     .catch(() =>
-      setStatus(
-        translateKey("mb.status.copyFailed", "Could not copy.")
-      )
+      setStatus(translateKey("mb.status.copyFailed", "Could not copy."))
     );
 }
 
-// 4) Render extracted fields card
+// ---------- 4) Render extracted fields card ----------
+
 function showResults(fieldsRaw) {
   const card = $("#results-card");
   if (!card) return;
 
   const f = fieldsRaw || {};
 
-  // Support both nested { amount_due: { value } } and flat { amount_due: "123" }
   const unwrap = (obj, key) => {
     if (!obj) return undefined;
     if (obj[key] && typeof obj[key] === "object" && "value" in obj[key]) {
@@ -101,11 +101,11 @@ function showResults(fieldsRaw) {
   card.style.display = any ? "block" : "none";
 }
 
-// 5) POST raw bytes to Function (OCR only)
-async function sendBytes(file) {
+// ---------- 5) Call OCR (Azure Function) ----------
+
+async function sendBytes(file, lang) {
   const buf = await file.arrayBuffer();
-  const lang = getLang() === "es" ? "es" : "en";
-  const url = `${API_BASE}/api/mailbills/parse?target_lang=${encodeURIComponent(
+  const url = `${OCR_API_BASE}/api/mailbills/parse?target_lang=${encodeURIComponent(
     lang
   )}`;
   const contentType = file.type || "application/octet-stream";
@@ -133,17 +133,21 @@ async function sendBytes(file) {
   return data;
 }
 
-// 6) Call deep agent to interpret OCR text
-async function callInterpret(ocrText, targetLang) {
-  const url = `${API_BASE}/api/mailbills/interpret`;
+// ---------- 6) Call Deep Agent (ai-translator) ----------
+
+async function callInterpret(ocrText, lang) {
+  const payload = {
+    ocr_text: ocrText,
+    locale: lang === "es" ? "es-MX" : "en-US",
+    document_kind: "utility_bill",
+  };
+
+  const url = `${INTERPRET_API_BASE}/api/mailbills/interpret`;
 
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      ocr_text: ocrText,
-      target_lang: targetLang,
-    }),
+    body: JSON.stringify(payload),
   });
 
   const text = await res.text();
@@ -160,32 +164,27 @@ async function callInterpret(ocrText, targetLang) {
     const msg = data?.error || data?.message || `HTTP ${res.status}`;
     throw new Error(`Interpret error: ${msg}`);
   }
+
   return data;
 }
 
-// 7) Main handler: upload → OCR → interpret → UI
+// ---------- 7) Main handler: upload → OCR → interpret ----------
+
 async function handleFile(file) {
   if (!file) return;
-  const uiLang = getLang() === "es" ? "es" : "en";
 
-  setStatus(
-    translateKey("mb.status.uploading", "Uploading document…")
-  );
+  const lang = getLang() === "es" ? "es" : "en";
+
+  setStatus(translateKey("mb.status.uploading", "Uploading document…"));
 
   try {
-    // Step 1: OCR
-    const ocrData = await sendBytes(file);
-    setStatus(
-      translateKey(
-        "mb.status.ocrDone",
-        "Text extracted. Running AI helper…"
-      )
-    );
+    // Step 1: OCR via Azure Functions
+    const ocrData = await sendBytes(file, lang);
+    setStatus(translateKey("mb.status.ocrDone", "Text extracted."));
 
-    // Combine possible OCR fields
     const ocrText =
-      ocrData.ocr_text ||
       ocrData.ocr_text_snippet ||
+      ocrData.ocr_text ||
       ocrData.full_text ||
       ocrData.message ||
       "";
@@ -193,62 +192,66 @@ async function handleFile(file) {
     const ocrEl = $("#ocr-text");
     if (ocrEl) ocrEl.value = ocrText;
 
-    // Step 2: Deep agent interpretation
-    let summaryText = "";
-    let fields = null;
-
-    try {
-      const interp = await callInterpret(ocrText, uiLang);
-      summaryText =
-        interp.summary_translated ||
-        interp.summary_en ||
-        interp.summary ||
-        "";
-      fields = interp.fields || interp;
-    } catch (e) {
-      console.error("[mailbills] interpret error, falling back to OCR-only:", e);
-
-      // Fallback: use whatever the OCR endpoint returned (if anything)
-      summaryText =
-        ocrData.summary_translated ||
-        ocrData.summary_en ||
-        ocrData.summary ||
-        "";
-      fields = ocrData.fields || ocrData;
+    // Optional: show any fields the OCR pipeline already gave (usually empty)
+    if (ocrData.fields) {
+      showResults(ocrData.fields);
     }
 
-    const sumEl = $("#summary-text");
-    if (sumEl) sumEl.value = summaryText;
+    // Step 2: Deep interpret via ai-translator
+    try {
+      const agentData = await callInterpret(ocrText, lang);
 
-    showResults(fields);
+      const sumEl = $("#summary-text");
+      const summaryText =
+        agentData.summary_translated ||
+        agentData.summary_en ||
+        agentData.summary ||
+        "";
 
-    setStatus(translateKey("mb.status.done", "Done."));
+      if (sumEl) sumEl.value = summaryText;
+
+      if (agentData.fields) {
+        showResults(agentData.fields);
+      }
+
+      setStatus(
+        translateKey(
+          "mb.status.doneWithAgent",
+          "Done. Summary and fields extracted."
+        )
+      );
+    } catch (err) {
+      console.error("[mailbills] interpret error, falling back to OCR-only:", err);
+      setStatus(
+        translateKey(
+          "mb.status.done",
+          "Done. Deep analysis unavailable, showing raw text."
+        )
+      );
+    }
   } catch (err) {
     console.error("[mailbills] error:", err);
     setStatus(
       translateKey("mb.status.serverError", "Server error. Try again.")
     );
     alert(
-      "Server error. Please check Azure Function logs, keys/endpoints, and CORS."
+      "Server error. Please check Azure Function logs, Render logs, keys/endpoints, and CORS."
     );
   }
 }
 
-// 8) Translate OCR text into target language (optional extra)
+// ---------- 8) Translate OCR text via existing translator ----------
+
 async function translateOcrText() {
   const srcEl = $("#ocr-text");
   const outEl = $("#summary-text");
   const langSelect = $("#mb-tgt-lang");
 
-  if (!srcEl || !outEl) {
-    return;
-  }
+  if (!srcEl || !outEl) return;
 
   const text = (srcEl.value || "").trim();
   if (!text) {
-    setStatus(
-      translateKey("mb.status.noText", "No text to translate.")
-    );
+    setStatus(translateKey("mb.status.noText", "No text to translate."));
     return;
   }
 
@@ -256,9 +259,7 @@ async function translateOcrText() {
     langSelect?.value || (getLang() === "es" ? "es" : "en")
   ).trim();
 
-  setStatus(
-    translateKey("mb.status.translating", "Translating…")
-  );
+  setStatus(translateKey("mb.status.translating", "Translating…"));
 
   try {
     const res = await fetch(TRANSLATE_API, {
@@ -276,10 +277,7 @@ async function translateOcrText() {
       }
       console.error("Translator error", res.status, body);
       setStatus(
-        translateKey(
-          "mb.status.translationFailed",
-          "Translation failed."
-        )
+        translateKey("mb.status.translationFailed", "Translation failed.")
       );
       return;
     }
@@ -297,21 +295,17 @@ async function translateOcrText() {
     }
 
     outEl.value = out;
-    setStatus(
-      translateKey("mb.status.translated", "Translated.")
-    );
+    setStatus(translateKey("mb.status.translated", "Translated."));
   } catch (err) {
     console.error("Translation network error", err);
     setStatus(
-      translateKey(
-        "mb.status.translationError",
-        "Translation error."
-      )
+      translateKey("mb.status.translationError", "Translation error.")
     );
   }
 }
 
-// 9) UI wiring
+// ---------- 9) UI wiring ----------
+
 window.addEventListener("DOMContentLoaded", function () {
   const tgt = $("#mb-tgt-lang");
   if (tgt) tgt.value = getLang() === "es" ? "es" : "en";
@@ -330,7 +324,6 @@ window.addEventListener("DOMContentLoaded", function () {
     handleFile(e.target.files?.[0])
   );
 
-  // quick flip EN↔ES for "To"
   $("#mb-swap-langs")?.addEventListener("click", () => {
     const t = $("#mb-tgt-lang");
     if (!t) return;
