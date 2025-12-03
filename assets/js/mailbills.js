@@ -182,7 +182,16 @@ async function handleFile(file) {
     const ocrData = await sendBytes(file, lang);
     setStatus(translateKey("mb.status.ocrDone", "Text extracted."));
 
-    const ocrText =
+    // ✅ Use FULL OCR text for the deep agent
+    const fullOcrText =
+      ocrData.ocr_text ||
+      ocrData.full_text ||
+      ocrData.ocr_text_snippet ||
+      ocrData.message ||
+      "";
+
+    // ✅ Use snippet/shorter text for display
+    const displayOcrText =
       ocrData.ocr_text_snippet ||
       ocrData.ocr_text ||
       ocrData.full_text ||
@@ -190,16 +199,16 @@ async function handleFile(file) {
       "";
 
     const ocrEl = $("#ocr-text");
-    if (ocrEl) ocrEl.value = ocrText;
+    if (ocrEl) ocrEl.value = displayOcrText;
 
     // Optional: show any fields the OCR pipeline already gave (usually empty)
     if (ocrData.fields) {
       showResults(ocrData.fields);
     }
 
-    // Step 2: Deep interpret via ai-translator
+    // Step 2: Deep interpret via ai-translator using FULL text
     try {
-      const agentData = await callInterpret(ocrText, lang);
+      const agentData = await callInterpret(fullOcrText, lang);
 
       const sumEl = $("#summary-text");
       const summaryText =
@@ -221,7 +230,10 @@ async function handleFile(file) {
         )
       );
     } catch (err) {
-      console.error("[mailbills] interpret error, falling back to OCR-only:", err);
+      console.error(
+        "[mailbills] interpret error, falling back to OCR-only:",
+        err
+      );
       setStatus(
         translateKey(
           "mb.status.done",
