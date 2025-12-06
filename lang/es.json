@@ -52,13 +52,17 @@
   "mb.copySummary": "Copiar resumen",
   "mb.btnClear": "Limpiar",
   "mb.hint": "Consejo: las fotos claras y bien iluminadas dan mejores resultados.",
+
   "mb.amount": "Monto a pagar:",
   "mb.duedate": "Fecha de vencimiento:",
   "mb.account": "N.º de cuenta:",
   "mb.sender": "Remitente:",
   "mb.address": "Dirección del servicio:",
+
   "mb.status.ready": "Listo",
   "mb.status.uploading": "Subiendo documento…",
+  "mb.status.ocrDone": "Texto extraído.",
+  "mb.status.doneWithAgent": "Listo. Resumen y datos extraídos.",
   "mb.status.done": "Hecho.",
   "mb.status.serverError": "Error del servidor. Inténtalo de nuevo.",
   "mb.status.noText": "No hay texto para traducir.",
