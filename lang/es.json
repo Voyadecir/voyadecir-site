@@ -48,10 +48,13 @@
   "mb.btnUpload": "Subir documento",
   "mb.btnCamera": "Tomar foto",
   "mb.btnListen": "Léemelo (pronto)",
-  "mb.copyOcr": "Copiar OCR",
+
+  "mb.copyOcr": "Copiar texto",
   "mb.copySummary": "Copiar resumen",
   "mb.btnClear": "Limpiar",
+
   "mb.hint": "Consejo: las fotos claras y bien iluminadas dan mejores resultados.",
+  "mb.ocrPlaceholder": "Aquí aparecerá el texto de tu documento…",
 
   "mb.amount": "Monto a pagar:",
   "mb.duedate": "Fecha de vencimiento:",
