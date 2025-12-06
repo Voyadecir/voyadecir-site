@@ -99,7 +99,30 @@ function updateFieldLabels() {
   set("#label-address", L.address);
 }
 
-// ---------- 5) Render extracted fields card ----------
+// ---------- 5) Helper: render bullet lists for identity / payment / other ----------
+
+function renderListItems(items, listSelector, sectionSelector) {
+  const section = $(sectionSelector);
+  const listEl = $(listSelector);
+  if (!section || !listEl) return;
+
+  listEl.innerHTML = "";
+
+  if (!Array.isArray(items) || items.length === 0) {
+    section.style.display = "none";
+    return;
+  }
+
+  items.forEach((item) => {
+    const li = document.createElement("li");
+    li.textContent = String(item);
+    listEl.appendChild(li);
+  });
+
+  section.style.display = "block";
+}
+
+// ---------- 6) Render extracted fields card ----------
 
 function showResults(fieldsRaw) {
   const card = $("#results-card");
@@ -115,7 +138,7 @@ function showResults(fieldsRaw) {
     return obj[key];
   };
 
-  const amt = unwrap(f, "amount_due");
+  const amt = unwrap(f, "amount_due") ?? unwrap(f, "amount_due_main");
   const due = unwrap(f, "due_date");
   const acc = unwrap(f, "account_number");
   const snd = unwrap(f, "sender");
@@ -144,7 +167,7 @@ function showResults(fieldsRaw) {
   card.style.display = any ? "block" : "none";
 }
 
-// ---------- 6) Call OCR (Azure Function) ----------
+// ---------- 7) Call OCR (Azure Function) ----------
 
 async function sendBytes(file, lang) {
   const buf = await file.arrayBuffer();
@@ -176,7 +199,7 @@ async function sendBytes(file, lang) {
   return data;
 }
 
-// ---------- 7) Call Deep Agent (ai-translator) ----------
+// ---------- 8) Call Deep Agent (ai-translator) ----------
 
 async function callInterpret(ocrText, lang) {
   const payload = {
@@ -211,7 +234,7 @@ async function callInterpret(ocrText, lang) {
   return data;
 }
 
-// ---------- 8) Main handler: upload → OCR → interpret ----------
+// ---------- 9) Main handler: upload → OCR → interpret ----------
 
 async function handleFile(file) {
   if (!file) return;
@@ -256,6 +279,25 @@ async function handleFile(file) {
         showResults(agentData.fields);
       }
 
+      // New: identity / payment / other amounts lists
+      renderListItems(
+        agentData.identity_requirements || [],
+        "#identity-list",
+        "#identity-section"
+      );
+
+      renderListItems(
+        agentData.payment_options || agentData.payment_methods || [],
+        "#payment-list",
+        "#payment-section"
+      );
+
+      renderListItems(
+        agentData.other_amounts || [],
+        "#other-amounts-list",
+        "#other-amounts-section"
+      );
+
       setStatus(
         translateKey(
           "mb.status.doneWithAgent",
@@ -285,7 +327,7 @@ async function handleFile(file) {
   }
 }
 
-// ---------- 9) Translate OCR text via existing translator ----------
+// ---------- 10) Translate OCR text via existing translator ----------
 
 async function translateOcrText() {
   const srcEl = $("#ocr-text");
@@ -349,7 +391,7 @@ async function translateOcrText() {
   }
 }
 
-// ---------- 10) UI wiring ----------
+// ---------- 11) UI wiring ----------
 
 window.addEventListener("DOMContentLoaded", function () {
   const tgt = $("#mb-tgt-lang");
@@ -383,7 +425,7 @@ window.addEventListener("DOMContentLoaded", function () {
     updateFieldLabels();
   });
 
-  // Fix: make sure translate button actually calls translateOcrText
+  // Make sure translate button actually calls translateOcrText
   const translateButtons = [
     "#mb-translate-run",
     "#mb-translate-btn", // fallback if HTML used a different id
@@ -418,6 +460,11 @@ window.addEventListener("DOMContentLoaded", function () {
 
     const card = $("#results-card");
     if (card) card.style.display = "none";
+
+    // Clear lists + hide sections
+    renderListItems([], "#identity-list", "#identity-section");
+    renderListItems([], "#payment-list", "#payment-section");
+    renderListItems([], "#other-amounts-list", "#other-amounts-section");
 
     setStatus(translateKey("mb.status.cleared", "Cleared."));
   });
