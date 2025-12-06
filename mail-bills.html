@@ -67,7 +67,7 @@
           <span data-i18n="mb.btnListen">Read it to me (soon)</span>
         </button>
 
-        <!-- This is the button mailbills.js hooks into for manual translation -->
+        <!-- Manual translate button (uses existing translator API) -->
         <button type="button" class="glass-button translate-btn" id="mb-translate-run">
           <span class="icon-doc"></span>
           <span data-i18n="translate.run">Translate</span>
@@ -136,7 +136,7 @@
       <!-- Results card: liquid glass too -->
       <div class="results-card glass" id="results-card" style="display:none;">
         <div class="result-row">
-          <!-- IDs added so JS can switch EN/ES labels -->
+          <!-- IDs so JS can localize labels cleanly -->
           <strong id="label-amount" data-i18n="mb.amount">Amount due:</strong>
           <span id="r-amount"></span>
         </div>
@@ -155,6 +155,24 @@
         <div class="result-row">
           <strong id="label-address" data-i18n="mb.address">Service address:</strong>
           <span id="r-address"></span>
+        </div>
+
+        <!-- New: identity requirements -->
+        <div class="result-section" id="identity-section" style="display:none;">
+          <h3 data-i18n="mb.identityTitle">What you’ll need</h3>
+          <ul id="identity-list"></ul>
+        </div>
+
+        <!-- New: payment options -->
+        <div class="result-section" id="payment-section" style="display:none;">
+          <h3 data-i18n="mb.paymentTitle">How you can pay</h3>
+          <ul id="payment-list"></ul>
+        </div>
+
+        <!-- New: other important amounts -->
+        <div class="result-section" id="other-amounts-section" style="display:none;">
+          <h3 data-i18n="mb.otherAmountsTitle">Other important amounts</h3>
+          <ul id="other-amounts-list"></ul>
         </div>
       </div>
     </div>
