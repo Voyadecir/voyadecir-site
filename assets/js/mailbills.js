@@ -62,7 +62,44 @@ function copyTextFrom(el) {
     );
 }
 
-// ---------- 4) Render extracted fields card ----------
+// ---------- 4) Field label language (EN / ES) ----------
+
+function updateFieldLabels() {
+  const lang = getLang() === "es" ? "es" : "en";
+
+  const LABELS = {
+    en: {
+      amount: "Amount Due",
+      due_date: "Due Date",
+      account: "Account Number",
+      sender: "Sender",
+      address: "Service Address",
+    },
+    es: {
+      amount: "Monto a pagar",
+      due_date: "Fecha de vencimiento",
+      account: "Número de cuenta",
+      sender: "Emisor",
+      address: "Dirección del servicio",
+    },
+  };
+
+  const L = LABELS[lang];
+
+  const set = (sel, text) => {
+    const el = $(sel);
+    if (el && text) el.textContent = text;
+  };
+
+  // These IDs must exist in mail-bills.html
+  set("#label-amount", L.amount);
+  set("#label-duedate", L.due_date);
+  set("#label-acct", L.account);
+  set("#label-sender", L.sender);
+  set("#label-address", L.address);
+}
+
+// ---------- 5) Render extracted fields card ----------
 
 function showResults(fieldsRaw) {
   const card = $("#results-card");
@@ -89,11 +126,17 @@ function showResults(fieldsRaw) {
       ? `$${Number(amt).toFixed(2)}`
       : valOrDash(amt);
 
-  $("#r-amount").textContent = amountText;
-  $("#r-duedate").textContent = valOrDash(due);
-  $("#r-acct").textContent = valOrDash(acc);
-  $("#r-sender").textContent = valOrDash(snd);
-  $("#r-address").textContent = valOrDash(adr);
+  const ra = $("#r-amount");
+  const rd = $("#r-duedate");
+  const rc = $("#r-acct");
+  const rs = $("#r-sender");
+  const raddr = $("#r-address");
+
+  if (ra) ra.textContent = amountText;
+  if (rd) rd.textContent = valOrDash(due);
+  if (rc) rc.textContent = valOrDash(acc);
+  if (rs) rs.textContent = valOrDash(snd);
+  if (raddr) raddr.textContent = valOrDash(adr);
 
   const any = [amt, due, acc, snd, adr].some(
     (x) => x && String(x).trim() !== ""
@@ -101,7 +144,7 @@ function showResults(fieldsRaw) {
   card.style.display = any ? "block" : "none";
 }
 
-// ---------- 5) Call OCR (Azure Function) ----------
+// ---------- 6) Call OCR (Azure Function) ----------
 
 async function sendBytes(file, lang) {
   const buf = await file.arrayBuffer();
@@ -133,7 +176,7 @@ async function sendBytes(file, lang) {
   return data;
 }
 
-// ---------- 6) Call Deep Agent (ai-translator) ----------
+// ---------- 7) Call Deep Agent (ai-translator) ----------
 
 async function callInterpret(ocrText, lang) {
   const payload = {
@@ -168,7 +211,7 @@ async function callInterpret(ocrText, lang) {
   return data;
 }
 
-// ---------- 7) Main handler: upload → OCR → interpret ----------
+// ---------- 8) Main handler: upload → OCR → interpret ----------
 
 async function handleFile(file) {
   if (!file) return;
@@ -182,16 +225,7 @@ async function handleFile(file) {
     const ocrData = await sendBytes(file, lang);
     setStatus(translateKey("mb.status.ocrDone", "Text extracted."));
 
-    // ✅ Use FULL OCR text for the deep agent
-    const fullOcrText =
-      ocrData.ocr_text ||
-      ocrData.full_text ||
-      ocrData.ocr_text_snippet ||
-      ocrData.message ||
-      "";
-
-    // ✅ Use snippet/shorter text for display
-    const displayOcrText =
+    const ocrText =
       ocrData.ocr_text_snippet ||
       ocrData.ocr_text ||
       ocrData.full_text ||
@@ -199,16 +233,15 @@ async function handleFile(file) {
       "";
 
     const ocrEl = $("#ocr-text");
-    if (ocrEl) ocrEl.value = displayOcrText;
+    if (ocrEl) ocrEl.value = ocrText;
 
-    // Optional: show any fields the OCR pipeline already gave (usually empty)
     if (ocrData.fields) {
       showResults(ocrData.fields);
     }
 
-    // Step 2: Deep interpret via ai-translator using FULL text
+    // Step 2: Deep interpret via ai-translator
     try {
-      const agentData = await callInterpret(fullOcrText, lang);
+      const agentData = await callInterpret(ocrText, lang);
 
       const sumEl = $("#summary-text");
       const summaryText =
@@ -252,7 +285,7 @@ async function handleFile(file) {
   }
 }
 
-// ---------- 8) Translate OCR text via existing translator ----------
+// ---------- 9) Translate OCR text via existing translator ----------
 
 async function translateOcrText() {
   const srcEl = $("#ocr-text");
@@ -316,11 +349,14 @@ async function translateOcrText() {
   }
 }
 
-// ---------- 9) UI wiring ----------
+// ---------- 10) UI wiring ----------
 
 window.addEventListener("DOMContentLoaded", function () {
   const tgt = $("#mb-tgt-lang");
   if (tgt) tgt.value = getLang() === "es" ? "es" : "en";
+
+  // Apply labels in the correct language
+  updateFieldLabels();
 
   $("#btn-upload")?.addEventListener("click", () =>
     $("#file-input").click()
@@ -336,6 +372,7 @@ window.addEventListener("DOMContentLoaded", function () {
     handleFile(e.target.files?.[0])
   );
 
+  // EN↔ES toggle for target language + update labels too
   $("#mb-swap-langs")?.addEventListener("click", () => {
     const t = $("#mb-tgt-lang");
     if (!t) return;
@@ -343,11 +380,22 @@ window.addEventListener("DOMContentLoaded", function () {
     try {
       sessionStorage.setItem("voyadecir_lang", t.value);
     } catch (_) {}
+    updateFieldLabels();
   });
 
-  $("#mb-translate-run")?.addEventListener("click", (e) => {
-    e.preventDefault();
-    translateOcrText();
+  // Fix: make sure translate button actually calls translateOcrText
+  const translateButtons = [
+    "#mb-translate-run",
+    "#mb-translate-btn", // fallback if HTML used a different id
+  ];
+
+  translateButtons.forEach((sel) => {
+    const btn = $(sel);
+    if (!btn) return;
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      translateOcrText();
+    });
   });
 
   $("#mb-copy-ocr")?.addEventListener("click", (e) => {
