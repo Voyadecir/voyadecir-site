@@ -105,14 +105,19 @@
           </div>
 
           <div class="translator-panels">
-            <div class="translator-box">
-              <textarea id="ocr-text" placeholder="OCR text will appear here..."></textarea>
-              <div>
-                <button type="button" class="glass-button inline-btn" id="mb-copy-ocr">
-                  <span data-i18n="mb.copyOcr">Copy OCR</span>
-                </button>
-              </div>
-            </div>
+          <div class="translator-box">
+  <textarea
+    id="ocr-text"
+    placeholder="Text from your document will appear here..."
+    data-i18n-placeholder="mb.ocrPlaceholder"
+  ></textarea>
+  <div>
+    <button type="button" class="glass-button inline-btn" id="mb-copy-ocr">
+      <span data-i18n="mb.copyOcr">Copy text</span>
+    </button>
+  </div>
+</div>
+
 
             <div class="translator-box">
               <textarea id="summary-text" placeholder="Summary will appear here..." readonly></textarea>
