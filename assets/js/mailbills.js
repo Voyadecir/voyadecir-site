@@ -62,67 +62,7 @@ function copyTextFrom(el) {
     );
 }
 
-// ---------- 4) Field label language (EN / ES) ----------
-
-function updateFieldLabels() {
-  const lang = getLang() === "es" ? "es" : "en";
-
-  const LABELS = {
-    en: {
-      amount: "Amount Due",
-      due_date: "Due Date",
-      account: "Account Number",
-      sender: "Sender",
-      address: "Service Address",
-    },
-    es: {
-      amount: "Monto a pagar",
-      due_date: "Fecha de vencimiento",
-      account: "Número de cuenta",
-      sender: "Emisor",
-      address: "Dirección del servicio",
-    },
-  };
-
-  const L = LABELS[lang];
-
-  const set = (sel, text) => {
-    const el = $(sel);
-    if (el && text) el.textContent = text;
-  };
-
-  // These IDs must exist in mail-bills.html
-  set("#label-amount", L.amount);
-  set("#label-duedate", L.due_date);
-  set("#label-acct", L.account);
-  set("#label-sender", L.sender);
-  set("#label-address", L.address);
-}
-
-// ---------- 5) Helper: render bullet lists for identity / payment / other ----------
-
-function renderListItems(items, listSelector, sectionSelector) {
-  const section = $(sectionSelector);
-  const listEl = $(listSelector);
-  if (!section || !listEl) return;
-
-  listEl.innerHTML = "";
-
-  if (!Array.isArray(items) || items.length === 0) {
-    section.style.display = "none";
-    return;
-  }
-
-  items.forEach((item) => {
-    const li = document.createElement("li");
-    li.textContent = String(item);
-    listEl.appendChild(li);
-  });
-
-  section.style.display = "block";
-}
-
-// ---------- 6) Render extracted fields card ----------
+// ---------- 4) Render extracted fields card ----------
 
 function showResults(fieldsRaw) {
   const card = $("#results-card");
@@ -138,7 +78,7 @@ function showResults(fieldsRaw) {
     return obj[key];
   };
 
-  const amt = unwrap(f, "amount_due") ?? unwrap(f, "amount_due_main");
+  const amt = unwrap(f, "amount_due");
   const due = unwrap(f, "due_date");
   const acc = unwrap(f, "account_number");
   const snd = unwrap(f, "sender");
@@ -167,7 +107,7 @@ function showResults(fieldsRaw) {
   card.style.display = any ? "block" : "none";
 }
 
-// ---------- 7) Call OCR (Azure Function) ----------
+// ---------- 5) Call OCR (Azure Function) ----------
 
 async function sendBytes(file, lang) {
   const buf = await file.arrayBuffer();
@@ -199,12 +139,15 @@ async function sendBytes(file, lang) {
   return data;
 }
 
-// ---------- 8) Call Deep Agent (ai-translator) ----------
+// ---------- 6) Call Deep Agent (ai-translator) ----------
 
-async function callInterpret(ocrText, lang) {
+async function callInterpret(ocrText, targetLangCode) {
+  const norm = (targetLangCode || "").toLowerCase();
+  const locale = norm.startsWith("es") ? "es-MX" : "en-US";
+
   const payload = {
     ocr_text: ocrText,
-    locale: lang === "es" ? "es-MX" : "en-US",
+    locale,
     document_kind: "utility_bill",
   };
 
@@ -234,18 +177,23 @@ async function callInterpret(ocrText, lang) {
   return data;
 }
 
-// ---------- 9) Main handler: upload → OCR → interpret ----------
+// ---------- 7) Main handler: upload → OCR → interpret ----------
 
 async function handleFile(file) {
   if (!file) return;
 
-  const lang = getLang() === "es" ? "es" : "en";
+  // Site language (UI) vs target language (summary/translation)
+  const siteLang = getLang() === "es" ? "es" : "en";
+
+  const tgtSelect = $("#mb-tgt-lang");
+  const targetLang =
+    (tgtSelect?.value || siteLang).trim(); // 'es' or 'en'
 
   setStatus(translateKey("mb.status.uploading", "Uploading document…"));
 
   try {
-    // Step 1: OCR via Azure Functions
-    const ocrData = await sendBytes(file, lang);
+    // Step 1: OCR via Azure Functions (siteLang doesn't really matter here)
+    const ocrData = await sendBytes(file, siteLang);
     setStatus(translateKey("mb.status.ocrDone", "Text extracted."));
 
     const ocrText =
@@ -258,13 +206,14 @@ async function handleFile(file) {
     const ocrEl = $("#ocr-text");
     if (ocrEl) ocrEl.value = ocrText;
 
+    // Optional: show any fields from OCR pipeline (usually empty until agent fills them)
     if (ocrData.fields) {
       showResults(ocrData.fields);
     }
 
-    // Step 2: Deep interpret via ai-translator
+    // Step 2: Deep interpret via ai-translator, in targetLang
     try {
-      const agentData = await callInterpret(ocrText, lang);
+      const agentData = await callInterpret(ocrText, targetLang);
 
       const sumEl = $("#summary-text");
       const summaryText =
@@ -278,25 +227,6 @@ async function handleFile(file) {
       if (agentData.fields) {
         showResults(agentData.fields);
       }
-
-      // New: identity / payment / other amounts lists
-      renderListItems(
-        agentData.identity_requirements || [],
-        "#identity-list",
-        "#identity-section"
-      );
-
-      renderListItems(
-        agentData.payment_options || agentData.payment_methods || [],
-        "#payment-list",
-        "#payment-section"
-      );
-
-      renderListItems(
-        agentData.other_amounts || [],
-        "#other-amounts-list",
-        "#other-amounts-section"
-      );
 
       setStatus(
         translateKey(
@@ -327,7 +257,7 @@ async function handleFile(file) {
   }
 }
 
-// ---------- 10) Translate OCR text via existing translator ----------
+// ---------- 8) Translate OCR text via existing translator ----------
 
 async function translateOcrText() {
   const srcEl = $("#ocr-text");
@@ -391,14 +321,21 @@ async function translateOcrText() {
   }
 }
 
-// ---------- 11) UI wiring ----------
+// ---------- 9) UI wiring ----------
 
 window.addEventListener("DOMContentLoaded", function () {
   const tgt = $("#mb-tgt-lang");
-  if (tgt) tgt.value = getLang() === "es" ? "es" : "en";
+  if (tgt) {
+    // Initialize dropdown from site language
+    tgt.value = getLang() === "es" ? "es" : "en";
 
-  // Apply labels in the correct language
-  updateFieldLabels();
+    // If user changes "To" language, sync it back to site language store
+    tgt.addEventListener("change", () => {
+      try {
+        sessionStorage.setItem("voyadecir_lang", tgt.value);
+      } catch (_) {}
+    });
+  }
 
   $("#btn-upload")?.addEventListener("click", () =>
     $("#file-input").click()
@@ -414,7 +351,7 @@ window.addEventListener("DOMContentLoaded", function () {
     handleFile(e.target.files?.[0])
   );
 
-  // EN↔ES toggle for target language + update labels too
+  // EN↔ES toggle for "To" (just flips the select and syncs it)
   $("#mb-swap-langs")?.addEventListener("click", () => {
     const t = $("#mb-tgt-lang");
     if (!t) return;
@@ -422,10 +359,9 @@ window.addEventListener("DOMContentLoaded", function () {
     try {
       sessionStorage.setItem("voyadecir_lang", t.value);
     } catch (_) {}
-    updateFieldLabels();
   });
 
-  // Make sure translate button actually calls translateOcrText
+  // Make sure the "Translate" button really calls translateOcrText
   const translateButtons = [
     "#mb-translate-run",
     "#mb-translate-btn", // fallback if HTML used a different id
@@ -460,11 +396,6 @@ window.addEventListener("DOMContentLoaded", function () {
 
     const card = $("#results-card");
     if (card) card.style.display = "none";
-
-    // Clear lists + hide sections
-    renderListItems([], "#identity-list", "#identity-section");
-    renderListItems([], "#payment-list", "#payment-section");
-    renderListItems([], "#other-amounts-list", "#other-amounts-section");
 
     setStatus(translateKey("mb.status.cleared", "Cleared."));
   });
