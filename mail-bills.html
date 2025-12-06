@@ -67,6 +67,7 @@
           <span data-i18n="mb.btnListen">Read it to me (soon)</span>
         </button>
 
+        <!-- This is the button mailbills.js hooks into for manual translation -->
         <button type="button" class="glass-button translate-btn" id="mb-translate-run">
           <span class="icon-doc"></span>
           <span data-i18n="translate.run">Translate</span>
@@ -135,23 +136,24 @@
       <!-- Results card: liquid glass too -->
       <div class="results-card glass" id="results-card" style="display:none;">
         <div class="result-row">
-          <strong data-i18n="mb.amount">Amount due:</strong>
+          <!-- IDs added so JS can switch EN/ES labels -->
+          <strong id="label-amount" data-i18n="mb.amount">Amount due:</strong>
           <span id="r-amount"></span>
         </div>
         <div class="result-row">
-          <strong data-i18n="mb.duedate">Due date:</strong>
+          <strong id="label-duedate" data-i18n="mb.duedate">Due date:</strong>
           <span id="r-duedate"></span>
         </div>
         <div class="result-row">
-          <strong data-i18n="mb.account">Account #:</strong>
+          <strong id="label-acct" data-i18n="mb.account">Account #:</strong>
           <span id="r-acct"></span>
         </div>
         <div class="result-row">
-          <strong data-i18n="mb.sender">Sender:</strong>
+          <strong id="label-sender" data-i18n="mb.sender">Sender:</strong>
           <span id="r-sender"></span>
         </div>
         <div class="result-row">
-          <strong data-i18n="mb.address">Service address:</strong>
+          <strong id="label-address" data-i18n="mb.address">Service address:</strong>
           <span id="r-address"></span>
         </div>
       </div>
