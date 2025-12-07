@@ -6,23 +6,32 @@
   <title>Privacy — Voyadecir</title>
   <meta name="description" content="Privacy-first translation and interpretation.">
   <meta name="author" content="Voyadecir">
+
   <meta property="og:title" content="Privacy — Voyadecir">
   <meta property="og:description" content="Privacy-first translation and interpretation.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://voyadecir.com/">
   <meta property="og:image" content="https://voyadecir.com/assets/img/favicon-32x32.png">
+
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Privacy — Voyadecir">
   <meta name="twitter:description" content="Privacy-first translation and interpretation.">
+
   <link rel="canonical" href="https://voyadecir.com/">
+
   <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
   <link rel="alternate icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/img/favicon.ico">
-  <meta name="theme-color" content="#ffffff">
+
+  <!-- match dark / ink background like other pages -->
+  <meta name="theme-color" content="#020617">
+
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preload" as="image" href="assets/img/logo.png">
-  <link rel="stylesheet" href="assets/css/styles.css?v=3">
+
+  <!-- keep CSS version aligned with other pages -->
+  <link rel="stylesheet" href="assets/css/styles.css?v=10">
   <script defer src="assets/js/main.js"></script>
 </head>
 <body>
@@ -40,23 +49,28 @@
     <nav>
       <a href="index.html" data-i18n="nav.home">Home</a>
       <a href="translate.html" data-i18n="nav.translate">Translate</a>
+      <a href="mail-bills.html" data-i18n="nav.mailbills">Mail & Bills</a>
       <a href="about.html" data-i18n="nav.about">About</a>
       <a href="contact.html" data-i18n="nav.contact">Contact</a>
-        <div class="button-wrap">
-          <button id="lang-toggle" class="lang glass-btn glass-button" aria-label="Toggle language" type="button">
-            <span>EN | ES</span>
-          </button>
-          <div class="button-shadow"></div>
-      </div>
+
+      <!-- Language toggle: unified liquid-glass button -->
+      <button id="lang-toggle" class="glass-button lang" aria-label="Toggle language" type="button">
+        <span>EN | ES</span>
+      </button>
     </nav>
   </div>
 </header>
-  <main class="container section">
-    <article class="card">
-      <h2 data-i18n="privacy.title">Privacy Policy</h2>
-      <p data-i18n="privacy.body">We design for privacy first. This static site uses no cookies or trackers by default. If you choose to use our translator, it may rely on third-party APIs according to their policies.</p>
-    </article>
-  </main>
+
+<main class="container section">
+  <!-- Privacy card as liquid-glass panel -->
+  <article class="card glass">
+    <h2 data-i18n="privacy.title">Privacy Policy</h2>
+    <p data-i18n="privacy.body">
+      We design for privacy first. This static site uses no cookies or trackers by default. If you choose to use our
+      translator, it may rely on third-party APIs according to their policies.
+    </p>
+  </article>
+</main>
   
 <footer>
   <div class="container">© 2025 Voyadecir — All rights reserved.</div>
