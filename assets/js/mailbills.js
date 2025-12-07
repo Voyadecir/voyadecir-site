@@ -62,7 +62,43 @@ function copyTextFrom(el) {
     );
 }
 
-// ---------- 4) Render extracted fields card ----------
+// ---------- 4) Field label language (EN / ES) ----------
+
+function updateFieldLabels() {
+  const lang = getLang() === "es" ? "es" : "en";
+
+  const LABELS = {
+    en: {
+      amount: "Amount due:",
+      due_date: "Due date:",
+      account: "Account #:",
+      sender: "Sender:",
+      address: "Service address:",
+    },
+    es: {
+      amount: "Monto a pagar:",
+      due_date: "Fecha de vencimiento:",
+      account: "N.º de cuenta:",
+      sender: "Remitente:",
+      address: "Dirección del servicio:",
+    },
+  };
+
+  const L = LABELS[lang];
+
+  const set = (sel, text) => {
+    const el = $(sel);
+    if (el && text) el.textContent = text;
+  };
+
+  set("#label-amount", L.amount);
+  set("#label-duedate", L.due_date);
+  set("#label-acct", L.account);
+  set("#label-sender", L.sender);
+  set("#label-address", L.address);
+}
+
+// ---------- 5) Render extracted fields card ----------
 
 function showResults(fieldsRaw) {
   const card = $("#results-card");
@@ -107,13 +143,11 @@ function showResults(fieldsRaw) {
   card.style.display = any ? "block" : "none";
 }
 
-// ---------- 5) Call OCR (Azure Function) ----------
+// ---------- 6) Call OCR (Azure Function) ----------
 
-async function sendBytes(file, lang) {
+async function sendBytes(file) {
   const buf = await file.arrayBuffer();
-  const url = `${OCR_API_BASE}/api/mailbills/parse?target_lang=${encodeURIComponent(
-    lang
-  )}`;
+  const url = `${OCR_API_BASE}/api/mailbills/parse`;
   const contentType = file.type || "application/octet-stream";
 
   const res = await fetch(url, {
@@ -139,16 +173,20 @@ async function sendBytes(file, lang) {
   return data;
 }
 
-// ---------- 6) Call Deep Agent (ai-translator) ----------
+// ---------- 7) Call Deep Agent (ai-translator) ----------
 
-async function callInterpret(ocrText, targetLangCode) {
-  const norm = (targetLangCode || "").toLowerCase();
-  const locale = norm.startsWith("es") ? "es-MX" : "en-US";
+async function callInterpret(ocrText) {
+  // Use the "To" dropdown as the target language for explanation.
+  const langSelect = $("#mb-tgt-lang");
+  const target_lang = (
+    langSelect?.value || (getLang() === "es" ? "es" : "en")
+  ).trim();
 
   const payload = {
     ocr_text: ocrText,
-    locale,
-    document_kind: "utility_bill",
+    source_lang: "auto",
+    target_lang,
+    bill_hint: "bill or official letter",
   };
 
   const url = `${INTERPRET_API_BASE}/api/mailbills/interpret`;
@@ -177,23 +215,16 @@ async function callInterpret(ocrText, targetLangCode) {
   return data;
 }
 
-// ---------- 7) Main handler: upload → OCR → interpret ----------
+// ---------- 8) Main handler: upload → OCR → interpret ----------
 
 async function handleFile(file) {
   if (!file) return;
 
-  // Site language (UI) vs target language (summary/translation)
-  const siteLang = getLang() === "es" ? "es" : "en";
-
-  const tgtSelect = $("#mb-tgt-lang");
-  const targetLang =
-    (tgtSelect?.value || siteLang).trim(); // 'es' or 'en'
-
   setStatus(translateKey("mb.status.uploading", "Uploading document…"));
 
   try {
-    // Step 1: OCR via Azure Functions (siteLang doesn't really matter here)
-    const ocrData = await sendBytes(file, siteLang);
+    // Step 1: OCR via Azure Functions
+    const ocrData = await sendBytes(file);
     setStatus(translateKey("mb.status.ocrDone", "Text extracted."));
 
     const ocrText =
@@ -206,14 +237,13 @@ async function handleFile(file) {
     const ocrEl = $("#ocr-text");
     if (ocrEl) ocrEl.value = ocrText;
 
-    // Optional: show any fields from OCR pipeline (usually empty until agent fills them)
     if (ocrData.fields) {
       showResults(ocrData.fields);
     }
 
-    // Step 2: Deep interpret via ai-translator, in targetLang
+    // Step 2: Deep interpret via ai-translator
     try {
-      const agentData = await callInterpret(ocrText, targetLang);
+      const agentData = await callInterpret(ocrText);
 
       const sumEl = $("#summary-text");
       const summaryText =
@@ -257,7 +287,7 @@ async function handleFile(file) {
   }
 }
 
-// ---------- 8) Translate OCR text via existing translator ----------
+// ---------- 9) Translate OCR text via existing translator ----------
 
 async function translateOcrText() {
   const srcEl = $("#ocr-text");
@@ -321,21 +351,13 @@ async function translateOcrText() {
   }
 }
 
-// ---------- 9) UI wiring ----------
+// ---------- 10) UI wiring ----------
 
 window.addEventListener("DOMContentLoaded", function () {
   const tgt = $("#mb-tgt-lang");
-  if (tgt) {
-    // Initialize dropdown from site language
-    tgt.value = getLang() === "es" ? "es" : "en";
+  if (tgt) tgt.value = getLang() === "es" ? "es" : "en";
 
-    // If user changes "To" language, sync it back to site language store
-    tgt.addEventListener("change", () => {
-      try {
-        sessionStorage.setItem("voyadecir_lang", tgt.value);
-      } catch (_) {}
-    });
-  }
+  updateFieldLabels();
 
   $("#btn-upload")?.addEventListener("click", () =>
     $("#file-input").click()
@@ -351,7 +373,7 @@ window.addEventListener("DOMContentLoaded", function () {
     handleFile(e.target.files?.[0])
   );
 
-  // EN↔ES toggle for "To" (just flips the select and syncs it)
+  // Swap “To” language and remember it
   $("#mb-swap-langs")?.addEventListener("click", () => {
     const t = $("#mb-tgt-lang");
     if (!t) return;
@@ -359,21 +381,22 @@ window.addEventListener("DOMContentLoaded", function () {
     try {
       sessionStorage.setItem("voyadecir_lang", t.value);
     } catch (_) {}
+    updateFieldLabels();
   });
 
-  // Make sure the "Translate" button really calls translateOcrText
-  const translateButtons = [
-    "#mb-translate-run",
-    "#mb-translate-btn", // fallback if HTML used a different id
-  ];
-
-  translateButtons.forEach((sel) => {
+  // Make sure Translate button calls translateOcrText
+  ["#mb-translate-run", "#mb-translate-btn"].forEach((sel) => {
     const btn = $(sel);
     if (!btn) return;
     btn.addEventListener("click", (e) => {
       e.preventDefault();
       translateOcrText();
     });
+  });
+
+  $("#mb-copy-text")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    copyTextFrom($("#ocr-text"));
   });
 
   $("#mb-copy-ocr")?.addEventListener("click", (e) => {
