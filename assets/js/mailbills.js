@@ -101,7 +101,92 @@ function updateFieldLabels() {
   setText("#label-address", L.address);
 }
 
-// ---------- 5) Render extracted fields card ----------
+// ---------- 5) Helpers: field presence + fallback extractor ----------
+
+function hasAnyField(fields) {
+  if (!fields || typeof fields !== "object") return false;
+  const keys = [
+    "amount_due",
+    "due_date",
+    "account_number",
+    "sender",
+    "service_address",
+  ];
+
+  for (const key of keys) {
+    const v = fields[key];
+    if (v == null) continue;
+
+    if (typeof v === "object" && "value" in v) {
+      if (v.value != null && String(v.value).trim() !== "") return true;
+    } else if (String(v).trim() !== "") {
+      return true;
+    }
+  }
+  return false;
+}
+
+function fallbackExtractFieldsFromText(text) {
+  const full = (text || "").replace(/\s+/g, " "); // normalize whitespace
+
+  const mkField = (value, confidence) => ({
+    value: value || "",
+    confidence: value ? confidence : 0.0,
+  });
+
+  // Amount due: try a few patterns
+  let amount = "";
+  const amountPatterns = [
+    /amount\s+due[^0-9$]*\$?\s*([0-9]+(?:\.[0-9]{2})?)/i,
+    /total\s+amount\s+due[^0-9$]*\$?\s*([0-9]+(?:\.[0-9]{2})?)/i,
+    /amount\s+park\s+charged[^0-9$]*\$?\s*([0-9]+(?:\.[0-9]{2})?)/i,
+  ];
+  for (const re of amountPatterns) {
+    const m = full.match(re);
+    if (m && m[1]) {
+      amount = m[1];
+      break;
+    }
+  }
+
+  // Due date: simple patterns (we can expand later)
+  let dueDate = "";
+  const datePatterns = [
+    /due\s+date[^A-Za-z0-9]*([A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4})/i,
+    /due\s+on[^A-Za-z0-9]*([A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4})/i,
+  ];
+  for (const re of datePatterns) {
+    const m = full.match(re);
+    if (m && m[1]) {
+      dueDate = m[1];
+      break;
+    }
+  }
+
+  // Account number: generic pattern
+  let account = "";
+  const acctPatterns = [
+    /(account(?:\s+number)?\s*[:#]?\s*)([A-Za-z0-9\-]+)/i,
+  ];
+  for (const re of acctPatterns) {
+    const m = full.match(re);
+    if (m && m[2]) {
+      account = m[2];
+      break;
+    }
+  }
+
+  // For now, sender and address are left empty in the fallback
+  return {
+    amount_due: mkField(amount, 0.5),
+    due_date: mkField(dueDate, 0.4),
+    account_number: mkField(account, 0.4),
+    sender: mkField("", 0.0),
+    service_address: mkField("", 0.0),
+  };
+}
+
+// ---------- 6) Render extracted fields card ----------
 
 function showResults(fieldsRaw) {
   const card = $("#results-card");
@@ -146,7 +231,7 @@ function showResults(fieldsRaw) {
   card.style.display = any ? "block" : "none";
 }
 
-// ---------- 6) Extra sections: identity / payment / other amounts ----------
+// ---------- 7) Extra sections: identity / payment / other amounts ----------
 
 function renderList(sectionSelector, listSelector, items) {
   const section = $(sectionSelector);
@@ -207,7 +292,7 @@ function renderAgentSections(agentData) {
   );
 }
 
-// ---------- 7) Call OCR (Azure Function) ----------
+// ---------- 8) Call OCR (Azure Function) ----------
 
 async function sendBytes(file) {
   const buf = await file.arrayBuffer();
@@ -237,7 +322,7 @@ async function sendBytes(file) {
   return data;
 }
 
-// ---------- 8) Call Deep Agent (ai-translator) ----------
+// ---------- 9) Call Deep Agent (ai-translator) ----------
 
 async function callInterpret(ocrText) {
   // Use the "To" dropdown as the target language for explanation.
@@ -279,7 +364,7 @@ async function callInterpret(ocrText) {
   return data;
 }
 
-// ---------- 9) Main handler: upload → OCR → interpret ----------
+// ---------- 10) Main handler: upload → OCR → interpret ----------
 
 async function handleFile(file) {
   if (!file) return;
@@ -319,8 +404,14 @@ async function handleFile(file) {
 
       if (sumEl) sumEl.value = summaryText;
 
-      if (agentData.fields) {
-        showResults(agentData.fields);
+      // Prefer agent fields; if empty, fall back to local extraction
+      let fields = agentData.fields;
+      if (!hasAnyField(fields) && ocrText) {
+        fields = fallbackExtractFieldsFromText(ocrText);
+      }
+
+      if (fields) {
+        showResults(fields);
       }
 
       renderAgentSections(agentData);
@@ -336,6 +427,15 @@ async function handleFile(file) {
         "[mailbills] interpret error, falling back to OCR-only:",
         err
       );
+
+      // Even if agent call fails, try local extraction from OCR text
+      if (ocrText) {
+        const fallback = fallbackExtractFieldsFromText(ocrText);
+        if (hasAnyField(fallback)) {
+          showResults(fallback);
+        }
+      }
+
       setStatus(
         translateKey(
           "mb.status.done",
@@ -354,7 +454,7 @@ async function handleFile(file) {
   }
 }
 
-// ---------- 10) Translate OCR text via existing translator ----------
+// ---------- 11) Translate OCR text via existing translator ----------
 
 async function translateOcrText() {
   const srcEl = $("#ocr-text");
@@ -418,7 +518,7 @@ async function translateOcrText() {
   }
 }
 
-// ---------- 11) UI wiring ----------
+// ---------- 12) UI wiring ----------
 
 window.addEventListener("DOMContentLoaded", function () {
   const tgt = $("#mb-tgt-lang");
