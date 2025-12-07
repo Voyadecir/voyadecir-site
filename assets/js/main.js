@@ -79,7 +79,7 @@
   }
 
   //
-  // Apply dictionary to all [data-i18n] elements
+  // Apply dictionary to all [data-i18n] + [data-i18n-placeholder]
   //
   async function apply(lang) {
     const dict = await loadDict(lang);
@@ -87,6 +87,7 @@
     window.VOY_LANGUAGE_MAP = dict;
     window.voyT = t;
 
+    // 1) Text content for elements with data-i18n
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       const key = el.getAttribute("data-i18n");
       if (!key) return;
@@ -104,6 +105,18 @@
       el.textContent = dict[key];
     });
 
+    // 2) Placeholders for inputs / textareas with data-i18n-placeholder
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+      const key = el.getAttribute("data-i18n-placeholder");
+      if (!key) return;
+      if (!Object.prototype.hasOwnProperty.call(dict, key)) {
+        return;
+      }
+      if (el.placeholder !== undefined) {
+        el.placeholder = dict[key];
+      }
+    });
+
     // Set <html lang="...">
     document.documentElement.setAttribute("lang", lang);
 
@@ -115,6 +128,15 @@
 
     // Expose for other scripts (translate.js, mailbills.js)
     window.VD_LANG = lang;
+
+    // If Mail & Bills is loaded, let it update its labels too
+    try {
+      if (typeof window.updateFieldLabels === "function") {
+        window.updateFieldLabels();
+      }
+    } catch (_) {
+      // ignore if not present or fails
+    }
   }
 
   async function setLang(lang) {
