@@ -105,22 +105,25 @@
           </div>
 
           <div class="translator-panels">
-          <div class="translator-box">
-  <textarea
-    id="ocr-text"
-    placeholder="Text from your document will appear here..."
-    data-i18n-placeholder="mb.ocrPlaceholder"
-  ></textarea>
-  <div>
-    <button type="button" class="glass-button inline-btn" id="mb-copy-ocr">
-      <span data-i18n="mb.copyOcr">Copy text</span>
-    </button>
-  </div>
-</div>
-
+            <div class="translator-box">
+              <textarea
+                id="ocr-text"
+                placeholder="Text from your document will appear here..."
+                data-i18n-placeholder="mb.ocrPlaceholder"
+              ></textarea>
+              <div>
+                <button type="button" class="glass-button inline-btn" id="mb-copy-ocr">
+                  <span data-i18n="mb.copyOcr">Copy text</span>
+                </button>
+              </div>
+            </div>
 
             <div class="translator-box">
-              <textarea id="summary-text" placeholder="Summary will appear here..." readonly></textarea>
+              <textarea
+                id="summary-text"
+                placeholder="Summary will appear here..."
+                readonly
+              ></textarea>
               <div>
                 <button type="button" class="glass-button inline-btn" id="mb-copy-summary">
                   <span data-i18n="mb.copySummary">Copy summary</span>
@@ -140,41 +143,63 @@
 
       <!-- Results card: liquid glass too -->
       <div class="results-card glass" id="results-card" style="display:none;">
-        <div class="result-row">
-          <!-- IDs so JS can localize labels cleanly -->
-          <strong id="label-amount" data-i18n="mb.amount">Amount due:</strong>
-          <span id="r-amount"></span>
-        </div>
-        <div class="result-row">
-          <strong id="label-duedate" data-i18n="mb.duedate">Due date:</strong>
-          <span id="r-duedate"></span>
-        </div>
-        <div class="result-row">
-          <strong id="label-acct" data-i18n="mb.account">Account #:</strong>
-          <span id="r-acct"></span>
-        </div>
-        <div class="result-row">
-          <strong id="label-sender" data-i18n="mb.sender">Sender:</strong>
-          <span id="r-sender"></span>
-        </div>
-        <div class="result-row">
-          <strong id="label-address" data-i18n="mb.address">Service address:</strong>
-          <span id="r-address"></span>
+        <!-- Title that the JS can localize -->
+        <h2 id="results-title" data-i18n="mb.results.title">
+          Key details from your bill
+        </h2>
+
+        <!-- Grid of key fields -->
+        <div class="results-grid">
+          <div class="result-row">
+            <!-- IDs so JS can localize labels cleanly -->
+            <div class="result-label" id="label-amount" data-i18n="mb.amount">
+              Amount due
+            </div>
+            <div class="result-value" id="r-amount">—</div>
+          </div>
+
+          <div class="result-row">
+            <div class="result-label" id="label-duedate" data-i18n="mb.duedate">
+              Due date
+            </div>
+            <div class="result-value" id="r-duedate">—</div>
+          </div>
+
+          <div class="result-row">
+            <div class="result-label" id="label-acct" data-i18n="mb.account">
+              Account #
+            </div>
+            <div class="result-value" id="r-acct">—</div>
+          </div>
+
+          <div class="result-row">
+            <div class="result-label" id="label-sender" data-i18n="mb.sender">
+              Sender
+            </div>
+            <div class="result-value" id="r-sender">—</div>
+          </div>
+
+          <div class="result-row">
+            <div class="result-label" id="label-address" data-i18n="mb.address">
+              Service address
+            </div>
+            <div class="result-value" id="r-address">—</div>
+          </div>
         </div>
 
-        <!-- New: identity requirements -->
+        <!-- Identity requirements -->
         <div class="result-section" id="identity-section" style="display:none;">
           <h3 data-i18n="mb.identityTitle">What you’ll need</h3>
           <ul id="identity-list"></ul>
         </div>
 
-        <!-- New: payment options -->
+        <!-- Payment options -->
         <div class="result-section" id="payment-section" style="display:none;">
           <h3 data-i18n="mb.paymentTitle">How you can pay</h3>
           <ul id="payment-list"></ul>
         </div>
 
-        <!-- New: other important amounts -->
+        <!-- Other important amounts -->
         <div class="result-section" id="other-amounts-section" style="display:none;">
           <h3 data-i18n="mb.otherAmountsTitle">Other important amounts</h3>
           <ul id="other-amounts-list"></ul>
