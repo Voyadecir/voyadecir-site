@@ -30,9 +30,9 @@
   "terms.body": "Usa Voyadecir de forma responsable. Ofrecemos el servicio tal cual, sin garantías. Al usar el sitio, aceptas no hacer un uso indebido del servicio.",
 
   "translate.title": "Traduce un documento",
-  "translate.subtitle": "Sube un archivo, toma una foto o usa el traductor de IA de abajo.",
-  "translate.upload": "Subir documento",
-  "translate.camera": "Tomar foto",
+  "translate.subtitle": "Escribe o pega texto abajo, o usa el Ayudante de correo y facturas para fotos y cartas.",
+  "translate.upload": "Subir documento (pronto)",
+  "translate.camera": "Tomar foto (pronto)",
   "translate.listen": "Léemelo (pronto)",
   "translate.from": "De",
   "translate.to": "A",
@@ -41,7 +41,8 @@
   "translate.sourcePlaceholder": "Escribe o pega el texto aquí…",
   "translate.targetPlaceholder": "La traducción aparecerá aquí…",
   "translate.status": "Listo.",
-  "translate.hint": "Próximamente: OCR desde cámara / archivo subido y “Léemelo”.",
+  "translate.hint": "Para fotos o facturas escaneadas, usa el Ayudante de correo y facturas.",
+  "translate.mailbillsCta": "¿Necesitas ayuda con correo y facturas?",
 
   "mb.title": "Ayudante de correo y facturas",
   "mb.sub": "Sube una factura o carta. La leeremos, extraeremos la información clave y la resumiremos en tu idioma.",
