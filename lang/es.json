@@ -78,6 +78,8 @@
   "mb.status.cleared": "Borrado.",
   "mb.status.translating": "Traduciendo…",
   "mb.status.translated": "Traducido.",
+  "mb.status.doneWithAgent": "Listo. Resumen y datos extraídos.",
+  "mb.status.ocrDone": "Texto extraído."
 
   "asst.title": "Asistente",
   "asst.sub": "Haz preguntas rápidas. Si el cerebro inteligente está sin conexión, usaré un ayudante simple.",
