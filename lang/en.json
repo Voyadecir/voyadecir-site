@@ -30,9 +30,9 @@
   "terms.body": "Use Voyadecir responsibly. We provide the service as-is, with no guarantees. By using the site, you agree not to misuse the service.",
 
   "translate.title": "Translate a document",
-  "translate.subtitle": "Upload, snap a photo, or use the AI translator below.",
-  "translate.upload": "Upload document",
-  "translate.camera": "Take picture",
+  "translate.subtitle": "Type or paste text below, or use the Mail & Bills Helper for photos and letters.",
+  "translate.upload": "Upload document (soon)",
+  "translate.camera": "Take picture (soon)",
   "translate.listen": "Read it to me (soon)",
   "translate.from": "From",
   "translate.to": "To",
@@ -41,7 +41,8 @@
   "translate.sourcePlaceholder": "Type or paste text here…",
   "translate.targetPlaceholder": "Translation will appear here…",
   "translate.status": "Ready.",
-  "translate.hint": "Coming soon: OCR from camera / upload, and “Read it to me.”",
+  "translate.hint": "For photos or scanned bills, use the Mail & Bills Helper.",
+  "translate.mailbillsCta": "Need help with mail & bills?",
 
   "mb.title": "Mail & Bills Helper",
   "mb.sub": "Upload a bill or letter. We’ll read it, extract key info, and summarize it in your language.",
