@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Voyadecir — Translate</title>
-  <meta name="description" content="Translate documents, images, and text with Voyadecir.">
+  <meta name="description" content="Translate everyday text with Voyadecir’s minimalist English–Spanish translator.">
 
   <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
@@ -35,13 +35,14 @@
       <nav>
         <a href="index.html" data-i18n="nav.home">Home</a>
         <a href="translate.html" data-i18n="nav.translate">Translate</a>
+        <a href="mail-bills.html" data-i18n="nav.mailbills">Mail &amp; Bills</a>
         <a href="about.html" data-i18n="nav.about">About</a>
         <a href="contact.html" data-i18n="nav.contact">Contact</a>
 
         <!-- Language toggle: liquid glass button (same as other pages) -->
         <button
           id="lang-toggle"
-          class="glass-button lang"
+          class="lang glass glass-button"
           aria-label="Toggle language"
           type="button">
           <span>EN | ES</span>
@@ -51,10 +52,16 @@
   </header>
 
   <main class="container section">
-    <div class="translate-shell">
-      <h1 class="translate-title" data-i18n="translate.title">Translate a document</h1>
+    <!-- Centered shell so the main “box with text” is centered -->
+    <div class="translate-shell" style="text-align:center;">
+      <h1 class="translate-title" data-i18n="translate.title">Translate everyday text</h1>
       <p class="translate-sub" data-i18n="translate.subtitle">
-        Upload, snap a photo, or use the AI translator below.
+        Type or paste your text below and choose your languages.
+      </p>
+
+      <!-- Small nudge toward Mail & Bills Helper -->
+      <p class="translate-sub" data-i18n="translate.mailbillsHint">
+        Have a utility bill or official letter? Try the <a href="mail-bills.html">Mail &amp; Bills Helper</a>.
       </p>
 
       <div class="translate-actions">
@@ -143,7 +150,7 @@
           <div class="translator-foot">
             <span id="translator-status" data-i18n="translate.status">Ready.</span>
             <span class="translator-hint" data-i18n="translate.hint">
-              Coming soon: OCR from camera / upload, and “Read it to me.”
+              Tip: For bills and mail with amounts and due dates, use the Mail &amp; Bills Helper.
             </span>
           </div>
         </div>
@@ -166,8 +173,8 @@
         </div>
       </div>
 
-      <p class="translate-footnote">
-        Future features: OCR scan from camera, document auto-detection, and text-to-speech for interpreted output.
+      <p class="translate-footnote" data-i18n="translate.footnote">
+        Future improvements: deeper explanation for complex messages and better support for more languages.
       </p>
     </div>
   </main>
