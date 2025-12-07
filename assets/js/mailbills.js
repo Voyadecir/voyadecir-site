@@ -69,33 +69,36 @@ function updateFieldLabels() {
 
   const LABELS = {
     en: {
-      amount: "Amount due:",
-      due_date: "Due date:",
-      account: "Account #:",
-      sender: "Sender:",
-      address: "Service address:",
+      title: "Key details from your bill",
+      amount: "Amount due",
+      due_date: "Due date",
+      account: "Account #",
+      sender: "Sender",
+      address: "Service address",
     },
     es: {
-      amount: "Monto a pagar:",
-      due_date: "Fecha de vencimiento:",
-      account: "N.º de cuenta:",
-      sender: "Remitente:",
-      address: "Dirección del servicio:",
+      title: "Detalles clave de tu factura",
+      amount: "Monto a pagar",
+      due_date: "Fecha de vencimiento",
+      account: "N.º de cuenta",
+      sender: "Remitente",
+      address: "Dirección del servicio",
     },
   };
 
   const L = LABELS[lang];
 
-  const set = (sel, text) => {
+  const setText = (sel, text) => {
     const el = $(sel);
     if (el && text) el.textContent = text;
   };
 
-  set("#label-amount", L.amount);
-  set("#label-duedate", L.due_date);
-  set("#label-acct", L.account);
-  set("#label-sender", L.sender);
-  set("#label-address", L.address);
+  setText("#results-title", L.title);
+  setText("#label-amount", L.amount);
+  setText("#label-duedate", L.due_date);
+  setText("#label-acct", L.account);
+  setText("#label-sender", L.sender);
+  setText("#label-address", L.address);
 }
 
 // ---------- 5) Render extracted fields card ----------
@@ -143,7 +146,68 @@ function showResults(fieldsRaw) {
   card.style.display = any ? "block" : "none";
 }
 
-// ---------- 6) Call OCR (Azure Function) ----------
+// ---------- 6) Extra sections: identity / payment / other amounts ----------
+
+function renderList(sectionSelector, listSelector, items) {
+  const section = $(sectionSelector);
+  const ul = $(listSelector);
+  if (!section || !ul) return;
+
+  ul.innerHTML = "";
+
+  const cleaned =
+    (items || []).filter(
+      (x) => typeof x === "string" && x.trim() !== ""
+    ) || [];
+
+  if (!cleaned.length) {
+    section.style.display = "none";
+    return;
+  }
+
+  cleaned.forEach((text) => {
+    const li = document.createElement("li");
+    li.textContent = text;
+    ul.appendChild(li);
+  });
+
+  section.style.display = "block";
+
+  const card = $("#results-card");
+  if (card) {
+    card.style.display = "block";
+  }
+}
+
+function renderAgentSections(agentData) {
+  if (!agentData) return;
+
+  renderList(
+    "#identity-section",
+    "#identity-list",
+    agentData.identity_requirements ||
+      agentData.identity ||
+      agentData.required_documents
+  );
+
+  renderList(
+    "#payment-section",
+    "#payment-list",
+    agentData.payment_options ||
+      agentData.payment_methods ||
+      agentData.how_to_pay
+  );
+
+  renderList(
+    "#other-amounts-section",
+    "#other-amounts-list",
+    agentData.other_important_amounts ||
+      agentData.other_amounts ||
+      agentData.fees
+  );
+}
+
+// ---------- 7) Call OCR (Azure Function) ----------
 
 async function sendBytes(file) {
   const buf = await file.arrayBuffer();
@@ -173,7 +237,7 @@ async function sendBytes(file) {
   return data;
 }
 
-// ---------- 7) Call Deep Agent (ai-translator) ----------
+// ---------- 8) Call Deep Agent (ai-translator) ----------
 
 async function callInterpret(ocrText) {
   // Use the "To" dropdown as the target language for explanation.
@@ -215,7 +279,7 @@ async function callInterpret(ocrText) {
   return data;
 }
 
-// ---------- 8) Main handler: upload → OCR → interpret ----------
+// ---------- 9) Main handler: upload → OCR → interpret ----------
 
 async function handleFile(file) {
   if (!file) return;
@@ -237,6 +301,7 @@ async function handleFile(file) {
     const ocrEl = $("#ocr-text");
     if (ocrEl) ocrEl.value = ocrText;
 
+    // Optional: show any fields the OCR pipeline already gave (usually empty)
     if (ocrData.fields) {
       showResults(ocrData.fields);
     }
@@ -257,6 +322,8 @@ async function handleFile(file) {
       if (agentData.fields) {
         showResults(agentData.fields);
       }
+
+      renderAgentSections(agentData);
 
       setStatus(
         translateKey(
@@ -287,7 +354,7 @@ async function handleFile(file) {
   }
 }
 
-// ---------- 9) Translate OCR text via existing translator ----------
+// ---------- 10) Translate OCR text via existing translator ----------
 
 async function translateOcrText() {
   const srcEl = $("#ocr-text");
@@ -351,12 +418,13 @@ async function translateOcrText() {
   }
 }
 
-// ---------- 10) UI wiring ----------
+// ---------- 11) UI wiring ----------
 
 window.addEventListener("DOMContentLoaded", function () {
   const tgt = $("#mb-tgt-lang");
   if (tgt) tgt.value = getLang() === "es" ? "es" : "en";
 
+  // Make labels match current language
   updateFieldLabels();
 
   $("#btn-upload")?.addEventListener("click", () =>
@@ -384,7 +452,7 @@ window.addEventListener("DOMContentLoaded", function () {
     updateFieldLabels();
   });
 
-  // Make sure Translate button calls translateOcrText
+  // Translate button → translateOcrText
   ["#mb-translate-run", "#mb-translate-btn"].forEach((sel) => {
     const btn = $(sel);
     if (!btn) return;
@@ -419,6 +487,14 @@ window.addEventListener("DOMContentLoaded", function () {
 
     const card = $("#results-card");
     if (card) card.style.display = "none";
+
+    // Clear lists too
+    ["#identity-list", "#payment-list", "#other-amounts-list"].forEach(
+      (sel) => {
+        const ul = $(sel);
+        if (ul) ul.innerHTML = "";
+      }
+    );
 
     setStatus(translateKey("mb.status.cleared", "Cleared."));
   });
