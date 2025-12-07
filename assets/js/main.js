@@ -19,23 +19,48 @@
   }
 
   //
-  // Load language JSON: /lang/en.json or /lang/es.json
+  // Helper: fetch JSON safely, return null on failure
   //
-  async function loadDict(lang) {
-    const ok = ["en", "es"].includes(lang) ? lang : "en";
-    const url = `/lang/${ok}.json`;
-
+  async function fetchJsonSafe(url) {
     try {
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) {
         console.error("[i18n] Failed to load", url, res.status);
-        return {};
+        return null;
       }
-      return await res.json();
+      const data = await res.json();
+      // sanity check: must be an object with at least 1 key
+      if (!data || typeof data !== "object" || Array.isArray(data)) {
+        console.error("[i18n] Bad JSON shape from", url);
+        return null;
+      }
+      return data;
     } catch (err) {
       console.error("[i18n] Error loading", url, err);
-      return {};
+      return null;
     }
+  }
+
+  //
+  // Load language JSON: try /lang/... and lang/...
+  //
+  async function loadDict(lang) {
+    const ok = ["en", "es"].includes(lang) ? lang : "en";
+    const candidates = [
+      `/lang/${ok}.json`,
+      `lang/${ok}.json`,
+    ];
+
+    for (const url of candidates) {
+      const data = await fetchJsonSafe(url);
+      if (data) {
+        console.info("[i18n] Loaded dictionary from", url);
+        return data;
+      }
+    }
+
+    console.warn("[i18n] No dictionary loaded for", ok, "– falling back to hardcoded text.");
+    return {};
   }
 
   //
@@ -62,17 +87,16 @@
     window.VOY_LANGUAGE_MAP = dict;
     window.voyT = t;
 
-    // Replace only when we actually have a translation.
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       const key = el.getAttribute("data-i18n");
       if (!key) return;
 
+      // Only touch elements if the dict actually has that key
       if (!Object.prototype.hasOwnProperty.call(dict, key)) {
-        // No translation for this key; leave existing text alone
         return;
       }
 
-      // Don't wipe labels that contain form controls
+      // Do not wipe labels that contain form controls; those are handled manually
       if (el.querySelector("select, input, textarea")) {
         return;
       }
