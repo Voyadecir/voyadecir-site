@@ -5,44 +5,104 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Voyadecir — Mail & Bills Helper</title>
   <meta name="description" content="Upload or snap a photo of your bill or mail. We’ll read it, extract key info, and summarize it in your language.">
+
   <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
   <link rel="alternate icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/img/favicon.ico">
-  <meta name="theme-color" content="#ffffff">
+
+  <!-- match dark / ink background -->
+  <meta name="theme-color" content="#020617">
+
   <link rel="manifest" href="manifest.webmanifest">
+
+  <!-- use latest CSS + JS -->
   <link rel="stylesheet" href="assets/css/styles.css?v=mb2">
-  <script defer src="assets/js/main.js?v=mb1"></script>
+  <script defer src="assets/js/main.js?v=4"></script>
   <script defer src="assets/js/mailbills.js?v=mb3"></script>
 </head>
 <body>
   <header>
     <div class="container nav">
       <div class="brand">
-        <img src="assets/img/logo.png" alt="Voyadecir Logo" class="logo" onerror="this.onerror=null;this.src='assets/img/logo.svg';">
+        <img
+          src="assets/img/logo.png"
+          alt="Voyadecir Logo"
+          class="logo"
+          onerror="this.onerror=null;this.src='assets/img/logo.svg';">
         <div>
           <div data-i18n="brand.title">Voyadecir</div>
           <small class="tagline" data-i18n="brand.tagline">Translate. Understand. Connect.</small>
         </div>
       </div>
+
       <nav>
         <a href="index.html" data-i18n="nav.home">Home</a>
         <a href="translate.html" data-i18n="nav.translate">Translate</a>
-        <a href="mail-bills.html" data-i18n="nav.mailbills">Mail & Bills</a>
+        <a href="mail-bills.html" data-i18n="nav.mailbills">Mail &amp; Bills</a>
         <a href="about.html" data-i18n="nav.about">About</a>
         <a href="contact.html" data-i18n="nav.contact">Contact</a>
 
-        <!-- Language toggle: glass button -->
-        <button id="lang-toggle" class="glass-button lang" aria-label="Toggle language" type="button">
-          <span>EN | ES</span>
-        </button>
+        <!-- Circle language menu (same as translate.html) -->
+        <div class="lang-menu">
+          <!-- Hidden checkbox that controls open/close -->
+          <input type="checkbox" id="lang-menu-toggle" class="lang-menu__toggler">
+
+          <!-- Center button with your PNG icon -->
+          <div class="lang-menu__center">
+            <button
+              type="button"
+              class="glass-button lang-menu__button"
+              aria-label="Change language">
+              <!-- Put your icon at: assets/img/lang-icon.png -->
+              <img
+                src="assets/img/lang-icon.png"
+                alt="Language"
+                class="lang-menu__icon">
+            </button>
+          </div>
+
+          <!-- Language options around the circle -->
+          <ul class="lang-menu__list">
+            <li class="lang-menu__item">
+              <button type="button" class="glass-button js-lang-option" data-lang="en">EN</button>
+            </li>
+            <li class="lang-menu__item">
+              <button type="button" class="glass-button js-lang-option" data-lang="es">ES</button>
+            </li>
+            <li class="lang-menu__item">
+              <button type="button" class="glass-button js-lang-option" data-lang="pt">PT</button>
+            </li>
+            <li class="lang-menu__item">
+              <button type="button" class="glass-button js-lang-option" data-lang="fr">FR</button>
+            </li>
+            <li class="lang-menu__item">
+              <button type="button" class="glass-button js-lang-option" data-lang="zh">中文</button>
+            </li>
+            <li class="lang-menu__item">
+              <button type="button" class="glass-button js-lang-option" data-lang="hi">HI</button>
+            </li>
+            <li class="lang-menu__item">
+              <button type="button" class="glass-button js-lang-option" data-lang="ar">AR</button>
+            </li>
+            <li class="lang-menu__item">
+              <button type="button" class="glass-button js-lang-option" data-lang="bn">BN</button>
+            </li>
+            <li class="lang-menu__item">
+              <button type="button" class="glass-button js-lang-option" data-lang="ru">RU</button>
+            </li>
+            <li class="lang-menu__item">
+              <button type="button" class="glass-button js-lang-option" data-lang="ur">UR</button>
+            </li>
+          </ul>
+        </div>
       </nav>
     </div>
   </header>
 
   <main class="container section">
     <div class="translate-shell">
-      <h1 class="translate-title" data-i18n="mb.title">Mail & Bills Helper</h1>
+      <h1 class="translate-title" data-i18n="mb.title">Mail &amp; Bills Helper</h1>
       <p class="translate-sub" data-i18n="mb.sub">
         Upload a bill or letter. We’ll read it, extract key info, and summarize it in your language.
       </p>
@@ -62,7 +122,12 @@
           <span data-i18n="mb.btnCamera">Take picture</span>
         </button>
 
-        <button type="button" class="glass-button translate-btn secondary" id="btn-listen" disabled title="Coming soon">
+        <button
+          type="button"
+          class="glass-button translate-btn secondary"
+          id="btn-listen"
+          disabled
+          title="Coming soon">
           <span class="icon-audio"></span>
           <span data-i18n="mb.btnListen">Read it to me (soon)</span>
         </button>
@@ -90,7 +155,11 @@
                 </select>
               </label>
 
-              <button type="button" id="mb-swap-langs" class="glass-button swap-btn" title="Swap languages">
+              <button
+                type="button"
+                id="mb-swap-langs"
+                class="glass-button swap-btn"
+                title="Swap languages">
                 <span data-i18n="translate.swap">⇄</span>
               </button>
 
@@ -151,7 +220,6 @@
         <!-- Grid of key fields -->
         <div class="results-grid">
           <div class="result-row">
-            <!-- IDs so JS can localize labels cleanly -->
             <div class="result-label" id="label-amount" data-i18n="mb.amount">
               Amount due
             </div>
