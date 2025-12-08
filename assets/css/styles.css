@@ -199,11 +199,12 @@ nav a:hover {
   margin:0;
   padding:0;
   position:absolute;
-  top:50%;
+  top:0;              /* anchor to top of the nav area */
   left:50%;
   width:0;
   height:0;
-  transform:translate(-50%, -50%);
+  /* move the circle center DOWN so top items stay visible */
+  transform:translate(-50%, 110px);
   z-index:1;
 }
 
