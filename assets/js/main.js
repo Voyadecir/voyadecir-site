@@ -3,6 +3,9 @@
   const $ = (s) => document.querySelector(s);
   let currentDict = {};
 
+  // All languages you now support
+  const SUPPORTED_LANGS = ["en", "es", "pt", "fr", "zh", "hi", "ar", "bn", "ru", "ur"];
+
   //
   // Global translator helper: window.voyT(key, fallback)
   //
@@ -45,10 +48,10 @@
   // Load language JSON: try /lang/... and lang/...
   //
   async function loadDict(lang) {
-    const ok = ["en", "es"].includes(lang) ? lang : "en";
+    const ok = SUPPORTED_LANGS.includes(lang) ? lang : "en";
     const candidates = [
       `/lang/${ok}.json`,
-      `lang/${ok}.json`,
+      `lang/${ok}.json`
     ];
 
     for (const url of candidates) {
@@ -64,30 +67,46 @@
   }
 
   //
-  // Detect initial language: sessionStorage -> browser language
+  // Detect initial language:
+  // 1) sessionStorage
+  // 2) browser language -> mapped to one of SUPPORTED_LANGS
+  // 3) fallback "en"
   //
   function detect() {
     try {
       const saved = sessionStorage.getItem(LS_KEY);
-      if (saved === "en" || saved === "es") return saved;
+      if (SUPPORTED_LANGS.includes(saved)) return saved;
     } catch (_) {
       // ignore storage errors
     }
 
-    const nav = (navigator.language || navigator.userLanguage || "en").toLowerCase();
-    return nav.startsWith("es") ? "es" : "en";
+    const raw = (navigator.language || navigator.userLanguage || "en").toLowerCase();
+
+    // Map browser language to our codes
+    if (raw.startsWith("es")) return "es";
+    if (raw.startsWith("pt")) return "pt";
+    if (raw.startsWith("fr")) return "fr";
+    if (raw.startsWith("zh")) return "zh";   // zh-CN, zh-TW, etc.
+    if (raw.startsWith("hi")) return "hi";
+    if (raw.startsWith("ar")) return "ar";
+    if (raw.startsWith("bn")) return "bn";
+    if (raw.startsWith("ru")) return "ru";
+    if (raw.startsWith("ur")) return "ur";
+
+    // default
+    return "en";
   }
 
   //
-  // Apply dictionary to all [data-i18n] + [data-i18n-placeholder]
+  // Apply dictionary to all [data-i18n] elements
   //
   async function apply(lang) {
     const dict = await loadDict(lang);
     currentDict = dict;
     window.VOY_LANGUAGE_MAP = dict;
     window.voyT = t;
+    window.VD_LANG = lang;
 
-    // 1) Text content for elements with data-i18n
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       const key = el.getAttribute("data-i18n");
       if (!key) return;
@@ -105,42 +124,18 @@
       el.textContent = dict[key];
     });
 
-    // 2) Placeholders for inputs / textareas with data-i18n-placeholder
-    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-      const key = el.getAttribute("data-i18n-placeholder");
-      if (!key) return;
-      if (!Object.prototype.hasOwnProperty.call(dict, key)) {
-        return;
-      }
-      if (el.placeholder !== undefined) {
-        el.placeholder = dict[key];
-      }
-    });
-
     // Set <html lang="...">
     document.documentElement.setAttribute("lang", lang);
 
-    // Update header toggle text
+    // Update header toggle text -> neutral globe icon instead of EN | ES
     const toggle = $("#lang-toggle");
     if (toggle) {
-      toggle.textContent = lang === "es" ? "ES | EN" : "EN | ES";
-    }
-
-    // Expose for other scripts (translate.js, mailbills.js)
-    window.VD_LANG = lang;
-
-    // If Mail & Bills is loaded, let it update its labels too
-    try {
-      if (typeof window.updateFieldLabels === "function") {
-        window.updateFieldLabels();
-      }
-    } catch (_) {
-      // ignore if not present or fails
+      toggle.textContent = "🌐";
     }
   }
 
   async function setLang(lang) {
-    const code = lang === "es" ? "es" : "en";
+    const code = SUPPORTED_LANGS.includes(lang) ? lang : "en";
     try {
       sessionStorage.setItem(LS_KEY, code);
     } catch (_) {
@@ -159,13 +154,20 @@
     const toggle = $("#lang-toggle");
     if (toggle) {
       toggle.addEventListener("click", async () => {
+        // Read current from storage or window
         let cur = initial;
         try {
-          cur = sessionStorage.getItem(LS_KEY) || initial;
+          cur = sessionStorage.getItem(LS_KEY) || window.VD_LANG || initial;
         } catch (_) {
           // ignore
         }
-        const next = cur === "es" ? "en" : "es";
+
+        const idx = SUPPORTED_LANGS.indexOf(cur);
+        const next =
+          idx === -1
+            ? "en"
+            : SUPPORTED_LANGS[(idx + 1) % SUPPORTED_LANGS.length];
+
         await setLang(next);
       });
     }
