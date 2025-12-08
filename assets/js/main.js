@@ -1,10 +1,11 @@
 (function () {
   const LS_KEY = "voyadecir_lang";
-  const $ = (s) => document.querySelector(s);
-  let currentDict = {};
-
-  // All languages you now support
   const SUPPORTED_LANGS = ["en", "es", "pt", "fr", "zh", "hi", "ar", "bn", "ru", "ur"];
+
+  const $ = (s, root = document) => root.querySelector(s);
+  const $$ = (s, root = document) => Array.from(root.querySelectorAll(s));
+
+  let currentDict = {};
 
   //
   // Global translator helper: window.voyT(key, fallback)
@@ -32,7 +33,6 @@
         return null;
       }
       const data = await res.json();
-      // sanity check: must be an object with at least 1 key
       if (!data || typeof data !== "object" || Array.isArray(data)) {
         console.error("[i18n] Bad JSON shape from", url);
         return null;
@@ -82,23 +82,21 @@
 
     const raw = (navigator.language || navigator.userLanguage || "en").toLowerCase();
 
-    // Map browser language to our codes
     if (raw.startsWith("es")) return "es";
     if (raw.startsWith("pt")) return "pt";
     if (raw.startsWith("fr")) return "fr";
-    if (raw.startsWith("zh")) return "zh";   // zh-CN, zh-TW, etc.
+    if (raw.startsWith("zh")) return "zh";
     if (raw.startsWith("hi")) return "hi";
     if (raw.startsWith("ar")) return "ar";
     if (raw.startsWith("bn")) return "bn";
     if (raw.startsWith("ru")) return "ru";
     if (raw.startsWith("ur")) return "ur";
 
-    // default
     return "en";
   }
 
   //
-  // Apply dictionary to all [data-i18n] elements
+  // Apply dictionary to all [data-i18n] elements + placeholders
   //
   async function apply(lang) {
     const dict = await loadDict(lang);
@@ -107,14 +105,11 @@
     window.voyT = t;
     window.VD_LANG = lang;
 
+    // Text content
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       const key = el.getAttribute("data-i18n");
       if (!key) return;
-
-      // Only touch elements if the dict actually has that key
-      if (!Object.prototype.hasOwnProperty.call(dict, key)) {
-        return;
-      }
+      if (!Object.prototype.hasOwnProperty.call(dict, key)) return;
 
       // Do not wipe labels that contain form controls; those are handled manually
       if (el.querySelector("select, input, textarea")) {
@@ -124,14 +119,29 @@
       el.textContent = dict[key];
     });
 
+    // Placeholders (e.g., translate textareas)
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+      const key = el.getAttribute("data-i18n-placeholder");
+      if (!key) return;
+      if (!Object.prototype.hasOwnProperty.call(dict, key)) return;
+
+      el.setAttribute("placeholder", dict[key]);
+    });
+
     // Set <html lang="...">
     document.documentElement.setAttribute("lang", lang);
 
-    // Update header toggle text -> neutral globe icon instead of EN | ES
-    const toggle = $("#lang-toggle");
-    if (toggle) {
-      toggle.textContent = "🌐";
+    // Old simple toggle button (if still present on some pages)
+    const legacyToggle = $("#lang-toggle");
+    if (legacyToggle) {
+      legacyToggle.textContent = "🌐";
     }
+
+    // Highlight active language in the circle menu
+    $$(".js-lang-option").forEach((btn) => {
+      const code = btn.getAttribute("data-lang");
+      btn.classList.toggle("is-active", code === lang);
+    });
   }
 
   async function setLang(lang) {
@@ -151,10 +161,46 @@
     const initial = detect();
     await setLang(initial);
 
-    const toggle = $("#lang-toggle");
-    if (toggle) {
-      toggle.addEventListener("click", async () => {
-        // Read current from storage or window
+    // === Circle language menu wiring (new header) ===
+    const toggler = $("#lang-menu-toggle");
+    const centerButton = $(".lang-menu__button");
+    const options = $$(".js-lang-option");
+
+    // Center globe button toggles the hidden checkbox
+    if (centerButton && toggler) {
+      centerButton.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggler.checked = !toggler.checked;
+      });
+
+      // Click outside menu closes it
+      document.addEventListener("click", (e) => {
+        const menu = $(".lang-menu");
+        if (!menu) return;
+        if (!menu.contains(e.target) && toggler.checked) {
+          toggler.checked = false;
+        }
+      });
+    }
+
+    // Each language option button sets the language and closes the menu
+    if (options.length) {
+      options.forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          const code = btn.getAttribute("data-lang");
+          if (code) {
+            await setLang(code);
+          }
+          if (toggler) toggler.checked = false;
+        });
+      });
+    }
+
+    // === Fallback: legacy #lang-toggle cycle button on pages not yet updated ===
+    const simpleToggle = $("#lang-toggle");
+    if (simpleToggle && !centerButton) {
+      simpleToggle.addEventListener("click", async () => {
         let cur = initial;
         try {
           cur = sessionStorage.getItem(LS_KEY) || window.VD_LANG || initial;
