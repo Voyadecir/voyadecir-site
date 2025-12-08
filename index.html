@@ -55,14 +55,64 @@
       <a href="about.html" data-i18n="nav.about">About</a>
       <a href="contact.html" data-i18n="nav.contact">Contact</a>
 
-      <!-- Language toggle: liquid glass button -->
-      <button
-        id="lang-toggle"
-        class="lang glass glass-button"
-        aria-label="Toggle language"
-        type="button">
-        <span>EN | ES</span>
-      </button>
+      <!-- Circle language menu -->
+      <div class="lang-menu" aria-label="Choose language">
+        <!-- invisible checkbox that controls open/close -->
+        <input
+          type="checkbox"
+          id="lang-menu-toggle"
+          class="lang-menu__toggler"
+          aria-hidden="true"
+        >
+
+        <!-- center “globe” button -->
+        <button
+          type="button"
+          class="lang-menu__button"
+          aria-label="Change language"
+        >
+          <!-- drop your PNG icon here -->
+          <img
+            src="assets/img/lang-icon.png"
+            alt="Language"
+            class="lang-menu__icon"
+          >
+        </button>
+
+        <!-- fanned-out language options -->
+        <ul class="lang-menu__list">
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="en">EN</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="es">ES</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="fr">FR</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="de">DE</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="zh">ZH</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="hi">HI</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="ar">AR</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="pt">PT</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="ru">RU</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="bn">BN</button>
+          </li>
+        </ul>
+      </div>
     </nav>
   </div>
 </header>
