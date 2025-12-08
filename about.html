@@ -30,33 +30,86 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preload" as="image" href="assets/img/logo.png">
 
-  <!-- use latest liquid-glass stylesheet (bump version for cache) -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=10">
-  <script defer src="assets/js/main.js"></script>
+  <!-- use latest liquid-glass stylesheet + i18n JS -->
+  <link rel="stylesheet" href="assets/css/styles.css?v=11">
+  <script defer src="assets/js/main.js?v=4"></script>
 </head>
 <body>
   
 <header>
   <div class="container nav">
     <div class="brand">
-      <img src="assets/img/logo.png" alt="Voyadecir Logo" class="logo"
-           onerror="this.onerror=null;this.src='assets/img/logo.svg';">
+      <img
+        src="assets/img/logo.png"
+        alt="Voyadecir Logo"
+        class="logo"
+        onerror="this.onerror=null;this.src='assets/img/logo.svg';">
       <div>
         <div data-i18n="brand.title">Voyadecir</div>
         <small class="tagline" data-i18n="brand.tagline">Translate. Understand. Connect.</small>
       </div>
     </div>
+
     <nav>
       <a href="index.html" data-i18n="nav.home">Home</a>
       <a href="translate.html" data-i18n="nav.translate">Translate</a>
-      <a href="mail-bills.html" data-i18n="nav.mailbills">Mail & Bills</a>
+      <a href="mail-bills.html" data-i18n="nav.mailbills">Mail &amp; Bills</a>
       <a href="about.html" data-i18n="nav.about">About</a>
       <a href="contact.html" data-i18n="nav.contact">Contact</a>
 
-      <!-- Language toggle: unified liquid-glass button -->
-      <button id="lang-toggle" class="glass-button lang" aria-label="Toggle language" type="button">
-        <span>EN | ES</span>
-      </button>
+      <!-- Circle language menu -->
+      <div class="lang-menu">
+        <!-- Hidden checkbox that controls open/close -->
+        <input type="checkbox" id="lang-menu-toggle" class="lang-menu__toggler">
+
+        <!-- Center button with your PNG icon -->
+        <div class="lang-menu__center">
+          <button
+            type="button"
+            class="glass-button lang-menu__button"
+            aria-label="Change language">
+            <!-- Place your icon file at: assets/img/lang-icon.png -->
+            <img
+              src="assets/img/lang-icon.png"
+              alt="Language"
+              class="lang-menu__icon">
+          </button>
+        </div>
+
+        <!-- Language options around the circle -->
+        <ul class="lang-menu__list">
+          <li class="lang-menu__item">
+            <button type="button" class="glass-button js-lang-option" data-lang="en">EN</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="glass-button js-lang-option" data-lang="es">ES</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="glass-button js-lang-option" data-lang="pt">PT</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="glass-button js-lang-option" data-lang="fr">FR</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="glass-button js-lang-option" data-lang="zh">中文</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="glass-button js-lang-option" data-lang="hi">HI</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="glass-button js-lang-option" data-lang="ar">AR</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="glass-button js-lang-option" data-lang="bn">BN</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="glass-button js-lang-option" data-lang="ru">RU</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="glass-button js-lang-option" data-lang="ur">UR</button>
+          </li>
+        </ul>
+      </div>
     </nav>
   </div>
 </header>
