@@ -1,5 +1,7 @@
 (function () {
   const LS_KEY = "voyadecir_lang";
+
+  // All languages you now support
   const SUPPORTED_LANGS = ["en", "es", "pt", "fr", "zh", "hi", "ar", "bn", "ru", "ur"];
 
   const $ = (s, root = document) => root.querySelector(s);
@@ -85,7 +87,7 @@
     if (raw.startsWith("es")) return "es";
     if (raw.startsWith("pt")) return "pt";
     if (raw.startsWith("fr")) return "fr";
-    if (raw.startsWith("zh")) return "zh";
+    if (raw.startsWith("zh")) return "zh";   // zh-CN, zh-TW, etc.
     if (raw.startsWith("hi")) return "hi";
     if (raw.startsWith("ar")) return "ar";
     if (raw.startsWith("bn")) return "bn";
@@ -119,7 +121,7 @@
       el.textContent = dict[key];
     });
 
-    // Placeholders (e.g., translate textareas)
+    // Placeholders (e.g., translate textareas, Mail & Bills OCR text)
     document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
       const key = el.getAttribute("data-i18n-placeholder");
       if (!key) return;
@@ -131,14 +133,8 @@
     // Set <html lang="...">
     document.documentElement.setAttribute("lang", lang);
 
-    // Old simple toggle button (if still present on some pages)
-    const legacyToggle = $("#lang-toggle");
-    if (legacyToggle) {
-      legacyToggle.textContent = "🌐";
-    }
-
     // Highlight active language in the circle menu
-    $$(".js-lang-option").forEach((btn) => {
+    $$(".lang-menu__link").forEach((btn) => {
       const code = btn.getAttribute("data-lang");
       btn.classList.toggle("is-active", code === lang);
     });
@@ -162,9 +158,9 @@
     await setLang(initial);
 
     // === Circle language menu wiring (new header) ===
-    const toggler = $("#lang-menu-toggle");
-    const centerButton = $(".lang-menu__button");
-    const options = $$(".js-lang-option");
+    const toggler = $(".lang-menu__toggler");       // the hidden checkbox
+    const centerButton = $(".lang-menu__button");   // the glass icon button
+    const options = $$(".lang-menu__link");         // each language bubble
 
     // Center globe button toggles the hidden checkbox
     if (centerButton && toggler) {
@@ -198,7 +194,8 @@
     }
 
     // === Fallback: legacy #lang-toggle cycle button on pages not yet updated ===
-    const simpleToggle = $("#lang-toggle");
+    // (If there is NO circle menu, but an old button with id="lang-toggle")
+    const simpleToggle = (!centerButton) ? $("#lang-toggle") : null;
     if (simpleToggle && !centerButton) {
       simpleToggle.addEventListener("click", async () => {
         let cur = initial;
