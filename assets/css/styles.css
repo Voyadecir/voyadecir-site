@@ -12,6 +12,9 @@
 
   --radius-card:24px;
   --radius-button:18px;  /* rounded rectangle, not full pill */
+
+  /* radius for circle language menu */
+  --lang-menu-radius:90px;
 }
 
 /* Reset & base */
@@ -120,6 +123,11 @@ header {
   header .nav { padding: 18px 0 !important; }
 }
 
+nav {
+  display:flex;
+  align-items:center;
+}
+
 nav a {
   text-decoration:none;
   color:#e5e7eb;
@@ -130,6 +138,203 @@ nav a {
 
 nav a:hover {
   opacity:1;
+}
+
+/* =========================================
+   CIRCLE LANGUAGE MENU (LANG PICKER)
+   ========================================= */
+
+.lang-menu {
+  position:relative;
+  width:48px;
+  height:48px;
+  margin-left:12px;
+}
+
+/* Invisible checkbox that controls open/close */
+.lang-menu__toggler {
+  position:absolute;
+  inset:0;
+  margin:0;
+  padding:0;
+  opacity:0;
+  cursor:pointer;
+  z-index:3;
+}
+
+/* Center “globe” button using your PNG icon */
+.lang-menu__button {
+  position:relative;
+  width:48px;
+  height:48px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  border:none;
+  padding:0;
+  background:rgba(255, 255, 255, 0.08);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255,255,255,0.15);
+  z-index:2;
+}
+
+.lang-menu__button:hover {
+  background:rgba(255, 255, 255, 0.14);
+}
+
+.lang-menu__icon {
+  width:28px;
+  height:28px;
+  object-fit:contain;
+}
+
+/* Container for round items */
+.lang-menu__list {
+  list-style:none;
+  margin:0;
+  padding:0;
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:0;
+  height:0;
+  transform:translate(-50%, -50%);
+  z-index:1;
+}
+
+/* Each language “dot” */
+.lang-menu__item {
+  position:absolute;
+  top:0;
+  left:0;
+  transform:translate(-50%, -50%);
+  opacity:0;
+  pointer-events:none;
+  transition:
+    transform 0.35s ease,
+    opacity 0.25s ease;
+}
+
+/* The round language button itself */
+.lang-menu__link {
+  min-width:40px;
+  min-height:40px;
+  padding:0;
+  border-radius:999px;
+  border:none;
+  cursor:pointer;
+  background:rgba(255, 255, 255, 0.12);
+  backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.16),
+    0 12px 30px rgba(0,0,0,0.45);
+  color:#f9fafb;
+  font-size:12px;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-transform:uppercase;
+}
+
+.lang-menu__link:hover {
+  background:rgba(255, 255, 255, 0.2);
+}
+
+/* Highlight the active language */
+.lang-menu__link.is-active {
+  background:rgba(255, 255, 255, 0.32);
+  color:#020617;
+}
+
+/* When toggler is checked, fan items out in a circle */
+.lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item {
+  opacity:1;
+  pointer-events:auto;
+}
+
+/* Positions for 10 items around the circle (manual offsets) */
+.lang-menu__item:nth-child(1) {
+  transform:translate(-50%, -50%);
+}
+.lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(1) {
+  transform:translate(-50%, -50%) translate(0, calc(-1 * var(--lang-menu-radius)));
+}
+
+.lang-menu__item:nth-child(2) {
+  transform:translate(-50%, -50%);
+}
+.lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(2) {
+  transform:translate(-50%, -50%) translate(53px, -73px);
+}
+
+.lang-menu__item:nth-child(3) {
+  transform:translate(-50%, -50%);
+}
+.lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(3) {
+  transform:translate(-50%, -50%) translate(86px, -28px);
+}
+
+.lang-menu__item:nth-child(4) {
+  transform:translate(-50%, -50%);
+}
+.lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(4) {
+  transform:translate(-50%, -50%) translate(86px, 28px);
+}
+
+.lang-menu__item:nth-child(5) {
+  transform:translate(-50%, -50%);
+}
+.lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(5) {
+  transform:translate(-50%, -50%) translate(53px, 73px);
+}
+
+.lang-menu__item:nth-child(6) {
+  transform:translate(-50%, -50%);
+}
+.lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(6) {
+  transform:translate(-50%, -50%) translate(0, var(--lang-menu-radius));
+}
+
+.lang-menu__item:nth-child(7) {
+  transform:translate(-50%, -50%);
+}
+.lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(7) {
+  transform:translate(-50%, -50%) translate(-53px, 73px);
+}
+
+.lang-menu__item:nth-child(8) {
+  transform:translate(-50%, -50%);
+}
+.lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(8) {
+  transform:translate(-50%, -50%) translate(-86px, 28px);
+}
+
+.lang-menu__item:nth-child(9) {
+  transform:translate(-50%, -50%);
+}
+.lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(9) {
+  transform:translate(-50%, -50%) translate(-86px, -28px);
+}
+
+.lang-menu__item:nth-child(10) {
+  transform:translate(-50%, -50%);
+}
+.lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(10) {
+  transform:translate(-50%, -50%) translate(-53px, -73px);
+}
+
+/* Small screens: slightly smaller radius so it doesn’t overflow */
+@media (max-width: 600px) {
+  :root {
+    --lang-menu-radius:70px;
+  }
 }
 
 /* =========================================
