@@ -199,14 +199,16 @@ nav a:hover {
   margin:0;
   padding:0;
   position:absolute;
-  top:0;              /* anchor to top of the nav area */
+
+  /* Move the circle center *below* the icon so top languages don't get cut off */
+  top:220%;
   left:50%;
   width:0;
   height:0;
-  /* move the circle center DOWN so top items stay visible */
-  transform:translate(-50%, 110px);
+  transform:translate(-50%, -50%);
   z-index:1;
 }
+
 
 /* Each language “dot” */
 .lang-menu__item {
