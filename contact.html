@@ -31,7 +31,7 @@
   <link rel="preload" as="image" href="assets/img/logo.png">
 
   <!-- bump version so new CSS is used -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=10">
+  <link rel="stylesheet" href="assets/css/styles.css?v=11">
   <script defer src="assets/js/main.js"></script>
 </head>
 <body>
@@ -53,10 +53,64 @@
       <a href="about.html" data-i18n="nav.about">About</a>
       <a href="contact.html" data-i18n="nav.contact">Contact</a>
 
-      <!-- Language toggle: unified liquid-glass button -->
-      <button id="lang-toggle" class="glass-button lang" aria-label="Toggle language" type="button">
-        <span>EN | ES</span>
-      </button>
+      <!-- Circle language menu -->
+      <div class="lang-menu" aria-label="Language picker">
+        <!-- Invisible checkbox that controls open/close -->
+        <input
+          type="checkbox"
+          id="lang-menu-toggler"
+          class="lang-menu__toggler"
+          aria-hidden="true"
+        >
+
+        <!-- Center globe button (use your PNG icon here) -->
+        <button
+          class="lang-menu__button"
+          type="button"
+          aria-label="Choose language"
+        >
+          <!-- drop your icon at assets/img/lang-globe.png -->
+          <img
+            src="assets/img/lang-globe.png"
+            alt="Language"
+            class="lang-menu__icon"
+          >
+        </button>
+
+        <!-- Circular list of languages -->
+        <ul class="lang-menu__list">
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link is-active" data-lang="en">EN</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="es">ES</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="pt">PT</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="fr">FR</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="zh">中文</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="hi">हिंदी</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="ar">العربية</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="bn">বাংলা</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="ru">РУ</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="ur">اردو</button>
+          </li>
+        </ul>
+      </div>
     </nav>
   </div>
 </header>
