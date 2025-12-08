@@ -22,7 +22,6 @@
   <script defer src="assets/js/translate.js?v=11"></script>
 </head>
 <body>
-  <!-- Unified header (same pattern as index/about/contact/mail-bills) -->
   <header>
     <div class="container nav">
       <div class="brand">
@@ -40,7 +39,7 @@
         <a href="about.html" data-i18n="nav.about">About</a>
         <a href="contact.html" data-i18n="nav.contact">Contact</a>
 
-        <!-- Language toggle: liquid glass button (same everywhere) -->
+        <!-- Language toggle: liquid glass button (same as other pages) -->
         <button
           id="lang-toggle"
           class="glass-button lang"
@@ -59,26 +58,45 @@
         Type or paste text below, or use the Mail & Bills Helper for photos and letters.
       </p>
 
-      <!-- Simple, clear actions -->
+      <!-- CTA that points clearly to Mail & Bills Helper -->
+      <div class="mailbills-cta" style="margin: 0 0 16px 0; text-align:center;">
+        <button
+          type="button"
+          class="glass-button translate-btn secondary"
+          onclick="window.location.href='mail-bills.html'">
+          <span data-i18n="translate.mailbillsCta">Need help with mail & bills?</span>
+        </button>
+      </div>
+
       <div class="translate-actions">
-        <!-- Keep these IDs for translate.js -->
+        <!-- We keep these inputs for later, but they are not used yet -->
         <input type="file" id="file-input" accept=".pdf,image/*" style="display:none;">
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;">
 
-        <!-- Primary: text translation -->
-        <button type="button" class="glass-button translate-btn" id="translate-run">
-          <span data-i18n="translate.run">Translate</span>
-        </button>
-
-        <!-- Optional: planned features still visible but secondary -->
-        <button type="button" class="glass-button translate-btn secondary" id="btn-upload">
+        <!-- Mark upload & camera as “coming soon” and disable them -->
+        <button
+          type="button"
+          class="glass-button translate-btn"
+          id="btn-upload"
+          disabled
+          title="Coming soon">
           <span class="icon-doc"></span>
           <span data-i18n="translate.upload">Upload document (soon)</span>
         </button>
 
-        <button type="button" class="glass-button translate-btn secondary" id="btn-camera">
+        <button
+          type="button"
+          class="glass-button translate-btn"
+          id="btn-camera"
+          disabled
+          title="Coming soon">
           <span class="icon-camera"></span>
           <span data-i18n="translate.camera">Take picture (soon)</span>
+        </button>
+
+        <!-- Main action: text translation -->
+        <button type="button" class="glass-button translate-btn" id="translate-run">
+          <span data-i18n="translate.run">Translate</span>
         </button>
 
         <button
@@ -89,15 +107,6 @@
           title="Coming soon">
           <span class="icon-audio"></span>
           <span data-i18n="translate.listen">Read it to me (soon)</span>
-        </button>
-
-        <!-- NEW: ultra-clear route to Mail & Bills Helper -->
-        <button
-          type="button"
-          class="glass-button translate-btn"
-          onclick="window.location.href='mail-bills.html'">
-          <span class="icon-bill"></span>
-          <span data-i18n="translate.mailbillsCta">Need help with mail & bills?</span>
         </button>
       </div>
 
@@ -181,7 +190,7 @@
       </div>
 
       <p class="translate-footnote">
-        Everyday text? Use the boxes above. Bills and letters? Tap “Mail & Bills” for the smart helper.
+        Future features: document upload, camera OCR, and text-to-speech — already available for bills and letters on the Mail & Bills Helper page.
       </p>
     </div>
   </main>
