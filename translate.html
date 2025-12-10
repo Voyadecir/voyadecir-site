@@ -17,9 +17,9 @@
   <link rel="manifest" href="manifest.webmanifest">
 
   <!-- bump version so browser actually reloads CSS -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=10">
+  <link rel="stylesheet" href="assets/css/styles.css?v=11">
 
-  <!-- IMPORTANT: make sure this points to your new main.js -->
+  <!-- IMPORTANT: new main.js version -->
   <script defer src="assets/js/main.js?v=5"></script>
   <script defer src="assets/js/translate.js?v=11"></script>
 </head>
@@ -45,65 +45,61 @@
         <a href="about.html" data-i18n="nav.about">About</a>
         <a href="contact.html" data-i18n="nav.contact">Contact</a>
 
-        <!-- Circle language menu (header) -->
-        <div class="lang-menu">
-          <input
-            type="checkbox"
-            id="lang-menu-toggle"
-            class="lang-menu__toggler"
-            aria-label="Open language menu">
-
-          <!-- Center button with your PNG icon -->
-          <button
-            type="button"
-            class="lang-menu__button"
-            aria-label="Change language">
-            <img
-              src="assets/img/lang-icon.png"
-              alt="Language"
-              class="lang-menu__icon">
-          </button>
-
-          <!-- Language options around the circle -->
-          <ul class="lang-menu__list">
-            <li class="lang-menu__item">
-              <button type="button" class="lang-menu__link js-lang-option" data-lang="en">EN</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="lang-menu__link js-lang-option" data-lang="es">ES</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="lang-menu__link js-lang-option" data-lang="pt">PT</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="lang-menu__link js-lang-option" data-lang="fr">FR</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="lang-menu__link js-lang-option" data-lang="zh">中文</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="lang-menu__link js-lang-option" data-lang="hi">हिन्दी</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="lang-menu__link js-lang-option" data-lang="ar">العربية</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="lang-menu__link js-lang-option" data-lang="bn">বাংলা</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="lang-menu__link js-lang-option" data-lang="ru">РУ</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="lang-menu__link js-lang-option" data-lang="ur">اردو</button>
-            </li>
-          </ul>
-        </div>
+        <!-- NOTE: language menu moved out of the header on this page -->
       </nav>
     </div>
   </header>
 
   <main class="container section">
     <div class="translate-shell">
+
+      <!-- Language picker centered above Translate title -->
+      <div class="lang-menu lang-menu--hero">
+        <input
+          type="checkbox"
+          id="lang-menu-toggle"
+          class="lang-menu__toggler"
+          aria-label="Open language menu">
+        <button class="lang-menu__button glass-button" type="button">
+          <img
+            src="assets/img/lang-icon.png"
+            alt="Language"
+            class="lang-menu__icon">
+        </button>
+        <ul class="lang-menu__list">
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="en">EN</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="es">ES</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="pt">PT</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="fr">FR</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="zh">中文</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="hi">हिन्दी</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="ar">العربية</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="bn">বাংলা</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="ru">РУ</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link" data-lang="ur">اردو</button>
+          </li>
+        </ul>
+      </div>
+
       <h1 class="translate-title" data-i18n="translate.title">Translate a document</h1>
       <p class="translate-sub" data-i18n="translate.subtitle">
         Type or paste text below, or use the Mail &amp; Bills Helper for photos and letters.
