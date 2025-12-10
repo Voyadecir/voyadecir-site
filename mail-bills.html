@@ -21,7 +21,9 @@
   <script defer src="assets/js/main.js?v=4"></script>
   <script defer src="assets/js/mailbills.js?v=mb3"></script>
 </head>
-<body>
+
+<!-- Mail & Bills page class for larger fonts -->
+<body class="mailbills-page">
   <header>
     <div class="container nav">
       <div class="brand">
@@ -42,66 +44,61 @@
         <a href="mail-bills.html" data-i18n="nav.mailbills">Mail &amp; Bills</a>
         <a href="about.html" data-i18n="nav.about">About</a>
         <a href="contact.html" data-i18n="nav.contact">Contact</a>
-
-        <!-- Circle language menu (same as translate.html) -->
-        <div class="lang-menu">
-          <!-- Hidden checkbox that controls open/close -->
-          <input type="checkbox" id="lang-menu-toggle" class="lang-menu__toggler">
-
-          <!-- Center button with your PNG icon -->
-          <div class="lang-menu__center">
-            <button
-              type="button"
-              class="glass-button lang-menu__button"
-              aria-label="Change language">
-              <!-- Put your icon at: assets/img/lang-icon.png -->
-              <img
-                src="assets/img/lang-icon.png"
-                alt="Language"
-                class="lang-menu__icon">
-            </button>
-          </div>
-
-          <!-- Language options around the circle -->
-          <ul class="lang-menu__list">
-            <li class="lang-menu__item">
-              <button type="button" class="glass-button js-lang-option" data-lang="en">EN</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="glass-button js-lang-option" data-lang="es">ES</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="glass-button js-lang-option" data-lang="pt">PT</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="glass-button js-lang-option" data-lang="fr">FR</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="glass-button js-lang-option" data-lang="zh">中文</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="glass-button js-lang-option" data-lang="hi">HI</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="glass-button js-lang-option" data-lang="ar">AR</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="glass-button js-lang-option" data-lang="bn">BN</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="glass-button js-lang-option" data-lang="ru">RU</button>
-            </li>
-            <li class="lang-menu__item">
-              <button type="button" class="glass-button js-lang-option" data-lang="ur">UR</button>
-            </li>
-          </ul>
-        </div>
+        <!-- No language control in the header on this page -->
       </nav>
     </div>
   </header>
 
   <main class="container section">
     <div class="translate-shell">
+
+      <!-- Language picker centered above Mail & Bills title -->
+      <div class="lang-menu lang-menu--hero">
+        <input
+          type="checkbox"
+          id="lang-menu-toggle"
+          class="lang-menu__toggler"
+          aria-label="Open language menu">
+        <button class="lang-menu__button" type="button" aria-label="Change language">
+          <img
+            src="assets/img/lang-icon.png"
+            alt="Language"
+            class="lang-menu__icon">
+        </button>
+        <ul class="lang-menu__list">
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="en">EN</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="es">ES</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="pt">PT</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="fr">FR</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="zh">中文</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="hi">हिन्दी</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="ar">العربية</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="bn">বাংলা</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="ru">РУ</button>
+          </li>
+          <li class="lang-menu__item">
+            <button type="button" class="lang-menu__link js-lang-option" data-lang="ur">اردو</button>
+          </li>
+        </ul>
+      </div>
+
       <h1 class="translate-title" data-i18n="mb.title">Mail &amp; Bills Helper</h1>
       <p class="translate-sub" data-i18n="mb.sub">
         Upload a bill or letter. We’ll read it, extract key info, and summarize it in your language.
@@ -168,6 +165,14 @@
                 <select id="mb-tgt-lang">
                   <option value="es">Spanish</option>
                   <option value="en">English</option>
+                  <option value="pt">Portuguese</option>
+                  <option value="fr">French</option>
+                  <option value="zh">Chinese</option>
+                  <option value="hi">Hindi</option>
+                  <option value="ar">Arabic</option>
+                  <option value="bn">Bengali</option>
+                  <option value="ru">Russian</option>
+                  <option value="ur">Urdu</option>
                 </select>
               </label>
             </div>
