@@ -133,8 +133,9 @@
     // Set <html lang="...">
     document.documentElement.setAttribute("lang", lang);
 
-    // Highlight active language in the circle menu
-    $$(".lang-menu__link").forEach((btn) => {
+    // Highlight active language in any circle menu (supports both old & new classes)
+    const langButtons = $$(".lang-menu__link, .js-lang-option");
+    langButtons.forEach((btn) => {
       const code = btn.getAttribute("data-lang");
       btn.classList.toggle("is-active", code === lang);
     });
@@ -157,10 +158,10 @@
     const initial = detect();
     await setLang(initial);
 
-    // === Circle language menu wiring (new header / hero) ===
-    const toggler = $(".lang-menu__toggler");       // hidden checkbox
-    const centerButton = $(".lang-menu__button");   // glass icon button
-    const options = $$(".lang-menu__link");         // each language bubble
+    // === Circle language menu wiring (nav or hero) ===
+    const toggler = $(".lang-menu__toggler");        // hidden checkbox
+    const centerButton = $(".lang-menu__button");    // glass icon button
+    const options = $$(".lang-menu__link, .js-lang-option"); // each language bubble
 
     // Center globe button toggles the hidden checkbox
     if (centerButton && toggler) {
@@ -193,9 +194,9 @@
       });
     }
 
-    // === Fallback: legacy #lang-toggle cycle button if some page still has it ===
-    const simpleToggle = (!centerButton) ? $("#lang-toggle") : null;
-    if (simpleToggle && !centerButton) {
+    // === Fallback: legacy #lang-toggle cycle button on pages WITHOUT circle menu ===
+    const simpleToggle = (!centerButton && !toggler) ? $("#lang-toggle") : null;
+    if (simpleToggle) {
       simpleToggle.addEventListener("click", async () => {
         let cur = initial;
         try {
