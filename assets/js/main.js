@@ -157,9 +157,9 @@
     const initial = detect();
     await setLang(initial);
 
-    // === Circle language menu wiring (new header) ===
-    const toggler = $(".lang-menu__toggler");       // the hidden checkbox
-    const centerButton = $(".lang-menu__button");   // the glass icon button
+    // === Circle language menu wiring (new header / hero) ===
+    const toggler = $(".lang-menu__toggler");       // hidden checkbox
+    const centerButton = $(".lang-menu__button");   // glass icon button
     const options = $$(".lang-menu__link");         // each language bubble
 
     // Center globe button toggles the hidden checkbox
@@ -193,8 +193,7 @@
       });
     }
 
-    // === Fallback: legacy #lang-toggle cycle button on pages not yet updated ===
-    // (If there is NO circle menu, but an old button with id="lang-toggle")
+    // === Fallback: legacy #lang-toggle cycle button if some page still has it ===
     const simpleToggle = (!centerButton) ? $("#lang-toggle") : null;
     if (simpleToggle && !centerButton) {
       simpleToggle.addEventListener("click", async () => {
