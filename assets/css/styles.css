@@ -209,7 +209,6 @@ nav a:hover {
   z-index:1;
 }
 
-
 /* Each language “dot” */
 .lang-menu__item {
   position:absolute;
@@ -221,6 +220,7 @@ nav a:hover {
   transition:
     transform 0.35s ease,
     opacity 0.25s ease;
+  z-index:3; /* make language bubbles sit ABOVE the center icon */
 }
 
 /* The round language button itself */
@@ -681,6 +681,35 @@ button {
 
 .result-row:last-child {
   border-bottom:none;
+}
+
+/* =========================================
+   MAIL & BILLS PAGE TWEAKS
+   ========================================= */
+
+/* Hero language menu centered above "Mail & Bills Helper" */
+.lang-menu--hero {
+  margin: 0 auto 18px;   /* horizontally center, tiny bottom gap */
+}
+
+/* Slightly larger font on Mail & Bills page only */
+body.mailbills-page .translate-title {
+  font-size: 28px;
+}
+
+body.mailbills-page .translate-sub {
+  font-size: 18px;
+}
+
+body.mailbills-page .translator-box textarea {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+body.mailbills-page .results-card,
+body.mailbills-page .result-label,
+body.mailbills-page .result-value {
+  font-size: 15px;
 }
 
 /* =========================================
