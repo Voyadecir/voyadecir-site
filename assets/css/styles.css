@@ -151,15 +151,16 @@ nav a:hover {
   margin-left:12px;
 }
 
-/* Invisible checkbox that controls open/close */
+/* Invisible checkbox that controls open/close
+   (toggled programmatically by JS now) */
 .lang-menu__toggler {
   position:absolute;
   inset:0;
   margin:0;
   padding:0;
   opacity:0;
-  cursor:pointer;
-  z-index:3;
+  pointer-events:none;   /* do NOT intercept clicks */
+  z-index:1;
 }
 
 /* Center “globe” button using your PNG icon */
@@ -193,15 +194,13 @@ nav a:hover {
   object-fit:contain;
 }
 
-/* Container for round items */
+/* Container for round items – center of circle = icon center */
 .lang-menu__list {
   list-style:none;
   margin:0;
   padding:0;
   position:absolute;
-
-  /* Move the circle center *below* the icon so top languages don't get cut off */
-  top:220%;
+  top:50%;
   left:50%;
   width:0;
   height:0;
