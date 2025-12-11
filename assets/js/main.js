@@ -133,7 +133,7 @@
     // Set <html lang="...">
     document.documentElement.setAttribute("lang", lang);
 
-    // Highlight active language in any circle menu (supports both old & new classes)
+    // Highlight active language in any circle menu
     const langButtons = $$(".lang-menu__link, .js-lang-option");
     langButtons.forEach((btn) => {
       const code = btn.getAttribute("data-lang");
@@ -158,61 +158,70 @@
     const initial = detect();
     await setLang(initial);
 
-    // === Circle language menu wiring (nav or hero) ===
-    const toggler = $(".lang-menu__toggler");        // hidden checkbox
-    const centerButton = $(".lang-menu__button");    // glass icon button
-    const options = $$(".lang-menu__link, .js-lang-option"); // each language bubble
+    // === Circle language menus (nav + hero) ===
+    const menus = $$(".lang-menu");
 
-    // Center globe button toggles the hidden checkbox
-    if (centerButton && toggler) {
-      centerButton.addEventListener("click", (e) => {
-        e.stopPropagation();
-        toggler.checked = !toggler.checked;
-      });
+    if (menus.length) {
+      // Wire each menu independently (supports nav + hero on same page if needed)
+      menus.forEach((menu) => {
+        const toggler = menu.querySelector(".lang-menu__toggler");
+        const centerButton = menu.querySelector(".lang-menu__button");
+        const options = menu.querySelectorAll(".lang-menu__link, .js-lang-option");
 
-      // Click outside menu closes it
-      document.addEventListener("click", (e) => {
-        const menu = $(".lang-menu");
-        if (!menu) return;
-        if (!menu.contains(e.target) && toggler.checked) {
-          toggler.checked = false;
+        // Center globe button toggles its checkbox
+        if (centerButton && toggler) {
+          centerButton.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggler.checked = !toggler.checked;
+          });
+        }
+
+        // Each language option sets lang and closes its own menu
+        if (options.length) {
+          options.forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+              e.stopPropagation();
+              const code = btn.getAttribute("data-lang");
+              if (code) {
+                await setLang(code);
+              }
+              if (toggler) toggler.checked = false;
+            });
+          });
         }
       });
-    }
 
-    // Each language option button sets the language and closes the menu
-    if (options.length) {
-      options.forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          const code = btn.getAttribute("data-lang");
-          if (code) {
-            await setLang(code);
+      // Click outside any .lang-menu closes all of them
+      document.addEventListener("click", (e) => {
+        menus.forEach((menu) => {
+          const toggler = menu.querySelector(".lang-menu__toggler");
+          if (!toggler) return;
+          if (!menu.contains(e.target)) {
+            toggler.checked = false;
           }
-          if (toggler) toggler.checked = false;
         });
       });
-    }
+    } else {
+      // === Fallback: legacy #lang-toggle cycle button on pages WITHOUT circle menu ===
+      const simpleToggle = $("#lang-toggle");
+      if (simpleToggle) {
+        simpleToggle.addEventListener("click", async () => {
+          let cur = initial;
+          try {
+            cur = sessionStorage.getItem(LS_KEY) || window.VD_LANG || initial;
+          } catch (_) {
+            // ignore
+          }
 
-    // === Fallback: legacy #lang-toggle cycle button on pages WITHOUT circle menu ===
-    const simpleToggle = (!centerButton && !toggler) ? $("#lang-toggle") : null;
-    if (simpleToggle) {
-      simpleToggle.addEventListener("click", async () => {
-        let cur = initial;
-        try {
-          cur = sessionStorage.getItem(LS_KEY) || window.VD_LANG || initial;
-        } catch (_) {
-          // ignore
-        }
+          const idx = SUPPORTED_LANGS.indexOf(cur);
+          const next =
+            idx === -1
+              ? "en"
+              : SUPPORTED_LANGS[(idx + 1) % SUPPORTED_LANGS.length];
 
-        const idx = SUPPORTED_LANGS.indexOf(cur);
-        const next =
-          idx === -1
-            ? "en"
-            : SUPPORTED_LANGS[(idx + 1) % SUPPORTED_LANGS.length];
-
-        await setLang(next);
-      });
+          await setLang(next);
+        });
+      }
     }
   }
 
