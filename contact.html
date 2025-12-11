@@ -32,7 +32,7 @@
 
   <!-- use latest CSS + JS -->
   <link rel="stylesheet" href="assets/css/styles.css?v=11">
-  <script defer src="assets/js/main.js?v=4"></script>
+  <script defer src="assets/js/main.js?v=5"></script>
 </head>
 <body>
 <header>
@@ -51,64 +51,69 @@
       <a href="mail-bills.html" data-i18n="nav.mailbills">Mail &amp; Bills</a>
       <a href="about.html" data-i18n="nav.about">About</a>
       <a href="contact.html" data-i18n="nav.contact">Contact</a>
-
-      <!-- Circle language menu (same structure as index/translate) -->
-      <div class="lang-menu">
-        <input
-          type="checkbox"
-          id="lang-menu-toggle"
-          class="lang-menu__toggler"
-          aria-label="Open language menu">
-        <button class="lang-menu__button" type="button">
-          <img
-            src="assets/img/lang-icon.png"
-            alt="Language"
-            class="lang-menu__icon">
-        </button>
-        <ul class="lang-menu__list">
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="en">EN</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="es">ES</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="pt">PT</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="fr">FR</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="zh">中文</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="hi">हिन्दी</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="ar">العربية</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="bn">বাংলা</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="ru">РУ</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="ur">اردو</button>
-          </li>
-        </ul>
-      </div>
+      <!-- No language control in the header on this page -->
     </nav>
   </div>
 </header>
 
 <main class="container section">
+  <!-- Hero-style language picker centered under the header -->
+  <div class="lang-menu lang-menu--hero">
+    <input
+      type="checkbox"
+      id="lang-menu-toggle"
+      class="lang-menu__toggler"
+      aria-label="Open language menu">
+    <button class="lang-menu__button glass-button" type="button" aria-label="Change language">
+      <img
+        src="assets/img/lang-icon.png"
+        alt="Language"
+        class="lang-menu__icon">
+    </button>
+    <ul class="lang-menu__list">
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="en">EN</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="es">ES</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="pt">PT</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="fr">FR</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="zh">中文</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="hi">हिन्दी</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="ar">العربية</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="bn">বাংলা</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="ru">РУ</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="ur">اردو</button>
+      </li>
+    </ul>
+  </div>
+
   <!-- Contact card: liquid-glass panel -->
   <div class="card glass contact-shell">
     <h2 data-i18n="contact.title">Contact us</h2>
     <p data-i18n="contact.intro">Send us a note. We’ll get back to you soon.</p>
 
-    <form action="https://formspree.io/f/your-form-id" method="POST" class="contact-form">
+    <!-- TODO: Replace YOUR_FORM_ID with your real Formspree form ID -->
+    <form
+      action="https://formspree.io/f/YOUR_FORM_ID"
+      method="POST"
+      class="contact-form">
       <label>
         <span data-i18n="contact.name">Name</span><br>
         <input type="text" name="name" required>
@@ -132,10 +137,6 @@
         <span data-i18n="contact.send">Send</span>
       </button>
     </form>
-
-    <p style="color:#9ca3af; font-size:12px; margin-top:12px;">
-      Replace <code>your-form-id</code> with your Formspree endpoint.
-    </p>
   </div>
 </main>
 
