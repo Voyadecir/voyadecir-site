@@ -59,6 +59,7 @@
           id="lang-menu-toggle"
           class="lang-menu__toggler"
           aria-label="Open language menu">
+        <!-- Added glass-button so icon matches other pages -->
         <button class="lang-menu__button glass-button" type="button" aria-label="Change language">
           <img
             src="assets/img/lang-icon.png"
@@ -105,7 +106,9 @@
       </p>
 
       <div class="translate-actions">
-        <input type="file" id="file-input" accept=".pdf,image/*" style="display:none;">
+        <!-- Updated: allow multi-file selection for multi-page docs -->
+        <input type="file" id="file-input" accept=".pdf,image/*" multiple style="display:none;">
+        <!-- Camera typically returns a single image; keep single-file -->
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;">
 
         <!-- All actions: glass buttons -->
@@ -185,7 +188,7 @@
                 placeholder="Text from your document will appear here..."
                 data-i18n-placeholder="mb.ocrPlaceholder"
               ></textarea>
-              <div>
+              <div style="margin-top:8px;">
                 <button type="button" class="glass-button inline-btn" id="mb-copy-ocr">
                   <span data-i18n="mb.copyOcr">Copy text</span>
                 </button>
@@ -198,16 +201,19 @@
                 placeholder="Summary will appear here..."
                 readonly
               ></textarea>
-             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
-  <button type="button" class="glass-button inline-btn" id="mb-copy-summary">
-    <span data-i18n="mb.copySummary">Copy summary</span>
-  </button>
 
-  <button type="button" class="glass-button inline-btn" id="mb-download-pdf">
-    <span data-i18n="mb.downloadPdf">Download translated PDF</span>
-  </button>
-</div>
+              <!-- Copy Summary + Download PDF side-by-side -->
+              <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
+                <button type="button" class="glass-button inline-btn" id="mb-copy-summary">
+                  <span data-i18n="mb.copySummary">Copy summary</span>
+                </button>
 
+                <button type="button" class="glass-button inline-btn" id="mb-download-pdf">
+                  <span data-i18n="mb.downloadPdf">Download translated PDF</span>
+                </button>
+              </div>
+            </div>
+          </div>
 
           <div class="translator-foot">
             <span class="translator-hint" data-i18n="mb.hint">
