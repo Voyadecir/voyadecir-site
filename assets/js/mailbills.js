@@ -9,6 +9,7 @@ const OCR_API_BASE =
 // Render backend: deep agent + translator + (future) PDF export
 const INTERPRET_API_BASE = "https://ai-translator-i5jb.onrender.com";
 const TRANSLATE_API = `${INTERPRET_API_BASE}/api/translate`;
+
 // New: PDF export endpoint (to be implemented on backend)
 const PDF_EXPORT_API = `${INTERPRET_API_BASE}/api/mailbills/translate-pdf`;
 
@@ -110,13 +111,7 @@ function updateFieldLabels() {
 
 function hasAnyField(fields) {
   if (!fields || typeof fields !== "object") return false;
-  const keys = [
-    "amount_due",
-    "due_date",
-    "account_number",
-    "sender",
-    "service_address",
-  ];
+  const keys = ["amount_due", "due_date", "account_number", "sender", "service_address"];
 
   for (const key of keys) {
     const v = fields[key];
@@ -147,9 +142,7 @@ function mergeFields(base, incoming) {
     const next = incoming[key];
 
     const normalize = (val) => {
-      if (val && typeof val === "object" && "value" in val) {
-        return val.value;
-      }
+      if (val && typeof val === "object" && "value" in val) return val.value;
       return val;
     };
 
@@ -204,9 +197,7 @@ function fallbackExtractFieldsFromText(text) {
 
   // Account number: generic pattern
   let account = "";
-  const acctPatterns = [
-    /(account(?:\s+number)?\s*[:#]?\s*)([A-Za-z0-9\-]+)/i,
-  ];
+  const acctPatterns = [/(account(?:\s+number)?\s*[:#]?\s*)([A-Za-z0-9\-]+)/i];
   for (const re of acctPatterns) {
     const m = full.match(re);
     if (m && m[2]) {
@@ -248,9 +239,7 @@ function showResults(fieldsRaw) {
   const adr = unwrap(f, "service_address");
 
   const amountText =
-    amt != null && !isNaN(amt)
-      ? `$${Number(amt).toFixed(2)}`
-      : valOrDash(amt);
+    amt != null && !isNaN(amt) ? `$${Number(amt).toFixed(2)}` : valOrDash(amt);
 
   const ra = $("#r-amount");
   const rd = $("#r-duedate");
@@ -264,9 +253,7 @@ function showResults(fieldsRaw) {
   if (rs) rs.textContent = valOrDash(snd);
   if (raddr) raddr.textContent = valOrDash(adr);
 
-  const any = [amt, due, acc, snd, adr].some(
-    (x) => x && String(x).trim() !== ""
-  );
+  const any = [amt, due, acc, snd, adr].some((x) => x && String(x).trim() !== "");
   card.style.display = any ? "block" : "none";
 }
 
@@ -280,9 +267,7 @@ function renderList(sectionSelector, listSelector, items) {
   ul.innerHTML = "";
 
   const cleaned =
-    (items || []).filter(
-      (x) => typeof x === "string" && x.trim() !== ""
-    ) || [];
+    (items || []).filter((x) => typeof x === "string" && x.trim() !== "") || [];
 
   if (!cleaned.length) {
     section.style.display = "none";
@@ -298,9 +283,7 @@ function renderList(sectionSelector, listSelector, items) {
   section.style.display = "block";
 
   const card = $("#results-card");
-  if (card) {
-    card.style.display = "block";
-  }
+  if (card) card.style.display = "block";
 }
 
 function renderAgentSections(agentData) {
@@ -309,25 +292,19 @@ function renderAgentSections(agentData) {
   renderList(
     "#identity-section",
     "#identity-list",
-    agentData.identity_requirements ||
-      agentData.identity ||
-      agentData.required_documents
+    agentData.identity_requirements || agentData.identity || agentData.required_documents
   );
 
   renderList(
     "#payment-section",
     "#payment-list",
-    agentData.payment_options ||
-      agentData.payment_methods ||
-      agentData.how_to_pay
+    agentData.payment_options || agentData.payment_methods || agentData.how_to_pay
   );
 
   renderList(
     "#other-amounts-section",
     "#other-amounts-list",
-    agentData.other_important_amounts ||
-      agentData.other_amounts ||
-      agentData.fees
+    agentData.other_important_amounts || agentData.other_amounts || agentData.fees
   );
 }
 
@@ -338,9 +315,15 @@ async function sendBytes(file) {
   const url = `${OCR_API_BASE}/api/mailbills/parse`;
   const contentType = file.type || "application/octet-stream";
 
+  // Best-effort: include filename for debugging (Azure Function supports x-filename in your API wrapper)
+  const headers = { "Content-Type": contentType };
+  try {
+    if (file?.name) headers["x-filename"] = file.name;
+  } catch (_) {}
+
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": contentType },
+    headers,
     body: buf,
   });
 
@@ -426,10 +409,7 @@ async function runAgentPipeline(ocrText, initialFields) {
 
     const sumEl = $("#summary-text");
     const summaryText =
-      agentData.summary_translated ||
-      agentData.summary_en ||
-      agentData.summary ||
-      "";
+      agentData.summary_translated || agentData.summary_en || agentData.summary || "";
 
     if (sumEl) sumEl.value = summaryText;
 
@@ -439,17 +419,12 @@ async function runAgentPipeline(ocrText, initialFields) {
       fields = fallbackExtractFieldsFromText(cleanText);
     }
 
-    if (fields) {
-      showResults(fields);
-    }
+    if (fields) showResults(fields);
 
     renderAgentSections(agentData);
 
     setStatus(
-      translateKey(
-        "mb.status.doneWithAgent",
-        "Done. Summary and fields extracted."
-      )
+      translateKey("mb.status.doneWithAgent", "Done. Summary and fields extracted.")
     );
   } catch (err) {
     console.error("[mailbills] interpret error, falling back to OCR-only:", err);
@@ -457,25 +432,28 @@ async function runAgentPipeline(ocrText, initialFields) {
     // Even if agent call fails, try local extraction from OCR text
     if (cleanText) {
       const fallback = fallbackExtractFieldsFromText(cleanText);
-      if (hasAnyField(fallback)) {
-        showResults(fallback);
-      }
+      if (hasAnyField(fallback)) showResults(fallback);
     }
 
     setStatus(
-      translateKey(
-        "mb.status.done",
-        "Done. Deep analysis unavailable, showing raw text."
-      )
+      translateKey("mb.status.done", "Done. Deep analysis unavailable, showing raw text.")
     );
   }
 }
 
 // ---------- 11) Main handlers: single file vs multi-page ----------
 
+function setPdfButtonEnabled(enabled) {
+  const btn = $("#mb-download-pdf");
+  if (!btn) return;
+  btn.disabled = !enabled;
+  btn.setAttribute("aria-disabled", (!enabled).toString());
+}
+
 async function handleFile(file) {
   if (!file) return;
   lastUploadedFiles = [file];
+  setPdfButtonEnabled(true);
 
   setStatus(translateKey("mb.status.uploading", "Uploading document…"));
 
@@ -494,9 +472,7 @@ async function handleFile(file) {
     await runAgentPipeline(ocrText, ocrData.fields || null);
   } catch (err) {
     console.error("[mailbills] error:", err);
-    setStatus(
-      translateKey("mb.status.serverError", "Server error. Try again.")
-    );
+    setStatus(translateKey("mb.status.serverError", "Server error. Try again."));
     alert(
       "Server error. Please check Azure Function logs, Render logs, keys/endpoints, and CORS."
     );
@@ -509,18 +485,15 @@ async function handleFiles(fileList) {
   if (!files.length) return;
 
   lastUploadedFiles = files;
+  setPdfButtonEnabled(true);
 
   if (files.length === 1) {
-    // Reuse the single-page flow
     await handleFile(files[0]);
     return;
   }
 
   setStatus(
-    translateKey(
-      "mb.status.uploadingMulti",
-      `Uploading and reading ${files.length} pages…`
-    )
+    translateKey("mb.status.uploadingMulti", `Uploading and reading ${files.length} pages…`)
   );
 
   let combinedTextParts = [];
@@ -530,10 +503,7 @@ async function handleFiles(fileList) {
     const file = files[i];
 
     setStatus(
-      translateKey(
-        "mb.status.processingPage",
-        `Reading page ${i + 1} of ${files.length}…`
-      )
+      translateKey("mb.status.processingPage", `Reading page ${i + 1} of ${files.length}…`)
     );
 
     try {
@@ -547,10 +517,7 @@ async function handleFiles(fileList) {
         "";
 
       if (ocrText && ocrText.trim() !== "") {
-        const header =
-          files.length > 1
-            ? `\n\n--- Page ${i + 1} ---\n\n`
-            : "";
+        const header = `\n\n--- Page ${i + 1} ---\n\n`;
         combinedTextParts.push(header + ocrText.trim());
       }
 
@@ -566,19 +533,11 @@ async function handleFiles(fileList) {
   const combinedText = combinedTextParts.join("").trim();
 
   if (!combinedText) {
-    setStatus(
-      translateKey(
-        "mb.status.noText",
-        "No text found in the uploaded pages."
-      )
-    );
+    setStatus(translateKey("mb.status.noText", "No text found in the uploaded pages."));
     return;
   }
 
-  setStatus(
-    translateKey("mb.status.ocrDoneMulti", "All pages read. Analyzing…")
-  );
-
+  setStatus(translateKey("mb.status.ocrDoneMulti", "All pages read. Analyzing…"));
   await runAgentPipeline(combinedText, mergedFields);
 }
 
@@ -618,18 +577,14 @@ async function translateOcrText() {
         body = await res.text();
       }
       console.error("Translator error", res.status, body);
-      setStatus(
-        translateKey("mb.status.translationFailed", "Translation failed.")
-      );
+      setStatus(translateKey("mb.status.translationFailed", "Translation failed."));
       return;
     }
 
     const data = await res.json();
     const out = data.translated_text || data.translation || "";
     if (!out) {
-      setStatus(
-        translateKey("mb.status.emptyTranslation", "Empty translation.")
-      );
+      setStatus(translateKey("mb.status.emptyTranslation", "Empty translation."));
       return;
     }
 
@@ -637,9 +592,7 @@ async function translateOcrText() {
     setStatus(translateKey("mb.status.translated", "Translated."));
   } catch (err) {
     console.error("Translation network error", err);
-    setStatus(
-      translateKey("mb.status.translationError", "Translation error.")
-    );
+    setStatus(translateKey("mb.status.translationError", "Translation error."));
   }
 }
 
@@ -682,9 +635,7 @@ async function downloadTranslatedPdf() {
     if (!res.ok) {
       const body = await res.text();
       console.error("[mailbills] PDF export failed", res.status, body);
-      setStatus(
-        translateKey("mb.status.pdfFailed", "PDF export failed.")
-      );
+      setStatus(translateKey("mb.status.pdfFailed", "PDF export failed."));
       return;
     }
 
@@ -698,43 +649,70 @@ async function downloadTranslatedPdf() {
     a.remove();
     URL.revokeObjectURL(url);
 
-    setStatus(
-      translateKey(
-        "mb.status.pdfReady",
-        "Translated PDF downloaded."
-      )
-    );
+    setStatus(translateKey("mb.status.pdfReady", "Translated PDF downloaded."));
   } catch (err) {
     console.error("[mailbills] PDF export error", err);
-    setStatus(
-      translateKey("mb.status.pdfError", "PDF export error.")
-    );
+    setStatus(translateKey("mb.status.pdfError", "PDF export error."));
   }
 }
 
-// ---------- 14) UI wiring ----------
+// ---------- 14) Ensure the Download PDF button exists beside Copy Summary ----------
+
+function ensureDownloadPdfButtonBesideCopySummary() {
+  // If your HTML already has it, we won't duplicate it.
+  if ($("#mb-download-pdf")) return;
+
+  const copyBtn = $("#mb-copy-summary");
+  if (!copyBtn) return;
+
+  const parent = copyBtn.parentElement;
+  if (!parent) return;
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.id = "mb-download-pdf";
+  btn.className = "glass-button inline-btn";
+  btn.disabled = true; // enabled after upload
+  btn.title = translateKey("mb.pdfTitle", "Download a professionally translated PDF");
+
+  // Button label
+  btn.textContent = translateKey("mb.downloadPdf", "Download translated PDF");
+
+  // Put it BESIDE the Copy Summary button
+  parent.appendChild(btn);
+
+  // Wire click
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    downloadTranslatedPdf();
+  });
+
+  // Small spacing if your CSS doesn't already handle it
+  try {
+    parent.style.display = parent.style.display || "flex";
+    parent.style.gap = parent.style.gap || "10px";
+    parent.style.alignItems = parent.style.alignItems || "center";
+  } catch (_) {}
+}
+
+// ---------- 15) UI wiring ----------
 
 window.addEventListener("DOMContentLoaded", function () {
   const tgt = $("#mb-tgt-lang");
   if (tgt) tgt.value = getLang() === "es" ? "es" : "en";
 
-  // Make labels match current language
   updateFieldLabels();
 
-  $("#btn-upload")?.addEventListener("click", () =>
-    $("#file-input")?.click()
-  );
-  $("#btn-camera")?.addEventListener("click", () =>
-    $("#camera-input")?.click()
-  );
+  // Make sure the PDF button exists beside Copy Summary (under the 2nd black box)
+  ensureDownloadPdfButtonBesideCopySummary();
+  setPdfButtonEnabled(false);
+
+  $("#btn-upload")?.addEventListener("click", () => $("#file-input")?.click());
+  $("#btn-camera")?.addEventListener("click", () => $("#camera-input")?.click());
 
   // Allow multi-file selection (multi-page documents)
-  $("#file-input")?.addEventListener("change", (e) =>
-    handleFiles(e.target.files)
-  );
-  $("#camera-input")?.addEventListener("change", (e) =>
-    handleFiles(e.target.files)
-  );
+  $("#file-input")?.addEventListener("change", (e) => handleFiles(e.target.files));
+  $("#camera-input")?.addEventListener("change", (e) => handleFiles(e.target.files));
 
   // Swap “To” language and remember it
   $("#mb-swap-langs")?.addEventListener("click", () => {
@@ -783,20 +761,18 @@ window.addEventListener("DOMContentLoaded", function () {
     const card = $("#results-card");
     if (card) card.style.display = "none";
 
-    // Clear lists too
-    ["#identity-list", "#payment-list", "#other-amounts-list"].forEach(
-      (sel) => {
-        const ul = $(sel);
-        if (ul) ul.innerHTML = "";
-      }
-    );
+    ["#identity-list", "#payment-list", "#other-amounts-list"].forEach((sel) => {
+      const ul = $(sel);
+      if (ul) ul.innerHTML = "";
+    });
 
     lastUploadedFiles = [];
+    setPdfButtonEnabled(false);
 
     setStatus(translateKey("mb.status.cleared", "Cleared."));
   });
 
-  // Download translated PDF button (if present in HTML)
+  // If the HTML already contains this id, wire it too (safe/no-dup)
   $("#mb-download-pdf")?.addEventListener("click", (e) => {
     e.preventDefault();
     downloadTranslatedPdf();
