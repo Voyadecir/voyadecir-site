@@ -177,6 +177,7 @@ nav a:hover {
   border:none;
   padding:0;
   /* background + blur come from glass section below */
+  z-index:4; /* keep it above list container */
 }
 
 .lang-menu__icon {
@@ -196,7 +197,7 @@ nav a:hover {
   width:0;
   height:0;
   transform:translate(-50%, -50%);
-  z-index:1;
+  z-index:5; /* above icon */
 }
 
 /* Each language “dot” */
@@ -210,7 +211,7 @@ nav a:hover {
   transition:
     transform 0.35s ease,
     opacity 0.25s ease;
-  z-index:3; /* make language bubbles sit ABOVE the center icon */
+  z-index:6; /* make language bubbles sit ABOVE everything */
 }
 
 /* The round language button itself */
@@ -253,81 +254,59 @@ nav a:hover {
 }
 
 /* Positions for 10 items around the circle (manual offsets) */
-.lang-menu__item:nth-child(1) {
-  transform:translate(-50%, -50%);
-}
+.lang-menu__item:nth-child(1) { transform:translate(-50%, -50%); }
 .lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(1) {
   transform:translate(-50%, -50%) translate(0, calc(-1 * var(--lang-menu-radius)));
 }
 
-.lang-menu__item:nth-child(2) {
-  transform:translate(-50%, -50%);
-}
+.lang-menu__item:nth-child(2) { transform:translate(-50%, -50%); }
 .lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(2) {
   transform:translate(-50%, -50%) translate(53px, -73px);
 }
 
-.lang-menu__item:nth-child(3) {
-  transform:translate(-50%, -50%);
-}
+.lang-menu__item:nth-child(3) { transform:translate(-50%, -50%); }
 .lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(3) {
   transform:translate(-50%, -50%) translate(86px, -28px);
 }
 
-.lang-menu__item:nth-child(4) {
-  transform:translate(-50%, -50%);
-}
+.lang-menu__item:nth-child(4) { transform:translate(-50%, -50%); }
 .lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(4) {
   transform:translate(-50%, -50%) translate(86px, 28px);
 }
 
-.lang-menu__item:nth-child(5) {
-  transform:translate(-50%, -50%);
-}
+.lang-menu__item:nth-child(5) { transform:translate(-50%, -50%); }
 .lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(5) {
   transform:translate(-50%, -50%) translate(53px, 73px);
 }
 
-.lang-menu__item:nth-child(6) {
-  transform:translate(-50%, -50%);
-}
+.lang-menu__item:nth-child(6) { transform:translate(-50%, -50%); }
 .lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(6) {
   transform:translate(-50%, -50%) translate(0, var(--lang-menu-radius));
 }
 
-.lang-menu__item:nth-child(7) {
-  transform:translate(-50%, -50%);
-}
+.lang-menu__item:nth-child(7) { transform:translate(-50%, -50%); }
 .lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(7) {
   transform:translate(-50%, -50%) translate(-53px, 73px);
 }
 
-.lang-menu__item:nth-child(8) {
-  transform:translate(-50%, -50%);
-}
+.lang-menu__item:nth-child(8) { transform:translate(-50%, -50%); }
 .lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(8) {
   transform:translate(-50%, -50%) translate(-86px, 28px);
 }
 
-.lang-menu__item:nth-child(9) {
-  transform:translate(-50%, -50%);
-}
+.lang-menu__item:nth-child(9) { transform:translate(-50%, -50%); }
 .lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(9) {
   transform:translate(-50%, -50%) translate(-86px, -28px);
 }
 
-.lang-menu__item:nth-child(10) {
-  transform:translate(-50%, -50%);
-}
+.lang-menu__item:nth-child(10) { transform:translate(-50%, -50%); }
 .lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(10) {
   transform:translate(-50%, -50%) translate(-53px, -73px);
 }
 
 /* Small screens: slightly smaller radius so it doesn’t overflow */
 @media (max-width: 600px) {
-  :root {
-    --lang-menu-radius:70px;
-  }
+  :root { --lang-menu-radius:70px; }
 }
 
 /* =========================================
@@ -350,6 +329,7 @@ nav a:hover {
     0 18px 45px rgba(0, 0, 0, 0.55),       /* no blue tint */
     inset 0 4px 18px rgba(255, 255, 255, 0.35);
   overflow:hidden;
+  isolation:isolate; /* NEW: ensures ::after stays behind content but within element */
 }
 
 /* Liquid highlight */
@@ -357,12 +337,9 @@ nav a:hover {
 .glass-panel::after,
 .glass-button::after,
 .lang-menu__button::after {
-  content:''; 
+  content:'';
   position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
+  inset:0;
   background:rgba(255, 255, 255, 0.1);
   border-radius:inherit;
   backdrop-filter:blur(1px);
@@ -371,8 +348,18 @@ nav a:hover {
     inset -10px -8px 0px -11px rgba(255, 255, 255, 1),
     inset 0px -9px 0px -8px rgba(255, 255, 255, 1);
   opacity:0.6;
-  z-index:-1;
+  z-index:0;          /* NEW: behind content, above background */
+  pointer-events:none;
   filter:blur(1px) drop-shadow(10px 4px 6px black) brightness(115%);
+}
+
+/* Ensure content sits above highlight on all glass surfaces */
+.glass > *,
+.glass-panel > *,
+.glass-button > *,
+.lang-menu__button > * {
+  position:relative;
+  z-index:1;
 }
 
 /* card-like surfaces get bigger radius */
@@ -430,13 +417,8 @@ button {
 }
 
 /* Layout tweaks for where buttons live */
-.nav .glass-button {
-  margin-left:12px;
-}
-
-.hero .glass-button {
-  margin-top:24px;
-}
+.nav .glass-button { margin-left:12px; }
+.hero .glass-button { margin-top:24px; }
 
 .translate-actions .glass-button,
 .translator-lang .glass-button,
@@ -467,9 +449,7 @@ button {
   margin:0;
 }
 
-.section {
-  padding:40px 0;
-}
+.section { padding:40px 0; }
 
 .card {
   border-radius:var(--radius-card);
@@ -548,9 +528,7 @@ button {
 
 /* Kill the generic glass-panel ::after on this one,
    since we defined its frame explicitly above */
-.translator-outer::after {
-  content:none;
-}
+.translator-outer::after { content:none; }
 
 /* INNER: NO BACKGROUND — just a container so outer glass stays visible */
 .translator-ui {
@@ -593,9 +571,7 @@ button {
 }
 
 /* swap button: visuals from glass-button */
-.swap-btn {
-  font-size:0.9rem;
-}
+.swap-btn { font-size:0.9rem; }
 
 /* layout for text boxes */
 .translator-panels {
@@ -604,9 +580,7 @@ button {
   gap:12px;
 }
 
-.translator-box {
-  width:100%;
-}
+.translator-box { width:100%; }
 
 /* INNER BLACK BOXES (only these are black now) */
 .translator-box textarea {
@@ -621,13 +595,14 @@ button {
   resize:vertical;
 }
 
-.translator-box textarea::placeholder {
-  color:#cbd5f5;
-}
+.translator-box textarea::placeholder { color:#cbd5f5; }
 
 /* inline buttons spacing; visuals from .glass-button */
-.inline-btn {
-  margin-top:8px;
+.inline-btn { margin-top:8px; }
+
+/* NEW: make the two buttons (Copy Summary + Download PDF) look aligned and consistent */
+.translator-box .inline-btn {
+  margin-top:0; /* container already handles spacing */
 }
 
 .translator-foot {
@@ -639,9 +614,7 @@ button {
   margin-top:10px;
 }
 
-.translator-hint {
-  opacity:.75;
-}
+.translator-hint { opacity:.75; }
 
 /* Footnote under translator */
 .translate-footnote {
@@ -670,9 +643,7 @@ button {
   border-bottom:1px dashed rgba(148,163,184,0.4);
 }
 
-.result-row:last-child {
-  border-bottom:none;
-}
+.result-row:last-child { border-bottom:none; }
 
 /* =========================================
    MAIL & BILLS PAGE TWEAKS
@@ -685,13 +656,8 @@ button {
 }
 
 /* Slightly larger font on Mail & Bills page only */
-body.mailbills-page .translate-title {
-  font-size: 28px;
-}
-
-body.mailbills-page .translate-sub {
-  font-size: 18px;
-}
+body.mailbills-page .translate-title { font-size: 28px; }
+body.mailbills-page .translate-sub { font-size: 18px; }
 
 body.mailbills-page .translator-box textarea {
   font-size: 16px;
@@ -799,9 +765,7 @@ small.tagline {
 @media (max-width:720px){
   .hero h1 { font-size:28px; }
 
-  .translate-shell {
-    padding:0 4px;
-  }
+  .translate-shell { padding:0 4px; }
 
   .chat-shell {
     margin-top:16px;
