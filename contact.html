@@ -30,12 +30,11 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preload" as="image" href="assets/img/logo.png">
 
-  <!-- bump version so new CSS is used -->
+  <!-- use latest CSS + JS -->
   <link rel="stylesheet" href="assets/css/styles.css?v=11">
-  <script defer src="assets/js/main.js?v=5"></script>
+  <script defer src="assets/js/main.js?v=4"></script>
 </head>
 <body>
-  
 <header>
   <div class="container nav">
     <div class="brand">
@@ -49,38 +48,26 @@
     <nav>
       <a href="index.html" data-i18n="nav.home">Home</a>
       <a href="translate.html" data-i18n="nav.translate">Translate</a>
-      <a href="mail-bills.html" data-i18n="nav.mailbills">Mail & Bills</a>
+      <a href="mail-bills.html" data-i18n="nav.mailbills">Mail &amp; Bills</a>
       <a href="about.html" data-i18n="nav.about">About</a>
       <a href="contact.html" data-i18n="nav.contact">Contact</a>
 
-      <!-- Circle language menu -->
-      <div class="lang-menu" aria-label="Language picker">
-        <!-- Invisible checkbox that controls open/close -->
+      <!-- Circle language menu (same structure as index/translate) -->
+      <div class="lang-menu">
         <input
           type="checkbox"
-          id="lang-menu-toggler"
+          id="lang-menu-toggle"
           class="lang-menu__toggler"
-          aria-hidden="true"
-        >
-
-        <!-- Center globe button (use your PNG icon here) -->
-        <button
-          class="lang-menu__button"
-          type="button"
-          aria-label="Choose language"
-        >
-          <!-- drop your icon at assets/img/lang-globe.png -->
+          aria-label="Open language menu">
+        <button class="lang-menu__button" type="button">
           <img
             src="assets/img/lang-icon.png"
             alt="Language"
-            class="lang-menu__icon"
-          >
+            class="lang-menu__icon">
         </button>
-
-        <!-- Circular list of languages -->
         <ul class="lang-menu__list">
           <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link is-active" data-lang="en">EN</button>
+            <button type="button" class="lang-menu__link" data-lang="en">EN</button>
           </li>
           <li class="lang-menu__item">
             <button type="button" class="lang-menu__link" data-lang="es">ES</button>
@@ -95,7 +82,7 @@
             <button type="button" class="lang-menu__link" data-lang="zh">中文</button>
           </li>
           <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="hi">हिंदी</button>
+            <button type="button" class="lang-menu__link" data-lang="hi">हिन्दी</button>
           </li>
           <li class="lang-menu__item">
             <button type="button" class="lang-menu__link" data-lang="ar">العربية</button>
@@ -151,7 +138,7 @@
     </p>
   </div>
 </main>
-  
+
 <footer>
   <div class="container">© 2025 Voyadecir — All rights reserved.</div>
 </footer>
