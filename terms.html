@@ -30,13 +30,11 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preload" as="image" href="assets/img/logo.png">
 
-  <!-- align CSS version with other pages -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=10">
-  <script defer src="assets/js/main.js?v=5"></script>
-
+  <!-- use latest CSS + JS -->
+  <link rel="stylesheet" href="assets/css/styles.css?v=11">
+  <script defer src="assets/js/main.js?v=4"></script>
 </head>
 <body>
-  
 <header>
   <div class="container nav">
     <div class="brand">
@@ -58,16 +56,14 @@
       <div class="lang-menu">
         <input
           type="checkbox"
-          id="lang-toggle"
+          id="lang-menu-toggle"
           class="lang-menu__toggler"
-          aria-label="Open language menu"
-        >
+          aria-label="Open language menu">
         <button class="lang-menu__button" type="button">
           <img
             src="assets/img/lang-icon.png"
             alt="Language"
-            class="lang-menu__icon"
-          >
+            class="lang-menu__icon">
         </button>
         <ul class="lang-menu__list">
           <li class="lang-menu__item">
@@ -116,7 +112,7 @@
     </p>
   </article>
 </main>
-  
+
 <footer>
   <div class="container">© 2025 Voyadecir — All rights reserved.</div>
 </footer>
