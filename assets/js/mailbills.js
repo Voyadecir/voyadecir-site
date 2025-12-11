@@ -6,9 +6,14 @@
 const OCR_API_BASE =
   "https://voyadecir-ai-functions-aze4fqhjdcbzfkdu.centralus-01.azurewebsites.net";
 
-// Render backend: deep agent + translator
+// Render backend: deep agent + translator + (future) PDF export
 const INTERPRET_API_BASE = "https://ai-translator-i5jb.onrender.com";
 const TRANSLATE_API = `${INTERPRET_API_BASE}/api/translate`;
+// New: PDF export endpoint (to be implemented on backend)
+const PDF_EXPORT_API = `${INTERPRET_API_BASE}/api/mailbills/translate-pdf`;
+
+// Keep track of last uploaded files so we can reuse them for PDF export
+let lastUploadedFiles = [];
 
 // ---------- 2) i18n helpers ----------
 
@@ -101,7 +106,7 @@ function updateFieldLabels() {
   setText("#label-address", L.address);
 }
 
-// ---------- 5) Helpers: field presence + fallback extractor ----------
+// ---------- 5) Helpers: field presence + merging + fallback extractor ----------
 
 function hasAnyField(fields) {
   if (!fields || typeof fields !== "object") return false;
@@ -124,6 +129,40 @@ function hasAnyField(fields) {
     }
   }
   return false;
+}
+
+// Merge fields from multiple pages: keep the first non-empty value
+function mergeFields(base, incoming) {
+  if (!incoming) return base || null;
+  if (!base) return incoming;
+
+  const out = { ...base };
+  const allKeys = new Set([
+    ...Object.keys(base || {}),
+    ...Object.keys(incoming || {}),
+  ]);
+
+  for (const key of allKeys) {
+    const prev = base[key];
+    const next = incoming[key];
+
+    const normalize = (val) => {
+      if (val && typeof val === "object" && "value" in val) {
+        return val.value;
+      }
+      return val;
+    };
+
+    const prevVal = normalize(prev);
+    const nextVal = normalize(next);
+
+    if (nextVal != null && String(nextVal).trim() !== "") {
+      if (prevVal == null || String(prevVal).trim() === "") {
+        out[key] = next;
+      }
+    }
+  }
+  return out;
 }
 
 function fallbackExtractFieldsFromText(text) {
@@ -335,7 +374,8 @@ async function callInterpret(ocrText) {
     ocr_text: ocrText,
     source_lang: "auto",
     target_lang,
-    bill_hint: "bill or official letter",
+    bill_hint: "bill, contract, or official letter",
+    summary_style: "eli5",
   };
 
   const url = `${INTERPRET_API_BASE}/api/mailbills/interpret`;
@@ -364,10 +404,78 @@ async function callInterpret(ocrText) {
   return data;
 }
 
-// ---------- 10) Main handler: upload → OCR → interpret ----------
+// ---------- 10) Agent pipeline: take OCR text (+optional fields) → summary & fields ----------
+
+async function runAgentPipeline(ocrText, initialFields) {
+  const cleanText = (ocrText || "").trim();
+  const ocrEl = $("#ocr-text");
+  if (ocrEl) ocrEl.value = cleanText;
+
+  // Show any OCR-stage fields (if present)
+  if (initialFields && hasAnyField(initialFields)) {
+    showResults(initialFields);
+  }
+
+  if (!cleanText) {
+    setStatus(translateKey("mb.status.noText", "No text found in document."));
+    return;
+  }
+
+  try {
+    const agentData = await callInterpret(cleanText);
+
+    const sumEl = $("#summary-text");
+    const summaryText =
+      agentData.summary_translated ||
+      agentData.summary_en ||
+      agentData.summary ||
+      "";
+
+    if (sumEl) sumEl.value = summaryText;
+
+    // Prefer agent fields; if empty, fall back to local extraction
+    let fields = agentData.fields;
+    if (!hasAnyField(fields) && cleanText) {
+      fields = fallbackExtractFieldsFromText(cleanText);
+    }
+
+    if (fields) {
+      showResults(fields);
+    }
+
+    renderAgentSections(agentData);
+
+    setStatus(
+      translateKey(
+        "mb.status.doneWithAgent",
+        "Done. Summary and fields extracted."
+      )
+    );
+  } catch (err) {
+    console.error("[mailbills] interpret error, falling back to OCR-only:", err);
+
+    // Even if agent call fails, try local extraction from OCR text
+    if (cleanText) {
+      const fallback = fallbackExtractFieldsFromText(cleanText);
+      if (hasAnyField(fallback)) {
+        showResults(fallback);
+      }
+    }
+
+    setStatus(
+      translateKey(
+        "mb.status.done",
+        "Done. Deep analysis unavailable, showing raw text."
+      )
+    );
+  }
+}
+
+// ---------- 11) Main handlers: single file vs multi-page ----------
 
 async function handleFile(file) {
   if (!file) return;
+  lastUploadedFiles = [file];
 
   setStatus(translateKey("mb.status.uploading", "Uploading document…"));
 
@@ -383,66 +491,7 @@ async function handleFile(file) {
       ocrData.message ||
       "";
 
-    const ocrEl = $("#ocr-text");
-    if (ocrEl) ocrEl.value = ocrText;
-
-    // Optional: show any fields the OCR pipeline already gave (usually empty)
-    if (ocrData.fields) {
-      showResults(ocrData.fields);
-    }
-
-    // Step 2: Deep interpret via ai-translator
-    try {
-      const agentData = await callInterpret(ocrText);
-
-      const sumEl = $("#summary-text");
-      const summaryText =
-        agentData.summary_translated ||
-        agentData.summary_en ||
-        agentData.summary ||
-        "";
-
-      if (sumEl) sumEl.value = summaryText;
-
-      // Prefer agent fields; if empty, fall back to local extraction
-      let fields = agentData.fields;
-      if (!hasAnyField(fields) && ocrText) {
-        fields = fallbackExtractFieldsFromText(ocrText);
-      }
-
-      if (fields) {
-        showResults(fields);
-      }
-
-      renderAgentSections(agentData);
-
-      setStatus(
-        translateKey(
-          "mb.status.doneWithAgent",
-          "Done. Summary and fields extracted."
-        )
-      );
-    } catch (err) {
-      console.error(
-        "[mailbills] interpret error, falling back to OCR-only:",
-        err
-      );
-
-      // Even if agent call fails, try local extraction from OCR text
-      if (ocrText) {
-        const fallback = fallbackExtractFieldsFromText(ocrText);
-        if (hasAnyField(fallback)) {
-          showResults(fallback);
-        }
-      }
-
-      setStatus(
-        translateKey(
-          "mb.status.done",
-          "Done. Deep analysis unavailable, showing raw text."
-        )
-      );
-    }
+    await runAgentPipeline(ocrText, ocrData.fields || null);
   } catch (err) {
     console.error("[mailbills] error:", err);
     setStatus(
@@ -454,7 +503,86 @@ async function handleFile(file) {
   }
 }
 
-// ---------- 11) Translate OCR text via existing translator ----------
+// New: handle multiple selected files (multi-page scans, multipage contracts, etc.)
+async function handleFiles(fileList) {
+  const files = Array.from(fileList || []).filter(Boolean);
+  if (!files.length) return;
+
+  lastUploadedFiles = files;
+
+  if (files.length === 1) {
+    // Reuse the single-page flow
+    await handleFile(files[0]);
+    return;
+  }
+
+  setStatus(
+    translateKey(
+      "mb.status.uploadingMulti",
+      `Uploading and reading ${files.length} pages…`
+    )
+  );
+
+  let combinedTextParts = [];
+  let mergedFields = null;
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+
+    setStatus(
+      translateKey(
+        "mb.status.processingPage",
+        `Reading page ${i + 1} of ${files.length}…`
+      )
+    );
+
+    try {
+      const ocrData = await sendBytes(file);
+
+      const ocrText =
+        ocrData.ocr_text_snippet ||
+        ocrData.ocr_text ||
+        ocrData.full_text ||
+        ocrData.message ||
+        "";
+
+      if (ocrText && ocrText.trim() !== "") {
+        const header =
+          files.length > 1
+            ? `\n\n--- Page ${i + 1} ---\n\n`
+            : "";
+        combinedTextParts.push(header + ocrText.trim());
+      }
+
+      if (ocrData.fields) {
+        mergedFields = mergeFields(mergedFields, ocrData.fields);
+      }
+    } catch (err) {
+      console.error(`[mailbills] OCR error on page ${i + 1}`, err);
+      // keep going with other pages
+    }
+  }
+
+  const combinedText = combinedTextParts.join("").trim();
+
+  if (!combinedText) {
+    setStatus(
+      translateKey(
+        "mb.status.noText",
+        "No text found in the uploaded pages."
+      )
+    );
+    return;
+  }
+
+  setStatus(
+    translateKey("mb.status.ocrDoneMulti", "All pages read. Analyzing…")
+  );
+
+  await runAgentPipeline(combinedText, mergedFields);
+}
+
+// ---------- 12) Translate OCR text via existing translator (fast full-document translation) ----------
 
 async function translateOcrText() {
   const srcEl = $("#ocr-text");
@@ -500,10 +628,7 @@ async function translateOcrText() {
     const out = data.translated_text || data.translation || "";
     if (!out) {
       setStatus(
-        translateKey(
-          "mb.status.emptyTranslation",
-          "Empty translation."
-        )
+        translateKey("mb.status.emptyTranslation", "Empty translation.")
       );
       return;
     }
@@ -518,7 +643,76 @@ async function translateOcrText() {
   }
 }
 
-// ---------- 12) UI wiring ----------
+// ---------- 13) Download professionally translated PDF (backend must implement PDF_EXPORT_API) ----------
+
+async function downloadTranslatedPdf() {
+  if (!lastUploadedFiles.length) {
+    alert(
+      translateKey(
+        "mb.status.noFiles",
+        "Upload your document first, then try downloading the PDF."
+      )
+    );
+    return;
+  }
+
+  const langSelect = $("#mb-tgt-lang");
+  const target_lang = (
+    langSelect?.value || (getLang() === "es" ? "es" : "en")
+  ).trim();
+
+  setStatus(
+    translateKey(
+      "mb.status.generatingPdf",
+      "Generating translated PDF (this can take a moment)…"
+    )
+  );
+
+  try {
+    const fd = new FormData();
+    lastUploadedFiles.forEach((file) => fd.append("files", file));
+    fd.append("target_lang", target_lang);
+    fd.append("translation_style", "professional");
+
+    const res = await fetch(PDF_EXPORT_API, {
+      method: "POST",
+      body: fd,
+    });
+
+    if (!res.ok) {
+      const body = await res.text();
+      console.error("[mailbills] PDF export failed", res.status, body);
+      setStatus(
+        translateKey("mb.status.pdfFailed", "PDF export failed.")
+      );
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "voyadecir-translated-document.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    setStatus(
+      translateKey(
+        "mb.status.pdfReady",
+        "Translated PDF downloaded."
+      )
+    );
+  } catch (err) {
+    console.error("[mailbills] PDF export error", err);
+    setStatus(
+      translateKey("mb.status.pdfError", "PDF export error.")
+    );
+  }
+}
+
+// ---------- 14) UI wiring ----------
 
 window.addEventListener("DOMContentLoaded", function () {
   const tgt = $("#mb-tgt-lang");
@@ -528,17 +722,18 @@ window.addEventListener("DOMContentLoaded", function () {
   updateFieldLabels();
 
   $("#btn-upload")?.addEventListener("click", () =>
-    $("#file-input").click()
+    $("#file-input")?.click()
   );
   $("#btn-camera")?.addEventListener("click", () =>
-    $("#camera-input").click()
+    $("#camera-input")?.click()
   );
 
+  // Allow multi-file selection (multi-page documents)
   $("#file-input")?.addEventListener("change", (e) =>
-    handleFile(e.target.files?.[0])
+    handleFiles(e.target.files)
   );
   $("#camera-input")?.addEventListener("change", (e) =>
-    handleFile(e.target.files?.[0])
+    handleFiles(e.target.files)
   );
 
   // Swap “To” language and remember it
@@ -596,7 +791,15 @@ window.addEventListener("DOMContentLoaded", function () {
       }
     );
 
+    lastUploadedFiles = [];
+
     setStatus(translateKey("mb.status.cleared", "Cleared."));
+  });
+
+  // Download translated PDF button (if present in HTML)
+  $("#mb-download-pdf")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    downloadTranslatedPdf();
   });
 
   setStatus(translateKey("mb.status.ready", "Ready"));
