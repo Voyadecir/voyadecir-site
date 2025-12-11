@@ -56,65 +56,59 @@
       <a href="mail-bills.html" data-i18n="nav.mailbills">Mail &amp; Bills</a>
       <a href="about.html" data-i18n="nav.about">About</a>
       <a href="contact.html" data-i18n="nav.contact">Contact</a>
-
-      <!-- Circle language menu -->
-      <div class="lang-menu">
-        <!-- Hidden checkbox that controls open/close -->
-        <input type="checkbox" id="lang-menu-toggle" class="lang-menu__toggler">
-
-        <!-- Center button with your PNG icon -->
-        <div class="lang-menu__center">
-          <button
-            type="button"
-            class="glass-button lang-menu__button"
-            aria-label="Change language">
-            <!-- Place your icon file at: assets/img/lang-icon.png -->
-            <img
-              src="assets/img/lang-icon.png"
-              alt="Language"
-              class="lang-menu__icon">
-          </button>
-        </div>
-
-        <!-- Language options around the circle -->
-        <ul class="lang-menu__list">
-          <li class="lang-menu__item">
-            <button type="button" class="glass-button js-lang-option" data-lang="en">EN</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="glass-button js-lang-option" data-lang="es">ES</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="glass-button js-lang-option" data-lang="pt">PT</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="glass-button js-lang-option" data-lang="fr">FR</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="glass-button js-lang-option" data-lang="zh">中文</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="glass-button js-lang-option" data-lang="hi">HI</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="glass-button js-lang-option" data-lang="ar">AR</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="glass-button js-lang-option" data-lang="bn">BN</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="glass-button js-lang-option" data-lang="ru">RU</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="glass-button js-lang-option" data-lang="ur">UR</button>
-          </li>
-        </ul>
-      </div>
+      <!-- No language control in the header on this page -->
     </nav>
   </div>
 </header>
 
 <main class="container section">
+  <!-- Hero-style language picker centered under the header -->
+  <div class="lang-menu lang-menu--hero">
+    <input
+      type="checkbox"
+      id="lang-menu-toggle"
+      class="lang-menu__toggler"
+      aria-label="Open language menu">
+    <button class="lang-menu__button glass-button" type="button" aria-label="Change language">
+      <img
+        src="assets/img/lang-icon.png"
+        alt="Language"
+        class="lang-menu__icon">
+    </button>
+    <ul class="lang-menu__list">
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="en">EN</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="es">ES</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="pt">PT</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="fr">FR</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="zh">中文</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="hi">हिन्दी</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="ar">العربية</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="bn">বাংলা</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="ru">РУ</button>
+      </li>
+      <li class="lang-menu__item">
+        <button type="button" class="lang-menu__link" data-lang="ur">اردو</button>
+      </li>
+    </ul>
+  </div>
+
   <!-- About card: liquid glass -->
   <article class="card glass">
     <h2 data-i18n="about.title">About Voyadecir</h2>
