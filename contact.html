@@ -6,142 +6,95 @@
   <title>Contact — Voyadecir</title>
   <meta name="description" content="Get in touch with Voyadecir.">
   <meta name="author" content="Voyadecir">
-
   <meta property="og:title" content="Contact — Voyadecir">
   <meta property="og:description" content="Get in touch with Voyadecir.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://voyadecir.com/">
   <meta property="og:image" content="https://voyadecir.com/assets/img/favicon-32x32.png">
-
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Contact — Voyadecir">
   <meta name="twitter:description" content="Get in touch with Voyadecir.">
-
   <link rel="canonical" href="https://voyadecir.com/">
-
   <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
   <link rel="alternate icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/img/favicon.ico">
-
-  <!-- match dark / ink background like other pages -->
   <meta name="theme-color" content="#020617">
-
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preload" as="image" href="assets/img/logo.png">
-
-  <!-- use latest CSS + JS -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=11">
+  <link rel="stylesheet" href="assets/css/styles.css?v=13">
   <script defer src="assets/js/main.js?v=5"></script>
+  <script defer src="assets/js/asst-widget.js?v=3"></script>
 </head>
 <body>
-<header>
-  <div class="container nav">
-    <div class="brand">
-      <img src="assets/img/logo.png" alt="Voyadecir Logo" class="logo"
-           onerror="this.onerror=null;this.src='assets/img/logo.svg';">
-      <div>
-        <div data-i18n="brand.title">Voyadecir</div>
-        <small class="tagline" data-i18n="brand.tagline">Translate. Understand. Connect.</small>
+  <header>
+    <div class="container nav">
+      <div class="brand">
+        <img src="assets/img/logo.png" alt="Voyadecir Logo" class="logo" onerror="this.onerror=null;this.src='assets/img/logo.svg';">
+        <div>
+          <div data-i18n="brand.title">Voyadecir</div>
+          <small class="tagline" data-i18n="brand.tagline">Translate. Understand. Connect.</small>
+        </div>
       </div>
+      <nav>
+        <a href="index.html" data-i18n="nav.home">Home</a>
+        <a href="translate.html" data-i18n="nav.translate">Translate</a>
+        <a href="mail-bills.html" data-i18n="nav.mailbills">Mail &amp; Bills</a>
+        <a href="about.html" data-i18n="nav.about">About</a>
+        <a href="contact.html" data-i18n="nav.contact">Contact</a>
+      </nav>
     </div>
-    <nav>
-      <a href="index.html" data-i18n="nav.home">Home</a>
-      <a href="translate.html" data-i18n="nav.translate">Translate</a>
-      <a href="mail-bills.html" data-i18n="nav.mailbills">Mail &amp; Bills</a>
-      <a href="about.html" data-i18n="nav.about">About</a>
-      <a href="contact.html" data-i18n="nav.contact">Contact</a>
-      <!-- No language control in the header on this page -->
-    </nav>
-  </div>
-</header>
+  </header>
 
-<main class="container section">
-  <!-- Hero-style language picker centered under the header -->
-  <div class="lang-menu lang-menu--hero">
-    <input
-      type="checkbox"
-      id="lang-menu-toggle"
-      class="lang-menu__toggler"
-      aria-label="Open language menu">
-    <button class="lang-menu__button glass-button" type="button" aria-label="Change language">
-      <img
-        src="assets/img/lang-icon.png"
-        alt="Language"
-        class="lang-menu__icon">
-    </button>
-    <ul class="lang-menu__list">
-      <li class="lang-menu__item">
-        <button type="button" class="lang-menu__link" data-lang="en">EN</button>
-      </li>
-      <li class="lang-menu__item">
-        <button type="button" class="lang-menu__link" data-lang="es">ES</button>
-      </li>
-      <li class="lang-menu__item">
-        <button type="button" class="lang-menu__link" data-lang="pt">PT</button>
-      </li>
-      <li class="lang-menu__item">
-        <button type="button" class="lang-menu__link" data-lang="fr">FR</button>
-      </li>
-      <li class="lang-menu__item">
-        <button type="button" class="lang-menu__link" data-lang="zh">中文</button>
-      </li>
-      <li class="lang-menu__item">
-        <button type="button" class="lang-menu__link" data-lang="hi">हिन्दी</button>
-      </li>
-      <li class="lang-menu__item">
-        <button type="button" class="lang-menu__link" data-lang="ar">العربية</button>
-      </li>
-      <li class="lang-menu__item">
-        <button type="button" class="lang-menu__link" data-lang="bn">বাংলা</button>
-      </li>
-      <li class="lang-menu__item">
-        <button type="button" class="lang-menu__link" data-lang="ru">РУ</button>
-      </li>
-      <li class="lang-menu__item">
-        <button type="button" class="lang-menu__link" data-lang="ur">اردو</button>
-      </li>
-    </ul>
-  </div>
-
-  <!-- Contact card: liquid-glass panel -->
-  <div class="card glass contact-shell">
-    <h2 data-i18n="contact.title">Contact us</h2>
-    <p data-i18n="contact.intro">Send us a note. We’ll get back to you soon.</p>
-
-    <!-- TODO: Replace YOUR_FORM_ID with your real Formspree form ID -->
-    <form
-      action="https://formspree.io/f/YOUR_FORM_ID"
-      method="POST"
-      class="contact-form">
-      <label>
-        <span data-i18n="contact.name">Name</span><br>
-        <input type="text" name="name" required>
-      </label>
-      <br><br>
-
-      <label>
-        <span data-i18n="contact.email">Email</span><br>
-        <input type="email" name="_replyto" required>
-      </label>
-      <br><br>
-
-      <label>
-        <span data-i18n="contact.msg">Message</span><br>
-        <textarea name="message" rows="6" required></textarea>
-      </label>
-      <br><br>
-
-      <!-- Single glass button -->
-      <button class="glass-button" type="submit">
-        <span data-i18n="contact.send">Send</span>
+  <main class="container section">
+    <div class="lang-menu lang-menu--hero">
+      <input type="checkbox" id="lang-menu-toggle" class="lang-menu__toggler" aria-label="Open language menu">
+      <button class="lang-menu__button glass-button" type="button" aria-label="Change language">
+        <img src="assets/img/lang-icon.png" alt="Language" class="lang-menu__icon">
       </button>
-    </form>
-  </div>
-</main>
+      <ul class="lang-menu__list">
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="en">EN</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="es">ES</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="pt">PT</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="fr">FR</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="zh">中文</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="hi">हिन्दी</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ar">العربية</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="bn">বাংলা</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ru">РУ</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ur">اردو</button></li>
+      </ul>
+    </div>
 
-<footer>
-  <div class="container">© 2025 Voyadecir — All rights reserved.</div>
-</footer>
+    <div class="card glass contact-shell">
+      <h2 data-i18n="contact.title">Contact us</h2>
+      <p data-i18n="contact.intro">Send us a note. We'll get back to you soon.</p>
+      <!-- TODO: Replace YOUR_FORM_ID with your real Formspree form ID -->
+      <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST" class="contact-form">
+        <label>
+          <span data-i18n="contact.name">Name</span><br>
+          <input type="text" name="name" required>
+        </label>
+        <br><br>
+        <label>
+          <span data-i18n="contact.email">Email</span><br>
+          <input type="email" name="_replyto" required>
+        </label>
+        <br><br>
+        <label>
+          <span data-i18n="contact.msg">Message</span><br>
+          <textarea name="message" rows="6" required></textarea>
+        </label>
+        <br><br>
+        <button class="glass-button" type="submit">
+          <span data-i18n="contact.send">Send</span>
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">© 2025 Voyadecir — All rights reserved.</div>
+  </footer>
 </body>
 </html>
