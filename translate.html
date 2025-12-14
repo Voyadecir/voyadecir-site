@@ -5,158 +5,89 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Voyadecir — Translate</title>
   <meta name="description" content="Translate documents, images, and text with Voyadecir.">
-
   <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
   <link rel="alternate icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/img/favicon.ico">
-
-  <!-- match dark / ink background -->
   <meta name="theme-color" content="#020617">
-
   <link rel="manifest" href="manifest.webmanifest">
-
-  <!-- bump version so browser actually reloads CSS -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=11">
-
-  <!-- IMPORTANT: new main.js version -->
+  <link rel="stylesheet" href="assets/css/styles.css?v=12">
   <script defer src="assets/js/main.js?v=5"></script>
   <script defer src="assets/js/translate.js?v=11"></script>
+  <!-- CHATBOT WIDGET: Added for Phase 1 -->
+  <script defer src="assets/js/asst-widget.js?v=2"></script>
 </head>
 <body>
   <header>
     <div class="container nav">
       <div class="brand">
-        <img
-          src="assets/img/logo.png"
-          alt="Voyadecir Logo"
-          class="logo"
-          onerror="this.onerror=null;this.src='assets/img/logo.svg';">
+        <img src="assets/img/logo.png" alt="Voyadecir Logo" class="logo" onerror="this.onerror=null;this.src='assets/img/logo.svg';">
         <div>
           <div data-i18n="brand.title">Voyadecir</div>
           <small class="tagline" data-i18n="brand.tagline">Translate. Understand. Connect.</small>
         </div>
       </div>
-
       <nav>
         <a href="index.html" data-i18n="nav.home">Home</a>
         <a href="translate.html" data-i18n="nav.translate">Translate</a>
         <a href="mail-bills.html" data-i18n="nav.mailbills">Mail &amp; Bills</a>
         <a href="about.html" data-i18n="nav.about">About</a>
         <a href="contact.html" data-i18n="nav.contact">Contact</a>
-        <!-- no old EN|ES toggle here, and no header circle menu on this page -->
       </nav>
     </div>
   </header>
 
   <main class="container section">
     <div class="translate-shell">
-
-      <!-- Language picker centered above Translate title -->
       <div class="lang-menu lang-menu--hero">
-        <input
-          type="checkbox"
-          id="lang-menu-toggle"
-          class="lang-menu__toggler"
-          aria-label="Open language menu">
+        <input type="checkbox" id="lang-menu-toggle" class="lang-menu__toggler" aria-label="Open language menu">
         <button class="lang-menu__button glass-button" type="button">
-          <img
-            src="assets/img/lang-icon.png"
-            alt="Language"
-            class="lang-menu__icon">
+          <img src="assets/img/lang-icon.png" alt="Language" class="lang-menu__icon">
         </button>
         <ul class="lang-menu__list">
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="en">EN</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="es">ES</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="pt">PT</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="fr">FR</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="zh">中文</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="hi">हिन्दी</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="ar">العربية</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="bn">বাংলা</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="ru">РУ</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link" data-lang="ur">اردو</button>
-          </li>
+          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="en">EN</button></li>
+          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="es">ES</button></li>
+          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="pt">PT</button></li>
+          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="fr">FR</button></li>
+          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="zh">中文</button></li>
+          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="hi">हिन्दी</button></li>
+          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ar">العربية</button></li>
+          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="bn">বাংলা</button></li>
+          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ru">РУ</button></li>
+          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ur">اردو</button></li>
         </ul>
       </div>
 
       <h1 class="translate-title" data-i18n="translate.title">Translate a document</h1>
-      <p class="translate-sub" data-i18n="translate.subtitle">
-        Type or paste text below, or use the Mail &amp; Bills Helper for photos and letters.
-      </p>
+      <p class="translate-sub" data-i18n="translate.subtitle">Type or paste text below, or use the Mail &amp; Bills Helper for photos and letters.</p>
 
-      <!-- CTA that points clearly to Mail & Bills Helper -->
       <div class="mailbills-cta" style="margin: 0 0 16px 0; text-align:center;">
-        <button
-          type="button"
-          class="glass-button translate-btn secondary"
-          onclick="window.location.href='mail-bills.html'">
+        <button type="button" class="glass-button translate-btn secondary" onclick="window.location.href='mail-bills.html'">
           <span data-i18n="translate.mailbillsCta">Need help with mail &amp; bills?</span>
         </button>
       </div>
 
       <div class="translate-actions">
-        <!-- We keep these inputs for later, but they are not used yet -->
         <input type="file" id="file-input" accept=".pdf,image/*" style="display:none;">
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;">
-
-        <!-- Mark upload & camera as “coming soon” and disable them -->
-        <button
-          type="button"
-          class="glass-button translate-btn"
-          id="btn-upload"
-          disabled
-          title="Coming soon">
+        
+        <button type="button" class="glass-button translate-btn" id="btn-upload" disabled title="Coming soon">
           <span class="icon-doc"></span>
           <span data-i18n="translate.upload">Upload document (soon)</span>
         </button>
-
-        <button
-          type="button"
-          class="glass-button translate-btn"
-          id="btn-camera"
-          disabled
-          title="Coming soon">
+        <button type="button" class="glass-button translate-btn" id="btn-camera" disabled title="Coming soon">
           <span class="icon-camera"></span>
           <span data-i18n="translate.camera">Take picture (soon)</span>
         </button>
-
-        <!-- Main action: text translation -->
         <button type="button" class="glass-button translate-btn" id="translate-run">
           <span data-i18n="translate.run">Translate</span>
         </button>
-
-        <button
-          type="button"
-          class="glass-button translate-btn secondary"
-          id="btn-listen"
-          disabled
-          title="Coming soon">
+        <button type="button" class="glass-button translate-btn secondary" id="btn-listen" disabled title="Coming soon">
           <span class="icon-audio"></span>
           <span data-i18n="translate.listen">Read it to me (soon)</span>
         </button>
       </div>
 
-      <!-- Translator: clear glass outer frame + inner content (matching Mail & Bills) -->
       <div class="translator-outer glass-panel">
         <div class="translator-ui">
           <div class="translator-topbar">
@@ -177,16 +108,11 @@
                   <option value="ur">Urdu</option>
                 </select>
               </label>
-
-              <!-- Swap languages: glass button -->
-              <button
-                type="button"
-                id="swap-langs"
-                class="glass-button swap-btn"
-                title="Swap languages">
-                <span data-i18n="translate.swap">⇄</span>
+              
+              <button type="button" id="swap-langs" class="glass-button swap-btn" title="Swap languages">
+                ⇄ <span data-i18n="translate.swap"></span>
               </button>
-
+              
               <label data-i18n="translate.to">
                 To
                 <select id="tgt-lang">
@@ -207,49 +133,29 @@
 
           <div class="translator-panels">
             <div class="translator-box">
-              <textarea
-                id="source-text"
-                data-i18n-placeholder="translate.sourcePlaceholder"
-                placeholder="Type or paste text here…"></textarea>
+              <textarea id="source-text" data-i18n-placeholder="translate.sourcePlaceholder" placeholder="Type or paste text here…"></textarea>
             </div>
             <div class="translator-box">
-              <textarea
-                id="target-text"
-                data-i18n-placeholder="translate.targetPlaceholder"
-                placeholder="Translation will appear here…"
-                readonly></textarea>
+              <textarea id="target-text" data-i18n-placeholder="translate.targetPlaceholder" placeholder="Translation will appear here…" readonly></textarea>
             </div>
           </div>
 
           <div class="translator-foot">
             <span id="translator-status" data-i18n="translate.status">Ready.</span>
-            <span class="translator-hint" data-i18n="translate.hint">
-              For photos or scanned bills, use the Mail &amp; Bills Helper.
-            </span>
+            <span class="translator-hint" data-i18n="translate.hint">For photos or scanned bills, use the Mail &amp; Bills Helper.</span>
           </div>
         </div>
       </div>
 
-      <!-- fallback iframe for when API blocks us (CORS) -->
       <div class="translate-panel" id="iframe-fallback" style="display:none; margin-top:16px;">
-        <iframe
-          class="appframe"
-          src="https://ai-translator-i5jb.onrender.com"
-          frameborder="0"
-          referrerpolicy="no-referrer"
-          sandbox="allow-scripts allow-forms allow-same-origin">
-        </iframe>
+        <iframe class="appframe" src="https://ai-translator-i5jb.onrender.com" frameborder="0" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
         <div class="notice" style="display:block;">
-          If the translator doesn’t load,
-          <a href="https://ai-translator-i5jb.onrender.com" target="_blank" rel="nofollow noopener">
-            open it in a new tab.
-          </a>
+          If the translator doesn't load,
+          <a href="https://ai-translator-i5jb.onrender.com" target="_blank" rel="nofollow noopener">open it in a new tab.</a>
         </div>
       </div>
 
-      <p class="translate-footnote" data-i18n="translate.footnote">
-        Future features: document upload, camera OCR, and text-to-speech — already available for bills and letters on the Mail &amp; Bills Helper page.
-      </p>
+      <p class="translate-footnote" data-i18n="translate.footnote">Future features: document upload, camera OCR, and text-to-speech — already available for bills and letters on the Mail &amp; Bills Helper page.</p>
     </div>
   </main>
 
