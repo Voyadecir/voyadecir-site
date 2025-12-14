@@ -1,5 +1,5 @@
 // asst-widget.js - Voyadecir Assistant Widget (Mode 1 + Mode 2 ready)
-// FIXED: Syntax error on line 170
+// NOW WITH: Click tracking to stop bounce animation
 const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com";
 
 (function(){
@@ -162,8 +162,11 @@ const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com";
     push('bot', greeting);
   }
 
-  // Toggle panel
+  // Toggle panel + stop bounce animation on first click
   fab.addEventListener('click', () => {
+    // Stop bounce animation permanently once clicked
+    fab.classList.add('clicked');
+    
     const isVisible = panel.style.display === 'block';
     panel.style.display = isVisible ? 'none' : 'block';
     if (!isVisible) input.focus();
