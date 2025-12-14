@@ -1,7 +1,6 @@
 // asst-widget.js - Voyadecir Assistant Widget (Mode 1 + Mode 2 ready)
-// When backend is ready, set this to your Render API base:
-// const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com";
-const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com"; // UPDATED: Now pointing to your backend
+// FIXED: Syntax error on line 170
+const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com";
 
 (function(){
   // Language helper
@@ -68,7 +67,7 @@ const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com"; // UPDATED: No
       return { reply: localHelper(message, l), mode: "local" };
     }
 
-    const url = `${ASSISTANT_BASE}/api/assistant`;
+    const url = ASSISTANT_BASE + "/api/assistant";
     const ctrl = new AbortController();
     const timeout = setTimeout(() => ctrl.abort(), 12000);
 
@@ -77,7 +76,7 @@ const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com"; // UPDATED: No
       const lastDoc = getLastDocument();
       
       const payload = {
-        message,
+        message: message,
         lang: l
       };
 
@@ -98,7 +97,7 @@ const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com"; // UPDATED: No
       });
 
       if (!res.ok) {
-        throw new Error(`${res.status} ${await res.text()}`);
+        throw new Error(res.status + " " + await res.text());
       }
 
       const data = await res.json();
@@ -114,13 +113,6 @@ const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com"; // UPDATED: No
     }
   }
 
-  // Inject CSS
-  const css = document.createElement('style');
-  css.textContent = `
-    /* Styles are now in main styles.css - this is just for any widget-specific overrides */
-  `;
-  document.head.appendChild(css);
-
   // Inject FAB and panel
   const fab = document.createElement('button');
   fab.className = 'asst-fab';
@@ -131,18 +123,16 @@ const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com"; // UPDATED: No
 
   const panel = document.createElement('div');
   panel.className = 'asst-panel';
-  panel.innerHTML = `
-    <div class="asst-head">${lang() === 'es' ? 'Asistente' : 'Assistant'}</div>
-    <div class="asst-body" id="asst-body"></div>
-    <div class="asst-foot">
-      <input 
-        id="asst-input" 
-        class="asst-input" 
-        type="text"
-        placeholder="${lang() === 'es' ? 'Escribe tu pregunta…' : 'Type your question…'}" />
-      <button id="asst-send" class="asst-send">${lang() === 'es' ? 'Enviar' : 'Send'}</button>
-    </div>
-  `;
+  const panelHead = lang() === 'es' ? 'Asistente' : 'Assistant';
+  const panelPlaceholder = lang() === 'es' ? 'Escribe tu pregunta…' : 'Type your question…';
+  const panelSend = lang() === 'es' ? 'Enviar' : 'Send';
+  
+  panel.innerHTML = '<div class="asst-head">' + panelHead + '</div>' +
+    '<div class="asst-body" id="asst-body"></div>' +
+    '<div class="asst-foot">' +
+      '<input id="asst-input" class="asst-input" type="text" placeholder="' + panelPlaceholder + '" />' +
+      '<button id="asst-send" class="asst-send">' + panelSend + '</button>' +
+    '</div>';
   document.body.appendChild(panel);
 
   const body = panel.querySelector('#asst-body');
@@ -152,7 +142,7 @@ const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com"; // UPDATED: No
   // Add message to chat
   function push(role, text) {
     const d = document.createElement('div');
-    d.className = `asst-msg ${role}`;
+    d.className = 'asst-msg ' + role;
     d.textContent = text;
     body.appendChild(d);
     body.scrollTop = body.scrollHeight;
@@ -161,13 +151,15 @@ const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com"; // UPDATED: No
   // Seed greeting once
   const lastDoc = getLastDocument();
   if (lastDoc && lastDoc.summary) {
-    push('bot', lang() === 'es'
-      ? `Hola! Veo que subiste un documento recientemente. Puedo responder preguntas sobre él, o ayudarte con el sitio.`
-      : `Hi! I see you uploaded a document recently. I can answer questions about it, or help you with the site.`);
+    const greeting = lang() === 'es'
+      ? 'Hola! Veo que subiste un documento recientemente. Puedo responder preguntas sobre él, o ayudarte con el sitio.'
+      : 'Hi! I see you uploaded a document recently. I can answer questions about it, or help you with the site.';
+    push('bot', greeting);
   } else {
-    push('bot', lang() === 'es'
+    const greeting = lang() === 'es'
       ? 'Soy tu asistente de Voyadecir. Pregúntame sobre facturas, correo, OCR o cargas.'
-      : 'I'm your Voyadecir assistant. Ask me about bills, mail, OCR, or uploads.');
+      : "I'm your Voyadecir assistant. Ask me about bills, mail, OCR, or uploads.";
+    push('bot', greeting);
   }
 
   // Toggle panel
@@ -197,7 +189,8 @@ const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com"; // UPDATED: No
     pending = true;
 
     // Show thinking indicator
-    push('bot', lang() === 'es' ? 'Pensando…' : 'Thinking…');
+    const thinkingText = lang() === 'es' ? 'Pensando…' : 'Thinking…';
+    push('bot', thinkingText);
     const children = body.children;
     const thinking = children[children.length - 1];
 
@@ -208,7 +201,8 @@ const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com"; // UPDATED: No
       if (thinking) thinking.remove();
       
       // Show response
-      push('bot', resp.reply || (lang() === 'es' ? 'No pude responder.' : 'I couldn't answer.'));
+      const fallbackText = lang() === 'es' ? 'No pude responder.' : "I couldn't answer.";
+      push('bot', resp.reply || fallbackText);
       
       // Optional: log mode for debugging
       if (resp.mode === 'document-aware') {
