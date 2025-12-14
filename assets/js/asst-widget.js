@@ -1,106 +1,156 @@
-// When you're ready to go server→ set this:
-// const ASSISTANT_BASE = "https://<your-func>.azurewebsites.net";
-// It will POST to `${ASSISTANT_BASE}/api/assistant`
-const ASSISTANT_BASE = ""; // empty means local helper
+// asst-widget.js - Voyadecir Assistant Widget (Mode 1 + Mode 2 ready)
+// When backend is ready, set this to your Render API base:
+// const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com";
+const ASSISTANT_BASE = "https://ai-translator-i5jb.onrender.com"; // UPDATED: Now pointing to your backend
 
 (function(){
+  // Language helper
   const lang = () => {
-    try { return sessionStorage.getItem('voyadecir_lang') || 'en'; }
-    catch (_) { return 'en'; }
+    try { 
+      return sessionStorage.getItem('voyadecir_lang') || 'en'; 
+    } catch (_) { 
+      return 'en'; 
+    }
   };
 
-  // Tiny local helper so the widget works without backend
-  function localHelper(q, l){
-    q = (q||"").toLowerCase();
+  // Document memory: store last uploaded document context
+  const getLastDocument = () => {
+    try {
+      const doc = sessionStorage.getItem('voyadecir_last_document');
+      return doc ? JSON.parse(doc) : null;
+    } catch (_) {
+      return null;
+    }
+  };
+
+  // Tiny local helper (fallback when backend unavailable)
+  function localHelper(q, l) {
+    q = (q || "").toLowerCase();
     const en = {
-      hello: "Hi! Ask me about translating bills, taking a photo, or supported files. Try: “Can I upload a PDF?”",
-      pdf: "Yes, PDFs and images work. Clear, well-lit photos are best. Multi-page PDFs: page 1 for now, full doc soon.",
-      camera: "Use the Take Picture button on Mail & Bills. Fill the frame and keep text sharp.",
-      ocr: "OCR reads text in images/PDF. We use Azure Vision + Document Intelligence to extract amount, due date, etc.",
-      def: "Got it. I’ll be smarter when the full assistant is wired. For now: ask about upload, camera, OCR, supported docs."
+      hello: "Hi! I can help you understand bills, letters, and documents. Ask me: 'How do I upload a PDF?' or 'What languages do you support?'",
+      pdf: "Yes, you can upload PDFs and images. Clear, well-lit photos work best. Go to Mail & Bills Helper to get started.",
+      camera: "Use the 'Take Picture' button on the Mail & Bills page. Make sure the text is sharp and fills the frame.",
+      ocr: "OCR (Optical Character Recognition) reads text from images and PDFs. We use Azure Document Intelligence to extract key details like amounts and dates.",
+      languages: "We support 10 languages: English, Spanish, Portuguese, French, Chinese, Hindi, Arabic, Bengali, Russian, and Urdu.",
+      privacy: "Your privacy matters. We don't store your documents permanently. Uploaded files are processed and then deleted.",
+      cost: "You get 2-3 free scans per month. For unlimited scans, upgrade to our $8/month plan.",
+      default: "I'm here to help! Ask me about uploading documents, languages we support, privacy, or how the site works."
     };
+    
     const es = {
-      hello: "¡Hola! Pregunta sobre traducir facturas, tomar foto o tipos de archivo. Prueba: “¿Puedo subir un PDF?”",
-      pdf: "Sí, PDF e imágenes funcionan. Fotos claras e iluminadas son mejores. PDFs multi-página: ahora solo la primera.",
-      camera: "Usa Tomar foto en Correo y Facturas. Llena el encuadre y mantén el texto nítido.",
-      ocr: "OCR lee texto de imágenes/PDF. Usamos Azure Vision + Document Intelligence para importe, vencimiento, etc.",
-      def: "Entendido. Seré más inteligente cuando conectemos el asistente completo. Por ahora: subida, cámara, OCR, docs."
+      hello: "¡Hola! Puedo ayudarte a entender facturas, cartas y documentos. Pregúntame: '¿Cómo subo un PDF?' o '¿Qué idiomas soportan?'",
+      pdf: "Sí, puedes subir PDFs e imágenes. Las fotos claras y bien iluminadas funcionan mejor. Ve a Ayudante de Correo y Facturas para comenzar.",
+      camera: "Usa el botón 'Tomar foto' en la página de Correo y Facturas. Asegúrate de que el texto esté nítido y llene el cuadro.",
+      ocr: "OCR (Reconocimiento Óptico de Caracteres) lee texto de imágenes y PDFs. Usamos Azure Document Intelligence para extraer detalles clave como importes y fechas.",
+      languages: "Soportamos 10 idiomas: inglés, español, portugués, francés, chino, hindi, árabe, bengalí, ruso y urdu.",
+      privacy: "Tu privacidad importa. No guardamos tus documentos permanentemente. Los archivos subidos se procesan y luego se eliminan.",
+      cost: "Tienes 2-3 escaneos gratis al mes. Para escaneos ilimitados, actualiza a nuestro plan de $8/mes.",
+      default: "¡Estoy aquí para ayudar! Pregúntame sobre subir documentos, idiomas que soportamos, privacidad o cómo funciona el sitio."
     };
-    const t = l==='es'? es: en;
+    
+    const t = l === 'es' ? es : en;
+    
+    // Pattern matching
     if (q.includes("pdf")) return t.pdf;
-    if (q.includes("camera")||q.includes("foto")||q.includes("picture")) return t.camera;
+    if (q.includes("camera") || q.includes("foto") || q.includes("picture") || q.includes("photo")) return t.camera;
     if (q.includes("ocr")) return t.ocr;
-    if (q.includes("hello")||q.includes("hola")||q.includes("hi")) return t.hello;
-    return t.def;
+    if (q.includes("language") || q.includes("idioma") || q.includes("lang")) return t.languages;
+    if (q.includes("privacy") || q.includes("privacidad") || q.includes("private") || q.includes("data")) return t.privacy;
+    if (q.includes("cost") || q.includes("price") || q.includes("pay") || q.includes("costo") || q.includes("precio") || q.includes("pagar")) return t.cost;
+    if (q.includes("hello") || q.includes("hola") || q.includes("hi") || q.includes("hey")) return t.hello;
+    
+    return t.default;
   }
 
-  async function callAssistantAPI(message, l){
-    if (!ASSISTANT_BASE) return { reply: localHelper(message, l) };
+  // Call backend assistant API
+  async function callAssistantAPI(message, l) {
+    if (!ASSISTANT_BASE) {
+      return { reply: localHelper(message, l), mode: "local" };
+    }
+
     const url = `${ASSISTANT_BASE}/api/assistant`;
     const ctrl = new AbortController();
-    const t = setTimeout(()=>ctrl.abort(), 12000);
-    try{
+    const timeout = setTimeout(() => ctrl.abort(), 12000);
+
+    try {
+      // Check if we have document context
+      const lastDoc = getLastDocument();
+      
+      const payload = {
+        message,
+        lang: l
+      };
+
+      // If we have a recent document, include it for context-aware responses
+      if (lastDoc && lastDoc.summary) {
+        payload.document_context = {
+          summary: lastDoc.summary,
+          document_type: lastDoc.document_type || "unknown",
+          uploaded_at: lastDoc.uploaded_at || new Date().toISOString()
+        };
+      }
+
       const res = await fetch(url, {
         method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ message, lang: l }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
         signal: ctrl.signal
       });
-      if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
-      return await res.json();
-    }catch(e){
-      return { reply: localHelper(message, l) };
-    }finally{ clearTimeout(t); }
+
+      if (!res.ok) {
+        throw new Error(`${res.status} ${await res.text()}`);
+      }
+
+      const data = await res.json();
+      return { 
+        reply: data.reply || data.message || localHelper(message, l),
+        mode: lastDoc ? "document-aware" : "general"
+      };
+    } catch (e) {
+      console.warn('[asst-widget] Backend unavailable, using local helper:', e.message);
+      return { reply: localHelper(message, l), mode: "local" };
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
-  // Inject FAB and panel
+  // Inject CSS
   const css = document.createElement('style');
   css.textContent = `
-  .asst-fab{
-    position:fixed; right:16px; bottom:16px; z-index:9999;
-    background:#000; color:#fff; border:none; border-radius:999px;
-    padding:12px 14px; box-shadow:0 6px 20px rgba(0,0,0,.15); cursor:pointer;
-    font-size:14px;
-  }
-  .asst-panel{
-    position:fixed; right:16px; bottom:76px; z-index:9999; width:320px; max-height:60vh;
-    background:#fff; border:1px solid #eee; border-radius:16px; display:none;
-    box-shadow:0 8px 28px rgba(0,0,0,.2); overflow:hidden;
-  }
-  .asst-head{ padding:10px 12px; border-bottom:1px solid #eee; font-weight:600; }
-  .asst-body{ padding:10px; height:260px; overflow:auto; font-size:14px; }
-  .asst-msg{ margin:6px 0; }
-  .asst-msg.user{ text-align:right; }
-  .asst-foot{ display:flex; gap:6px; padding:10px; border-top:1px solid #eee; }
-  .asst-input{ flex:1; padding:8px; border:1px solid #ddd; border-radius:10px; font-size:14px; }
-  .asst-send{ padding:8px 10px; border:1px solid #000; border-radius:10px; background:#000; color:#fff; }
+    /* Styles are now in main styles.css - this is just for any widget-specific overrides */
   `;
   document.head.appendChild(css);
 
+  // Inject FAB and panel
   const fab = document.createElement('button');
   fab.className = 'asst-fab';
   fab.type = 'button';
-  fab.setAttribute('aria-label','Open assistant');
-  fab.textContent = 'Assistant';
+  fab.setAttribute('aria-label', 'Open assistant');
+  fab.textContent = lang() === 'es' ? 'Asistente' : 'Assistant';
   document.body.appendChild(fab);
 
   const panel = document.createElement('div');
   panel.className = 'asst-panel';
   panel.innerHTML = `
-    <div class="asst-head">${lang()==='es'?'Asistente':'Assistant'}</div>
+    <div class="asst-head">${lang() === 'es' ? 'Asistente' : 'Assistant'}</div>
     <div class="asst-body" id="asst-body"></div>
     <div class="asst-foot">
-      <input id="asst-input" class="asst-input" type="text" placeholder="${lang()==='es'?'Escribe tu pregunta…':'Type your question…'}" />
-      <button id="asst-send" class="asst-send">${lang()==='es'?'Enviar':'Send'}</button>
+      <input 
+        id="asst-input" 
+        class="asst-input" 
+        type="text"
+        placeholder="${lang() === 'es' ? 'Escribe tu pregunta…' : 'Type your question…'}" />
+      <button id="asst-send" class="asst-send">${lang() === 'es' ? 'Enviar' : 'Send'}</button>
     </div>
   `;
   document.body.appendChild(panel);
 
   const body = panel.querySelector('#asst-body');
   const input = panel.querySelector('#asst-input');
-  const send  = panel.querySelector('#asst-send');
+  const send = panel.querySelector('#asst-send');
 
-  function push(role, text){
+  // Add message to chat
+  function push(role, text) {
     const d = document.createElement('div');
     d.className = `asst-msg ${role}`;
     d.textContent = text;
@@ -108,42 +158,84 @@ const ASSISTANT_BASE = ""; // empty means local helper
     body.scrollTop = body.scrollHeight;
   }
 
-  // seed greeting once
-  push('bot', lang()==='es'
-    ? 'Soy tu asistente de Voyadecir. Pregúntame sobre facturas, correo, OCR o cargas.'
-    : 'I’m your Voyadecir assistant. Ask me about bills, mail, OCR, or uploads.');
+  // Seed greeting once
+  const lastDoc = getLastDocument();
+  if (lastDoc && lastDoc.summary) {
+    push('bot', lang() === 'es'
+      ? `Hola! Veo que subiste un documento recientemente. Puedo responder preguntas sobre él, o ayudarte con el sitio.`
+      : `Hi! I see you uploaded a document recently. I can answer questions about it, or help you with the site.`);
+  } else {
+    push('bot', lang() === 'es'
+      ? 'Soy tu asistente de Voyadecir. Pregúntame sobre facturas, correo, OCR o cargas.'
+      : 'I'm your Voyadecir assistant. Ask me about bills, mail, OCR, or uploads.');
+  }
 
-  fab.addEventListener('click', ()=>{
-    panel.style.display = panel.style.display === 'none' || !panel.style.display ? 'block' : 'none';
-    if (panel.style.display === 'block') input.focus();
+  // Toggle panel
+  fab.addEventListener('click', () => {
+    const isVisible = panel.style.display === 'block';
+    panel.style.display = isVisible ? 'none' : 'block';
+    if (!isVisible) input.focus();
   });
 
-  input.addEventListener('keydown', (e)=>{
-    if (e.key === 'Enter' && !e.shiftKey){
+  // Enter to send
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       send.click();
     }
   });
 
   let pending = false;
-  send.addEventListener('click', async ()=>{
+
+  // Send message
+  send.addEventListener('click', async () => {
     const text = input.value.trim();
     if (!text || pending) return;
+
     input.value = '';
     push('user', text);
     pending = true;
-    push('bot', lang()==='es' ? 'Pensando…' : 'Thinking…');
+
+    // Show thinking indicator
+    push('bot', lang() === 'es' ? 'Pensando…' : 'Thinking…');
     const children = body.children;
     const thinking = children[children.length - 1];
-    try{
+
+    try {
       const resp = await callAssistantAPI(text, lang());
+      
+      // Remove thinking indicator
       if (thinking) thinking.remove();
-      push('bot', resp?.reply || (lang()==='es'?'No pude responder.':'I couldn’t answer.'));
-    }catch(_){
+      
+      // Show response
+      push('bot', resp.reply || (lang() === 'es' ? 'No pude responder.' : 'I couldn't answer.'));
+      
+      // Optional: log mode for debugging
+      if (resp.mode === 'document-aware') {
+        console.log('[asst-widget] Responded with document context');
+      }
+    } catch (err) {
+      console.error('[asst-widget] Error:', err);
       if (thinking) thinking.remove();
       push('bot', localHelper(text, lang()));
-    }finally{
+    } finally {
       pending = false;
     }
   });
+
+  // Listen for document uploads (other scripts can dispatch this event)
+  window.addEventListener('voyadecir:document-uploaded', (e) => {
+    try {
+      const docData = {
+        summary: e.detail.summary || '',
+        document_type: e.detail.document_type || 'unknown',
+        uploaded_at: new Date().toISOString()
+      };
+      sessionStorage.setItem('voyadecir_last_document', JSON.stringify(docData));
+      console.log('[asst-widget] Document context stored for assistant');
+    } catch (err) {
+      console.warn('[asst-widget] Could not store document context:', err);
+    }
+  });
+
 })();
