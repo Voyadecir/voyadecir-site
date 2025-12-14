@@ -1,18 +1,14 @@
 /* =========================================
    BASE THEME & GLOBAL
    ========================================= */
-
 :root {
-  --bg:#020617;          /* deep slate / near-black */
-  --fg:#f9fafb;          /* almost white */
+  --bg:#020617; /* deep slate / near-black */
+  --fg:#f9fafb; /* almost white */
   --muted:#e5e7eb;
   --accent:#000000;
-
   --panel-shadow:0 18px 45px rgba(0,0,0,0.45);
-
   --radius-card:24px;
-  --radius-button:18px;  /* rounded rectangle, not full pill */
-
+  --radius-button:18px; /* rounded rectangle, not full pill */
   /* radius for circle language menu */
   --lang-menu-radius:90px;
 }
@@ -31,12 +27,13 @@ html, body {
   overscroll-behavior-y:none;
 }
 
-/* Global wallpaper (ink JPG) – NO blue overlays */
+/* Global wallpaper - NEW: Deep ink wash from Unsplash */
 body {
   position:relative;
   min-height:100vh;
   background-color:#020617;
-  background-image:url("../img/bg-ink.jpg");
+  /* UPDATED: High-quality dark ink wash background */
+  background-image:url("https://images.unsplash.com/photo-1557683316-973673baf926?w=1920&q=80");
   background-size:cover;
   background-position:center center;
   background-repeat:no-repeat;
@@ -66,7 +63,7 @@ body > * {
   padding:0 24px;
 }
 
-/* Make main tall enough so footer doesn’t float halfway up
+/* Make main tall enough so footer doesn't float halfway up
    and vertically center content on short pages (all pages). */
 main {
   min-height:calc(100vh - 180px);
@@ -78,7 +75,6 @@ main {
 /* =========================================
    HEADER & NAV
    ========================================= */
-
 /* Back to clear top bar (no navy slab),
    and NOT sticky so content never scrolls "behind" it. */
 header {
@@ -144,7 +140,6 @@ nav a:hover {
 /* =========================================
    CIRCLE LANGUAGE MENU (LANG PICKER)
    ========================================= */
-
 .lang-menu {
   position:relative;
   width:48px;
@@ -160,11 +155,11 @@ nav a:hover {
   margin:0;
   padding:0;
   opacity:0;
-  pointer-events:none;   /* do NOT intercept clicks */
+  pointer-events:none; /* do NOT intercept clicks */
   z-index:1;
 }
 
-/* Center “globe” button using your PNG icon */
+/* Center "globe" button using your PNG icon */
 .lang-menu__button {
   position:relative;
   width:48px;
@@ -200,7 +195,7 @@ nav a:hover {
   z-index:5; /* above icon */
 }
 
-/* Each language “dot” */
+/* Each language "dot" */
 .lang-menu__item {
   position:absolute;
   top:0;
@@ -304,16 +299,15 @@ nav a:hover {
   transform:translate(-50%, -50%) translate(-53px, -73px);
 }
 
-/* Small screens: slightly smaller radius so it doesn’t overflow */
+/* Small screens: slightly smaller radius so it doesn't overflow */
 @media (max-width: 600px) {
   :root { --lang-menu-radius:70px; }
 }
 
 /* =========================================
-   LIQUID GLASS BASE (APPLE-STYLE)
+   CRYSTAL-CLEAR GLASS BASE (UPGRADED)
    ========================================= */
-
-/* Core liquid glass surface:
+/* Core crystal glass surface:
    We alias .glass, .glass-panel, .glass-button, and .lang-menu__button
    so the language icon ALSO gets the full glass effect everywhere. */
 .glass,
@@ -321,18 +315,22 @@ nav a:hover {
 .glass-button,
 .lang-menu__button {
   position:relative;
-  background:rgba(255, 255, 255, 0.14);   /* neutral clear glass */
-  backdrop-filter:blur(2px) saturate(180%);
-  -webkit-backdrop-filter:blur(2px) saturate(180%);
-  border:1px solid rgba(255, 255, 255, 0.8);
+  /* UPDATED: Ultra-transparent, almost invisible base */
+  background:rgba(255, 255, 255, 0.06);
+  /* UPDATED: Minimal blur for crystal clarity */
+  backdrop-filter:blur(8px) saturate(160%);
+  -webkit-backdrop-filter:blur(8px) saturate(160%);
+  /* UPDATED: Crisp, thin border with light refraction */
+  border:1px solid rgba(255, 255, 255, 0.18);
+  /* UPDATED: Softer shadow for floating effect */
   box-shadow:
-    0 18px 45px rgba(0, 0, 0, 0.55),       /* no blue tint */
-    inset 0 4px 18px rgba(255, 255, 255, 0.35);
+    0 8px 32px rgba(0, 0, 0, 0.37),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   overflow:hidden;
-  isolation:isolate; /* NEW: ensures ::after stays behind content but within element */
+  isolation:isolate;
 }
 
-/* Liquid highlight */
+/* Liquid highlight - UPDATED for crystal clarity */
 .glass::after,
 .glass-panel::after,
 .glass-button::after,
@@ -340,17 +338,24 @@ nav a:hover {
   content:'';
   position:absolute;
   inset:0;
-  background:rgba(255, 255, 255, 0.1);
+  /* UPDATED: Barely visible inner glow */
+  background:linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
   border-radius:inherit;
-  backdrop-filter:blur(1px);
-  -webkit-backdrop-filter:blur(1px);
+  /* UPDATED: Almost no blur on the highlight itself */
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+  /* UPDATED: Subtle edge lighting (like light hitting glass edge) */
   box-shadow:
-    inset -10px -8px 0px -11px rgba(255, 255, 255, 1),
-    inset 0px -9px 0px -8px rgba(255, 255, 255, 1);
-  opacity:0.6;
-  z-index:0;          /* NEW: behind content, above background */
+    inset -1px -1px 2px rgba(255, 255, 255, 0.12),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.08);
+  opacity:0.5;
+  z-index:0;
   pointer-events:none;
-  filter:blur(1px) drop-shadow(10px 4px 6px black) brightness(115%);
 }
 
 /* Ensure content sits above highlight on all glass surfaces */
@@ -375,9 +380,8 @@ nav a:hover {
 }
 
 /* =========================================
-   UNIFORM GLASS BUTTONS
+   CRYSTAL-CLEAR GLASS BUTTONS (UPGRADED)
    ========================================= */
-
 /* Base reset for native buttons */
 button {
   font:inherit;
@@ -388,16 +392,14 @@ button {
   color:inherit;
 }
 
-/* One look for every CTA, everywhere */
+/* One look for every CTA, everywhere - CRYSTAL CLEAR VERSION */
 .glass-button {
   display:inline-flex;
   align-items:center;
   justify-content:center;
   gap:8px;
-
-  padding:0.45rem 1.1rem;
+  padding:0.5rem 1.2rem;
   border-radius:var(--radius-button);
-
   color:#ffffff;
   font-size:0.8rem;
   letter-spacing:0.16em;
@@ -405,21 +407,46 @@ button {
   text-decoration:none;
   cursor:pointer;
   white-space:nowrap;
+  /* UPDATED: Crystal-clear transparency */
+  background:rgba(255, 255, 255, 0.08);
+  backdrop-filter:blur(10px) saturate(150%);
+  -webkit-backdrop-filter:blur(10px) saturate(150%);
+  /* UPDATED: Ultra-thin border for glass edge effect */
+  border:1px solid rgba(255, 255, 255, 0.2);
+  /* UPDATED: Softer shadow */
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition:all 0.2s ease;
 }
 
+/* UPDATED: Hover state - slight brightness increase like light hitting glass */
 .glass-button:hover {
-  background:rgba(255, 255, 255, 0.25);
+  background:rgba(255, 255, 255, 0.14);
+  border-color:rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform:translateY(-1px);
+}
+
+/* UPDATED: Active state - like pressing on glass */
+.glass-button:active {
+  transform:translateY(0);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .glass-button:disabled {
-  opacity:0.55;
+  opacity:0.4;
   cursor:not-allowed;
+  transform:none;
 }
 
 /* Layout tweaks for where buttons live */
 .nav .glass-button { margin-left:12px; }
 .hero .glass-button { margin-top:24px; }
-
 .translate-actions .glass-button,
 .translator-lang .glass-button,
 .translator-foot .glass-button,
@@ -431,7 +458,6 @@ button {
 /* =========================================
    TYPOGRAPHY & BASIC LAYOUT
    ========================================= */
-
 .hero {
   padding:72px 0 48px;
   text-align:center;
@@ -462,7 +488,6 @@ button {
 /* =========================================
    TRANSLATE / MAIL SHELLS CENTERED
    ========================================= */
-
 .translate-shell,
 .chat-shell,
 .results-card,
@@ -474,7 +499,6 @@ button {
 /* =========================================
    TRANSLATE PAGE SHELL
    ========================================= */
-
 .translate-shell {
   max-width:960px;
   margin-top:24px;
@@ -507,23 +531,20 @@ button {
 /* =========================================
    TRANSLATOR: CLEAR GLASS OUTER, BLACK INNER TEXTAREAS
    ========================================= */
-
 /* OUTER: CLEAR GLASS FRAME (ALL TRANSLATOR BOXES) */
 .translator-outer {
   max-width:960px;
   margin:18px auto 0;
-
   border-radius:var(--radius-card) !important;
   overflow:hidden;
-
   /* same clear-glass look as glass-panel */
-  background:rgba(255, 255, 255, 0.14);
-  backdrop-filter:blur(2px) saturate(180%);
-  -webkit-backdrop-filter:blur(2px) saturate(180%);
-  border:1px solid rgba(255, 255, 255, 0.8);
+  background:rgba(255, 255, 255, 0.06);
+  backdrop-filter:blur(8px) saturate(160%);
+  -webkit-backdrop-filter:blur(8px) saturate(160%);
+  border:1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
-    0 18px 45px rgba(0, 0, 0, 0.55),
-    inset 0 4px 18px rgba(255, 255, 255, 0.35);
+    0 8px 32px rgba(0, 0, 0, 0.37),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 /* Kill the generic glass-panel ::after on this one,
@@ -534,7 +555,6 @@ button {
 .translator-ui {
   padding:18px 18px 16px;
   color:#f5f5f5;
-
   background:transparent;
   border-radius:0;
   box-shadow:none;
@@ -595,7 +615,7 @@ button {
   resize:vertical;
 }
 
-.translator-box textarea::placeholder { color:#cbd5f5; }
+.translator-box textarea::placeholder { color:#cbd5e1; }
 
 /* inline buttons spacing; visuals from .glass-button */
 .inline-btn { margin-top:8px; }
@@ -610,7 +630,7 @@ button {
   justify-content:space-between;
   gap:10px;
   font-size:12px;
-  color:#cbd5f5;
+  color:#cbd5e1;
   margin-top:10px;
 }
 
@@ -627,7 +647,6 @@ button {
 /* =========================================
    MAIL & BILLS RESULTS CARD
    ========================================= */
-
 .results-card {
   max-width:760px;
   margin:16px auto 0;
@@ -648,22 +667,19 @@ button {
 /* =========================================
    MAIL & BILLS PAGE TWEAKS
    ========================================= */
-
 /* Hero language menu centered above "Mail & Bills Helper" with extra top space
    so the top bubble NEVER overlaps the header visually. */
 .lang-menu--hero {
-  margin:72px auto 18px;   /* big top margin, horizontally centered */
+  margin:72px auto 18px; /* big top margin, horizontally centered */
 }
 
 /* Slightly larger font on Mail & Bills page only */
 body.mailbills-page .translate-title { font-size: 28px; }
 body.mailbills-page .translate-sub { font-size: 18px; }
-
 body.mailbills-page .translator-box textarea {
   font-size: 16px;
   line-height: 1.5;
 }
-
 body.mailbills-page .results-card,
 body.mailbills-page .result-label,
 body.mailbills-page .result-value {
@@ -673,7 +689,6 @@ body.mailbills-page .result-value {
 /* =========================================
    ASSISTANT / CHAT PAGE
    ========================================= */
-
 .chat-shell {
   max-width:760px;
   margin:24px auto 0;
@@ -731,16 +746,153 @@ body.mailbills-page .result-value {
 }
 
 /* =========================================
+   CHATBOT WIDGET (BOTTOM-RIGHT / BOTTOM-CENTER)
+   ========================================= */
+.asst-fab {
+  position:fixed;
+  right:16px;
+  bottom:16px;
+  z-index:9999;
+  background:rgba(255, 255, 255, 0.08);
+  backdrop-filter:blur(10px) saturate(150%);
+  -webkit-backdrop-filter:blur(10px) saturate(150%);
+  color:#fff;
+  border:1px solid rgba(255, 255, 255, 0.2);
+  border-radius:999px;
+  padding:14px 18px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.3);
+  cursor:pointer;
+  font-size:14px;
+  font-weight:600;
+  transition:all 0.2s ease;
+}
+
+.asst-fab:hover {
+  background:rgba(255, 255, 255, 0.14);
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(0,0,0,0.4);
+}
+
+.asst-panel {
+  position:fixed;
+  right:16px;
+  bottom:76px;
+  z-index:9999;
+  width:340px;
+  max-width:calc(100vw - 32px);
+  max-height:60vh;
+  background:rgba(255, 255, 255, 0.08);
+  backdrop-filter:blur(12px) saturate(150%);
+  -webkit-backdrop-filter:blur(12px) saturate(150%);
+  border:1px solid rgba(255, 255, 255, 0.2);
+  border-radius:16px;
+  display:none;
+  box-shadow:0 8px 28px rgba(0,0,0,0.4);
+  overflow:hidden;
+  color:#f5f5f5;
+}
+
+.asst-head {
+  padding:12px 14px;
+  border-bottom:1px solid rgba(255,255,255,0.15);
+  font-weight:600;
+  font-size:15px;
+  background:rgba(0,0,0,0.3);
+}
+
+.asst-body {
+  padding:12px;
+  height:260px;
+  overflow:auto;
+  font-size:14px;
+  background:rgba(0,0,0,0.5);
+}
+
+.asst-msg {
+  margin:8px 0;
+  padding:8px 10px;
+  border-radius:10px;
+  max-width:85%;
+}
+
+.asst-msg.user {
+  background:rgba(255,255,255,0.15);
+  margin-left:auto;
+  text-align:right;
+}
+
+.asst-msg.bot {
+  background:rgba(0,0,0,0.6);
+  margin-right:auto;
+}
+
+.asst-foot {
+  display:flex;
+  gap:8px;
+  padding:12px;
+  border-top:1px solid rgba(255,255,255,0.15);
+  background:rgba(0,0,0,0.3);
+}
+
+.asst-input {
+  flex:1;
+  padding:8px 10px;
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:10px;
+  font-size:14px;
+  background:rgba(0,0,0,0.5);
+  color:#f5f5f5;
+}
+
+.asst-input::placeholder {
+  color:#94a3b8;
+}
+
+.asst-send {
+  padding:8px 14px;
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:10px;
+  background:rgba(255,255,255,0.1);
+  color:#fff;
+  cursor:pointer;
+  font-weight:600;
+  font-size:13px;
+  transition:all 0.2s ease;
+}
+
+.asst-send:hover {
+  background:rgba(255,255,255,0.18);
+}
+
+/* Mobile: bottom-center positioning */
+@media (max-width: 640px) {
+  .asst-fab {
+    right:50%;
+    transform:translateX(50%);
+    bottom:12px;
+  }
+  
+  .asst-fab:hover {
+    transform:translateX(50%) translateY(-2px);
+  }
+  
+  .asst-panel {
+    right:50%;
+    transform:translateX(50%);
+    bottom:68px;
+    width:calc(100vw - 24px);
+  }
+}
+
+/* =========================================
    FOOTER
    ========================================= */
-
 footer {
   border-top:1px solid rgba(148,163,184,0.4);
   margin-top:64px;
   padding:24px 0;
   color:#9ca3af;
   font-size:14px;
-
   /* let wallpaper show; no heavy bar at bottom */
   background:transparent;
   backdrop-filter:none;
@@ -757,16 +909,13 @@ small.tagline {
 /* =========================================
    RESPONSIVE
    ========================================= */
-
 @keyframes fadeIn {
   to { opacity:1; transform:none; }
 }
 
 @media (max-width:720px){
   .hero h1 { font-size:28px; }
-
   .translate-shell { padding:0 4px; }
-
   .chat-shell {
     margin-top:16px;
     padding:18px;
@@ -776,10 +925,3 @@ small.tagline {
 @media (max-width:640px){
   .translate-actions {
     flex-direction:column;
-    align-items:center;
-  }
-
-  .translator-foot {
-    flex-direction:column;
-  }
-}
