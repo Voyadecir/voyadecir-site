@@ -4,166 +4,88 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Voyadecir — Mail & Bills Helper</title>
-  <meta name="description" content="Upload or snap a photo of your bill or mail. We’ll read it, extract key info, and summarize it in your language.">
-
+  <meta name="description" content="Upload your mail and bills or translate everyday text with Voyadecir — a minimalist AI helper for English and Spanish.">
+  <meta name="author" content="Voyadecir">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
   <link rel="alternate icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/img/favicon.ico">
-
-  <!-- match dark / ink background -->
   <meta name="theme-color" content="#020617">
-
   <link rel="manifest" href="manifest.webmanifest">
-
-  <!-- use latest CSS + JS -->
-  <link rel="stylesheet" href="assets/css/styles.css?v=11">
+  <link rel="preload" as="image" href="assets/img/logo.png">
+  <link rel="stylesheet" href="assets/css/styles.css?v=12">
   <script defer src="assets/js/main.js?v=5"></script>
-  <script defer src="assets/js/mailbills.js?v=mb3"></script>
+  <script defer src="assets/js/mailbills.js?v=11"></script>
+  <!-- CHATBOT WIDGET: Added for Phase 1 -->
+  <script defer src="assets/js/asst-widget.js?v=2"></script>
 </head>
-
-<!-- Mail & Bills page class for larger fonts -->
 <body class="mailbills-page">
   <header>
     <div class="container nav">
       <div class="brand">
-        <img
-          src="assets/img/logo.png"
-          alt="Voyadecir Logo"
-          class="logo"
-          onerror="this.onerror=null;this.src='assets/img/logo.svg';">
+        <img src="assets/img/logo.png" alt="Voyadecir Logo" class="logo" onerror="this.onerror=null;this.src='assets/img/logo.svg';">
         <div>
           <div data-i18n="brand.title">Voyadecir</div>
           <small class="tagline" data-i18n="brand.tagline">Translate. Understand. Connect.</small>
         </div>
       </div>
-
       <nav>
         <a href="index.html" data-i18n="nav.home">Home</a>
         <a href="translate.html" data-i18n="nav.translate">Translate</a>
         <a href="mail-bills.html" data-i18n="nav.mailbills">Mail &amp; Bills</a>
         <a href="about.html" data-i18n="nav.about">About</a>
         <a href="contact.html" data-i18n="nav.contact">Contact</a>
-        <!-- No language control in the header on this page -->
       </nav>
     </div>
   </header>
 
   <main class="container section">
+    <div class="lang-menu lang-menu--hero">
+      <input type="checkbox" id="lang-menu-toggle" class="lang-menu__toggler" aria-label="Open language menu">
+      <button class="lang-menu__button glass-button" type="button">
+        <img src="assets/img/lang-icon.png" alt="Language" class="lang-menu__icon">
+      </button>
+      <ul class="lang-menu__list">
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="en">EN</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="es">ES</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="pt">PT</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="fr">FR</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="zh">中文</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="hi">हिन्दी</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ar">العربية</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="bn">বাংলা</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ru">РУ</button></li>
+        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ur">اردو</button></li>
+      </ul>
+    </div>
+
     <div class="translate-shell">
-
-      <!-- Language picker centered above Mail & Bills title -->
-      <div class="lang-menu lang-menu--hero">
-        <input
-          type="checkbox"
-          id="lang-menu-toggle"
-          class="lang-menu__toggler"
-          aria-label="Open language menu">
-        <!-- Added glass-button so icon matches other pages -->
-        <button class="lang-menu__button glass-button" type="button" aria-label="Change language">
-          <img
-            src="assets/img/lang-icon.png"
-            alt="Language"
-            class="lang-menu__icon">
-        </button>
-        <ul class="lang-menu__list">
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link js-lang-option" data-lang="en">EN</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link js-lang-option" data-lang="es">ES</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link js-lang-option" data-lang="pt">PT</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link js-lang-option" data-lang="fr">FR</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link js-lang-option" data-lang="zh">中文</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link js-lang-option" data-lang="hi">हिन्दी</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link js-lang-option" data-lang="ar">العربية</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link js-lang-option" data-lang="bn">বাংলা</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link js-lang-option" data-lang="ru">РУ</button>
-          </li>
-          <li class="lang-menu__item">
-            <button type="button" class="lang-menu__link js-lang-option" data-lang="ur">اردو</button>
-          </li>
-        </ul>
-      </div>
-
-      <h1 class="translate-title" data-i18n="mb.title">Mail &amp; Bills Helper</h1>
-      <p class="translate-sub" data-i18n="mb.sub">
-        Upload a bill or letter. We’ll read it, extract key info, and summarize it in your language.
-      </p>
+      <h1 class="translate-title" data-i18n="mb.title">Mail & Bills Helper</h1>
+      <p class="translate-sub" data-i18n="mb.subtitle">Upload a photo or PDF of your bill, letter, or document.</p>
 
       <div class="translate-actions">
-        <!-- Updated: allow multi-file selection for multi-page docs -->
-        <input type="file" id="file-input" accept=".pdf,image/*" multiple style="display:none;">
-        <!-- Camera typically returns a single image; keep single-file -->
-        <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;">
-
-        <!-- All actions: glass buttons -->
+        <input type="file" id="file-input" accept=".pdf,image/*" style="display:none;" multiple>
+        <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;" multiple>
+        
         <button type="button" class="glass-button translate-btn" id="btn-upload">
-          <span class="icon-doc"></span>
-          <span data-i18n="mb.btnUpload">Upload document</span>
+          <span data-i18n="mb.upload">Upload Document</span>
         </button>
-
         <button type="button" class="glass-button translate-btn" id="btn-camera">
-          <span class="icon-camera"></span>
-          <span data-i18n="mb.btnCamera">Take picture</span>
+          <span data-i18n="mb.camera">Take Picture</span>
         </button>
-
-        <button
-          type="button"
-          class="glass-button translate-btn secondary"
-          id="btn-listen"
-          disabled
-          title="Coming soon">
-          <span class="icon-audio"></span>
-          <span data-i18n="mb.btnListen">Read it to me (soon)</span>
+        <button type="button" class="glass-button translate-btn" id="mb-translate-btn">
+          <span data-i18n="mb.translate">Translate Full Text</span>
         </button>
-
-        <!-- Manual translate button (uses existing translator API) -->
-        <button type="button" class="glass-button translate-btn" id="mb-translate-run">
-          <span class="icon-doc"></span>
-          <span data-i18n="translate.run">Translate</span>
-        </button>
-
-        <button type="button" class="glass-button translate-btn secondary" id="mb-clear">
-          <span data-i18n="mb.btnClear">Clear</span>
+        <button type="button" class="glass-button translate-btn" id="mb-clear">
+          <span data-i18n="mb.clear">Clear</span>
         </button>
       </div>
 
-      <!-- Translator: clear glass outer frame + black inner textareas -->
       <div class="translator-outer glass-panel">
         <div class="translator-ui">
           <div class="translator-topbar">
             <div class="translator-lang">
-              <label data-i18n="translate.from">
-                From
-                <select id="mb-src-lang" disabled>
-                  <option value="auto">Auto</option>
-                </select>
-              </label>
-
-              <button
-                type="button"
-                id="mb-swap-langs"
-                class="glass-button swap-btn"
-                title="Swap languages">
-                <span data-i18n="translate.swap">⇄</span>
-              </button>
-
-              <label data-i18n="translate.to">
+              <label data-i18n="mb.to">
                 To
                 <select id="mb-tgt-lang">
                   <option value="es">Spanish</option>
@@ -178,115 +100,78 @@
                   <option value="ur">Urdu</option>
                 </select>
               </label>
+              <button type="button" id="mb-swap-langs" class="glass-button swap-btn" title="Swap languages">⇄</button>
             </div>
           </div>
 
           <div class="translator-panels">
             <div class="translator-box">
-              <textarea
-                id="ocr-text"
-                placeholder="Text from your document will appear here..."
-                data-i18n-placeholder="mb.ocrPlaceholder"
-              ></textarea>
-              <div style="margin-top:8px;">
-                <button type="button" class="glass-button inline-btn" id="mb-copy-ocr">
-                  <span data-i18n="mb.copyOcr">Copy text</span>
-                </button>
-              </div>
+              <textarea id="ocr-text" data-i18n-placeholder="mb.ocrPlaceholder" placeholder="Extracted text will appear here…" readonly></textarea>
+              <button type="button" id="mb-copy-ocr" class="glass-button inline-btn">
+                <span data-i18n="mb.copyOcr">Copy Text</span>
+              </button>
             </div>
 
             <div class="translator-box">
-              <textarea
-                id="summary-text"
-                placeholder="Summary will appear here..."
-                readonly
-              ></textarea>
-
-              <!-- Copy Summary + Download PDF side-by-side -->
-              <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
-                <button type="button" class="glass-button inline-btn" id="mb-copy-summary">
-                  <span data-i18n="mb.copySummary">Copy summary</span>
+              <textarea id="summary-text" data-i18n-placeholder="mb.summaryPlaceholder" placeholder="Summary and explanation will appear here…" readonly></textarea>
+              <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+                <button type="button" id="mb-copy-summary" class="glass-button inline-btn">
+                  <span data-i18n="mb.copySummary">Copy Summary</span>
                 </button>
-
-                <button type="button" class="glass-button inline-btn" id="mb-download-pdf">
-                  <span data-i18n="mb.downloadPdf">Download translated PDF</span>
+                <button type="button" id="mb-download-pdf" class="glass-button inline-btn" disabled>
+                  <span data-i18n="mb.downloadPdf">Download PDF</span>
                 </button>
               </div>
             </div>
           </div>
 
           <div class="translator-foot">
-            <span class="translator-hint" data-i18n="mb.hint">
-              Tip: clear, well-lit photos give the best results.
-            </span>
-            <span id="status-line">Ready</span>
+            <span id="status-line" data-i18n="mb.status">Ready</span>
+            <span class="translator-hint" data-i18n="mb.hint">Upload clear photos for best results.</span>
           </div>
         </div>
       </div>
 
-      <!-- Results card: liquid glass too -->
       <div class="results-card glass" id="results-card" style="display:none;">
-        <!-- Title that the JS can localize -->
-        <h2 id="results-title" data-i18n="mb.results.title">
-          Key details from your bill
-        </h2>
-
-        <!-- Grid of key fields -->
-        <div class="results-grid">
-          <div class="result-row">
-            <div class="result-label" id="label-amount" data-i18n="mb.amount">
-              Amount due
-            </div>
-            <div class="result-value" id="r-amount">—</div>
-          </div>
-
-          <div class="result-row">
-            <div class="result-label" id="label-duedate" data-i18n="mb.duedate">
-              Due date
-            </div>
-            <div class="result-value" id="r-duedate">—</div>
-          </div>
-
-          <div class="result-row">
-            <div class="result-label" id="label-acct" data-i18n="mb.account">
-              Account #
-            </div>
-            <div class="result-value" id="r-acct">—</div>
-          </div>
-
-          <div class="result-row">
-            <div class="result-label" id="label-sender" data-i18n="mb.sender">
-              Sender
-            </div>
-            <div class="result-value" id="r-sender">—</div>
-          </div>
-
-          <div class="result-row">
-            <div class="result-label" id="label-address" data-i18n="mb.address">
-              Service address
-            </div>
-            <div class="result-value" id="r-address">—</div>
-          </div>
+        <h3 id="results-title">Key details from your bill</h3>
+        <div class="result-row">
+          <strong id="label-amount">Amount due:</strong>
+          <span id="r-amount">—</span>
+        </div>
+        <div class="result-row">
+          <strong id="label-duedate">Due date:</strong>
+          <span id="r-duedate">—</span>
+        </div>
+        <div class="result-row">
+          <strong id="label-acct">Account #:</strong>
+          <span id="r-acct">—</span>
+        </div>
+        <div class="result-row">
+          <strong id="label-sender">Sender:</strong>
+          <span id="r-sender">—</span>
+        </div>
+        <div class="result-row">
+          <strong id="label-address">Service address:</strong>
+          <span id="r-address">—</span>
         </div>
 
-        <!-- Identity requirements -->
-        <div class="result-section" id="identity-section" style="display:none;">
-          <h3 data-i18n="mb.identityTitle">What you’ll need</h3>
+        <div id="identity-section" style="display:none;margin-top:16px;">
+          <h4>What you need to identify yourself:</h4>
           <ul id="identity-list"></ul>
         </div>
 
-        <!-- Payment options -->
-        <div class="result-section" id="payment-section" style="display:none;">
-          <h3 data-i18n="mb.paymentTitle">How you can pay</h3>
+        <div id="payment-section" style="display:none;margin-top:16px;">
+          <h4>How to pay:</h4>
           <ul id="payment-list"></ul>
         </div>
 
-        <!-- Other important amounts -->
-        <div class="result-section" id="other-amounts-section" style="display:none;">
-          <h3 data-i18n="mb.otherAmountsTitle">Other important amounts</h3>
+        <div id="other-amounts-section" style="display:none;margin-top:16px;">
+          <h4>Other important amounts:</h4>
           <ul id="other-amounts-list"></ul>
         </div>
       </div>
+
+      <p class="translate-footnote" data-i18n="mb.footnote">Your document is processed securely and not stored permanently.</p>
     </div>
   </main>
 
