@@ -2,18 +2,16 @@
    BASE THEME & GLOBAL
    ========================================= */
 :root {
-  --bg:#020617; /* deep slate / near-black */
-  --fg:#f9fafb; /* almost white */
+  --bg:#020617;
+  --fg:#f9fafb;
   --muted:#e5e7eb;
   --accent:#000000;
   --panel-shadow:0 18px 45px rgba(0,0,0,0.45);
   --radius-card:24px;
-  --radius-button:18px; /* rounded rectangle, not full pill */
-  /* radius for circle language menu */
+  --radius-button:18px;
   --lang-menu-radius:90px;
 }
 
-/* Reset & base */
 * {
   box-sizing:border-box;
 }
@@ -23,16 +21,13 @@ html, body {
   padding:0;
   color:var(--fg);
   font-family:Inter, "Helvetica Neue", Arial, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  /* stop the page from "overscrolling" past the top bar feeling */
   overscroll-behavior-y:none;
 }
 
-/* Global wallpaper - NEW: Deep ink wash from Unsplash */
 body {
   position:relative;
   min-height:100vh;
   background-color:#020617;
-  /* UPDATED: High-quality dark ink wash background */
   background-image:url("https://images.unsplash.com/photo-1557683316-973673baf926?w=1920&q=80");
   background-size:cover;
   background-position:center center;
@@ -40,7 +35,6 @@ body {
   background-attachment:fixed;
 }
 
-/* subtle grid texture overlay */
 body::before {
   content:"";
   position:fixed;
@@ -63,8 +57,6 @@ body > * {
   padding:0 24px;
 }
 
-/* Make main tall enough so footer doesn't float halfway up
-   and vertically center content on short pages (all pages). */
 main {
   min-height:calc(100vh - 180px);
   display:flex;
@@ -75,8 +67,6 @@ main {
 /* =========================================
    HEADER & NAV
    ========================================= */
-/* Back to clear top bar (no navy slab),
-   and NOT sticky so content never scrolls "behind" it. */
 header {
   position:relative;
   top:auto;
@@ -108,13 +98,11 @@ header {
   width:auto;
 }
 
-/* Bigger logo on desktop */
 @media (min-width: 1024px){
   .brand img { height: 64px; }
   header .nav { padding: 18px 0; }
 }
 
-/* FORCE bigger logo on desktop, per design lock */
 @media (min-width: 1024px){
   header .brand img.logo { height: 64px !important; }
   header .nav { padding: 18px 0 !important; }
@@ -138,7 +126,7 @@ nav a:hover {
 }
 
 /* =========================================
-   CIRCLE LANGUAGE MENU (LANG PICKER)
+   CIRCLE LANGUAGE MENU
    ========================================= */
 .lang-menu {
   position:relative;
@@ -147,19 +135,16 @@ nav a:hover {
   margin-left:12px;
 }
 
-/* Invisible checkbox that controls open/close
-   (toggled programmatically by JS now) */
 .lang-menu__toggler {
   position:absolute;
   inset:0;
   margin:0;
   padding:0;
   opacity:0;
-  pointer-events:none; /* do NOT intercept clicks */
+  pointer-events:none;
   z-index:1;
 }
 
-/* Center "globe" button using your PNG icon */
 .lang-menu__button {
   position:relative;
   width:48px;
@@ -171,8 +156,7 @@ nav a:hover {
   cursor:pointer;
   border:none;
   padding:0;
-  /* background + blur come from glass section below */
-  z-index:4; /* keep it above list container */
+  z-index:4;
 }
 
 .lang-menu__icon {
@@ -181,7 +165,6 @@ nav a:hover {
   object-fit:contain;
 }
 
-/* Container for round items – center of circle = icon center */
 .lang-menu__list {
   list-style:none;
   margin:0;
@@ -192,10 +175,9 @@ nav a:hover {
   width:0;
   height:0;
   transform:translate(-50%, -50%);
-  z-index:5; /* above icon */
+  z-index:5;
 }
 
-/* Each language "dot" */
 .lang-menu__item {
   position:absolute;
   top:0;
@@ -206,10 +188,9 @@ nav a:hover {
   transition:
     transform 0.35s ease,
     opacity 0.25s ease;
-  z-index:6; /* make language bubbles sit ABOVE everything */
+  z-index:6;
 }
 
-/* The round language button itself */
 .lang-menu__link {
   min-width:40px;
   min-height:40px;
@@ -236,19 +217,16 @@ nav a:hover {
   background:rgba(255, 255, 255, 0.2);
 }
 
-/* Highlight the active language */
 .lang-menu__link.is-active {
   background:rgba(255, 255, 255, 0.32);
   color:#020617;
 }
 
-/* When toggler is checked, fan items out in a circle */
 .lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item {
   opacity:1;
   pointer-events:auto;
 }
 
-/* Positions for 10 items around the circle (manual offsets) */
 .lang-menu__item:nth-child(1) { transform:translate(-50%, -50%); }
 .lang-menu__toggler:checked ~ .lang-menu__list .lang-menu__item:nth-child(1) {
   transform:translate(-50%, -50%) translate(0, calc(-1 * var(--lang-menu-radius)));
@@ -299,30 +277,22 @@ nav a:hover {
   transform:translate(-50%, -50%) translate(-53px, -73px);
 }
 
-/* Small screens: slightly smaller radius so it doesn't overflow */
 @media (max-width: 600px) {
   :root { --lang-menu-radius:70px; }
 }
 
 /* =========================================
-   CRYSTAL-CLEAR GLASS BASE (UPGRADED)
+   CRYSTAL-CLEAR GLASS BASE
    ========================================= */
-/* Core crystal glass surface:
-   We alias .glass, .glass-panel, .glass-button, and .lang-menu__button
-   so the language icon ALSO gets the full glass effect everywhere. */
 .glass,
 .glass-panel,
 .glass-button,
 .lang-menu__button {
   position:relative;
-  /* UPDATED: Ultra-transparent, almost invisible base */
   background:rgba(255, 255, 255, 0.06);
-  /* UPDATED: Minimal blur for crystal clarity */
   backdrop-filter:blur(8px) saturate(160%);
   -webkit-backdrop-filter:blur(8px) saturate(160%);
-  /* UPDATED: Crisp, thin border with light refraction */
   border:1px solid rgba(255, 255, 255, 0.18);
-  /* UPDATED: Softer shadow for floating effect */
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.37),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -330,7 +300,6 @@ nav a:hover {
   isolation:isolate;
 }
 
-/* Liquid highlight - UPDATED for crystal clarity */
 .glass::after,
 .glass-panel::after,
 .glass-button::after,
@@ -338,7 +307,6 @@ nav a:hover {
   content:'';
   position:absolute;
   inset:0;
-  /* UPDATED: Barely visible inner glow */
   background:linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.08) 0%,
@@ -346,10 +314,8 @@ nav a:hover {
     rgba(255, 255, 255, 0.08) 100%
   );
   border-radius:inherit;
-  /* UPDATED: Almost no blur on the highlight itself */
   backdrop-filter:blur(2px);
   -webkit-backdrop-filter:blur(2px);
-  /* UPDATED: Subtle edge lighting (like light hitting glass edge) */
   box-shadow:
     inset -1px -1px 2px rgba(255, 255, 255, 0.12),
     inset 1px 1px 2px rgba(255, 255, 255, 0.08);
@@ -358,7 +324,6 @@ nav a:hover {
   pointer-events:none;
 }
 
-/* Ensure content sits above highlight on all glass surfaces */
 .glass > *,
 .glass-panel > *,
 .glass-button > *,
@@ -367,7 +332,6 @@ nav a:hover {
   z-index:1;
 }
 
-/* card-like surfaces get bigger radius */
 .hero.glass,
 .card.glass,
 .chat-shell.glass,
@@ -380,9 +344,8 @@ nav a:hover {
 }
 
 /* =========================================
-   CRYSTAL-CLEAR GLASS BUTTONS (UPGRADED)
+   CRYSTAL-CLEAR GLASS BUTTONS
    ========================================= */
-/* Base reset for native buttons */
 button {
   font:inherit;
   border:none;
@@ -392,7 +355,6 @@ button {
   color:inherit;
 }
 
-/* One look for every CTA, everywhere - CRYSTAL CLEAR VERSION */
 .glass-button {
   display:inline-flex;
   align-items:center;
@@ -407,20 +369,16 @@ button {
   text-decoration:none;
   cursor:pointer;
   white-space:nowrap;
-  /* UPDATED: Crystal-clear transparency */
   background:rgba(255, 255, 255, 0.08);
   backdrop-filter:blur(10px) saturate(150%);
   -webkit-backdrop-filter:blur(10px) saturate(150%);
-  /* UPDATED: Ultra-thin border for glass edge effect */
   border:1px solid rgba(255, 255, 255, 0.2);
-  /* UPDATED: Softer shadow */
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
   transition:all 0.2s ease;
 }
 
-/* UPDATED: Hover state - slight brightness increase like light hitting glass */
 .glass-button:hover {
   background:rgba(255, 255, 255, 0.14);
   border-color:rgba(255, 255, 255, 0.3);
@@ -430,7 +388,6 @@ button {
   transform:translateY(-1px);
 }
 
-/* UPDATED: Active state - like pressing on glass */
 .glass-button:active {
   transform:translateY(0);
   box-shadow:
@@ -444,7 +401,6 @@ button {
   transform:none;
 }
 
-/* Layout tweaks for where buttons live */
 .nav .glass-button { margin-left:12px; }
 .hero .glass-button { margin-top:24px; }
 .translate-actions .glass-button,
@@ -485,9 +441,6 @@ button {
   margin-right:auto;
 }
 
-/* =========================================
-   TRANSLATE / MAIL SHELLS CENTERED
-   ========================================= */
 .translate-shell,
 .chat-shell,
 .results-card,
@@ -496,9 +449,6 @@ button {
   margin-right:auto;
 }
 
-/* =========================================
-   TRANSLATE PAGE SHELL
-   ========================================= */
 .translate-shell {
   max-width:960px;
   margin-top:24px;
@@ -516,7 +466,6 @@ button {
   color:var(--muted);
 }
 
-/* top button row */
 .translate-actions {
   display:flex;
   flex-wrap:wrap;
@@ -525,19 +474,16 @@ button {
   margin:24px 0 20px;
 }
 
-/* hook for translate-specific logic only */
 .translate-btn {}
 
 /* =========================================
-   TRANSLATOR: CLEAR GLASS OUTER, BLACK INNER TEXTAREAS
+   TRANSLATOR
    ========================================= */
-/* OUTER: CLEAR GLASS FRAME (ALL TRANSLATOR BOXES) */
 .translator-outer {
   max-width:960px;
   margin:18px auto 0;
   border-radius:var(--radius-card) !important;
   overflow:hidden;
-  /* same clear-glass look as glass-panel */
   background:rgba(255, 255, 255, 0.06);
   backdrop-filter:blur(8px) saturate(160%);
   -webkit-backdrop-filter:blur(8px) saturate(160%);
@@ -547,11 +493,8 @@ button {
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* Kill the generic glass-panel ::after on this one,
-   since we defined its frame explicitly above */
 .translator-outer::after { content:none; }
 
-/* INNER: NO BACKGROUND — just a container so outer glass stays visible */
 .translator-ui {
   padding:18px 18px 16px;
   color:#f5f5f5;
@@ -590,10 +533,8 @@ button {
   padding:6px 8px;
 }
 
-/* swap button: visuals from glass-button */
 .swap-btn { font-size:0.9rem; }
 
-/* layout for text boxes */
 .translator-panels {
   display:flex;
   flex-direction:column;
@@ -602,7 +543,6 @@ button {
 
 .translator-box { width:100%; }
 
-/* INNER BLACK BOXES (only these are black now) */
 .translator-box textarea {
   width:100%;
   min-height:180px;
@@ -617,12 +557,10 @@ button {
 
 .translator-box textarea::placeholder { color:#cbd5e1; }
 
-/* inline buttons spacing; visuals from .glass-button */
 .inline-btn { margin-top:8px; }
 
-/* NEW: make the two buttons (Copy Summary + Download PDF) look aligned and consistent */
 .translator-box .inline-btn {
-  margin-top:0; /* container already handles spacing */
+  margin-top:0;
 }
 
 .translator-foot {
@@ -636,7 +574,6 @@ button {
 
 .translator-hint { opacity:.75; }
 
-/* Footnote under translator */
 .translate-footnote {
   margin-top:20px;
   font-size:12px;
@@ -664,16 +601,10 @@ button {
 
 .result-row:last-child { border-bottom:none; }
 
-/* =========================================
-   MAIL & BILLS PAGE TWEAKS
-   ========================================= */
-/* Hero language menu centered above "Mail & Bills Helper" with extra top space
-   so the top bubble NEVER overlaps the header visually. */
 .lang-menu--hero {
-  margin:72px auto 18px; /* big top margin, horizontally centered */
+  margin:72px auto 18px;
 }
 
-/* Slightly larger font on Mail & Bills page only */
 body.mailbills-page .translate-title { font-size: 28px; }
 body.mailbills-page .translate-sub { font-size: 18px; }
 body.mailbills-page .translator-box textarea {
@@ -746,7 +677,7 @@ body.mailbills-page .result-value {
 }
 
 /* =========================================
-   CHATBOT WIDGET (BOTTOM-RIGHT / BOTTOM-CENTER)
+   CHATBOT WIDGET (WITH BOUNCE ANIMATION)
    ========================================= */
 .asst-fab {
   position:fixed;
@@ -765,12 +696,21 @@ body.mailbills-page .result-value {
   font-size:14px;
   font-weight:600;
   transition:all 0.2s ease;
+  /* NEW: Bounce animation plays after 2s delay, repeats every 15s */
+  animation: fabBounce 0.6s ease-in-out 2s infinite;
+  animation-iteration-count: 1;
+}
+
+/* Stop animation after first interaction */
+.asst-fab.clicked {
+  animation: none;
 }
 
 .asst-fab:hover {
   background:rgba(255, 255, 255, 0.14);
   transform:translateY(-2px);
   box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  animation: none; /* Stop bouncing on hover */
 }
 
 .asst-panel {
@@ -893,7 +833,6 @@ footer {
   padding:24px 0;
   color:#9ca3af;
   font-size:14px;
-  /* let wallpaper show; no heavy bar at bottom */
   background:transparent;
   backdrop-filter:none;
   -webkit-backdrop-filter:none;
@@ -907,12 +846,31 @@ small.tagline {
 }
 
 /* =========================================
-   RESPONSIVE
+   ANIMATIONS
    ========================================= */
 @keyframes fadeIn {
   to { opacity:1; transform:none; }
 }
 
+/* NEW: Gentle bounce animation for chatbot button */
+@keyframes fabBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-8px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-4px);
+  }
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
 @media (max-width:720px){
   .hero h1 { font-size:28px; }
   .translate-shell { padding:0 4px; }
@@ -925,3 +883,9 @@ small.tagline {
 @media (max-width:640px){
   .translate-actions {
     flex-direction:column;
+    align-items:center;
+  }
+  .translator-foot {
+    flex-direction:column;
+  }
+}
