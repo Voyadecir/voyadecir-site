@@ -22,18 +22,18 @@
   // UTILITY FUNCTIONS
   // ============================================================================
   
-  const $ = (s) => document.querySelector(s);
+  const $ = function(s) { return document.querySelector(s); };
 
   function getLang() {
     try {
       return sessionStorage.getItem("voyadecir_lang") || "en";
-    } catch (_) {
+    } catch (e) {
       return "en";
     }
   }
 
   // i18n strings for the widget
-  const i18n = {
+  var i18n = {
     en: {
       fabLabel: "💬 Ask",
       panelTitle: "Voyadecir Assistant",
@@ -57,7 +57,7 @@
   };
 
   function t(key) {
-    const lang = getLang();
+    var lang = getLang();
     return (i18n[lang] && i18n[lang][key]) || i18n.en[key] || key;
   }
 
@@ -66,74 +66,83 @@
   // ============================================================================
   
   function localHelper(question, lang) {
-    const q = (question || "").toLowerCase();
+    var q = (question || "").toLowerCase();
     
-    const en = {
+    var en = {
       hello: "Hi! Ask me about translating bills, taking a photo, or supported file types. Try: "Can I upload a PDF?"",
       pdf: "Yes, you can upload PDFs and images. Clear, well-lit photos work best. For multi-page PDFs, we process all pages.",
       camera: "Use the Take Picture button on Mail & Bills. Make sure the text is sharp and fills the frame.",
       ocr: "OCR reads text in your image or PDF. We use Azure Vision + Document Intelligence to extract key fields like amount and due date.",
       translate: "Go to the Translate page for text translation, or use Mail & Bills for document images with OCR + translation.",
       help: "I can help with: uploading documents, taking photos, OCR (text recognition), translation, and understanding bills/mail.",
-      default: "Got it. I'll get smarter later when we connect the full assistant. For now, ask about upload, camera, OCR, or supported docs."
+      defaultMsg: "Got it. I'll get smarter later when we connect the full assistant. For now, ask about upload, camera, OCR, or supported docs."
     };
     
-    const es = {
+    var es = {
       hello: "¡Hola! Pregúntame sobre traducir facturas, tomar una foto o los tipos de archivo. Prueba: "¿Puedo subir un PDF?"",
       pdf: "Sí, puedes subir archivos PDF e imágenes. Las fotos claras y bien iluminadas funcionan mejor. Procesamos todas las páginas.",
       camera: "Usa el botón Tomar foto en Correo y Facturas. Asegúrate de que el texto esté nítido y ocupe el cuadro.",
       ocr: "OCR lee el texto de tu imagen o PDF. Usamos Azure Vision + Document Intelligence para extraer campos clave como importe y fecha de vencimiento.",
       translate: "Ve a la página Traducir para traducir texto, o usa Correo y Facturas para imágenes de documentos con OCR + traducción.",
       help: "Puedo ayudar con: subir documentos, tomar fotos, OCR (reconocimiento de texto), traducción y entender facturas/correo.",
-      default: "Entendido. Pronto seré más inteligente cuando conectemos el asistente completo. Por ahora, pregunta sobre subir, cámara, OCR o documentos soportados."
+      defaultMsg: "Entendido. Pronto seré más inteligente cuando conectemos el asistente completo. Por ahora, pregunta sobre subir, cámara, OCR o documentos soportados."
     };
     
-    const dict = lang === "es" ? es : en;
+    var dict = lang === "es" ? es : en;
     
-    if (q.includes("pdf") || q.includes("upload") || q.includes("subir")) return dict.pdf;
-    if (q.includes("camera") || q.includes("foto") || q.includes("picture") || q.includes("photo")) return dict.camera;
-    if (q.includes("ocr") || q.includes("scan") || q.includes("read")) return dict.ocr;
-    if (q.includes("translate") || q.includes("traducir") || q.includes("translation")) return dict.translate;
-    if (q.includes("help") || q.includes("ayuda") || q.includes("what can")) return dict.help;
-    if (q.includes("hello") || q.includes("hola") || q.includes("hi") || q.includes("hey")) return dict.hello;
+    if (q.indexOf("pdf") !== -1 || q.indexOf("upload") !== -1 || q.indexOf("subir") !== -1) return dict.pdf;
+    if (q.indexOf("camera") !== -1 || q.indexOf("foto") !== -1 || q.indexOf("picture") !== -1 || q.indexOf("photo") !== -1) return dict.camera;
+    if (q.indexOf("ocr") !== -1 || q.indexOf("scan") !== -1 || q.indexOf("read") !== -1) return dict.ocr;
+    if (q.indexOf("translate") !== -1 || q.indexOf("traducir") !== -1 || q.indexOf("translation") !== -1) return dict.translate;
+    if (q.indexOf("help") !== -1 || q.indexOf("ayuda") !== -1 || q.indexOf("what can") !== -1) return dict.help;
+    if (q.indexOf("hello") !== -1 || q.indexOf("hola") !== -1 || q.indexOf("hi") !== -1 || q.indexOf("hey") !== -1) return dict.hello;
     
-    return dict.default;
+    return dict.defaultMsg;
   }
 
   // ============================================================================
   // API CALL
   // ============================================================================
   
-  async function fetchWithTimeout(url, opts = {}, ms = 12000) {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), ms);
-    try {
-      const res = await fetch(url, { ...opts, signal: ctrl.signal });
-      return res;
-    } finally {
-      clearTimeout(timer);
-    }
+  function fetchWithTimeout(url, opts, ms) {
+    opts = opts || {};
+    ms = ms || 12000;
+    
+    return new Promise(function(resolve, reject) {
+      var ctrl = new AbortController();
+      var timer = setTimeout(function() { ctrl.abort(); }, ms);
+      
+      fetch(url, Object.assign({}, opts, { signal: ctrl.signal }))
+        .then(function(res) {
+          clearTimeout(timer);
+          resolve(res);
+        })
+        .catch(function(err) {
+          clearTimeout(timer);
+          reject(err);
+        });
+    });
   }
 
-  async function callAssistantAPI(message, lang) {
+  function callAssistantAPI(message, lang) {
     if (!ASSISTANT_BASE) {
       // No backend configured → use local helper
-      return { reply: localHelper(message, lang), backend: "local" };
+      return Promise.resolve({ reply: localHelper(message, lang), backend: "local" });
     }
     
-    const url = `${ASSISTANT_BASE}/api/assistant`;
-    const res = await fetchWithTimeout(url, {
+    var url = ASSISTANT_BASE + "/api/assistant";
+    return fetchWithTimeout(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, lang })
+      body: JSON.stringify({ message: message, lang: lang })
+    }).then(function(res) {
+      if (!res.ok) {
+        return res.text().then(function(text) {
+          throw new Error("Assistant server " + res.status + ": " + text);
+        });
+      }
+      return res.json();
     });
-    
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Assistant server ${res.status}: ${text}`);
-    }
-    
-    return res.json();
   }
 
   // ============================================================================
@@ -142,41 +151,47 @@
   
   function createWidget() {
     // Don't create widget on the assistant.html page (it has its own full chat)
-    if (window.location.pathname.includes("assistant.html")) {
+    if (window.location.pathname.indexOf("assistant.html") !== -1) {
+      console.log("[asst-widget] Skipping widget on assistant.html page");
+      return null;
+    }
+
+    // Check if widget already exists (prevent duplicates)
+    if (document.getElementById("asst-fab")) {
+      console.log("[asst-widget] Widget already exists, skipping creation");
       return null;
     }
 
     // Create FAB (Floating Action Button)
-    const fab = document.createElement("button");
+    var fab = document.createElement("button");
     fab.id = "asst-fab";
     fab.className = "asst-fab";
     fab.type = "button";
     fab.setAttribute("aria-label", t("fabLabel"));
-    fab.innerHTML = `<span>${t("fabLabel")}</span>`;
+    fab.innerHTML = "<span>" + t("fabLabel") + "</span>";
 
     // Create Panel
-    const panel = document.createElement("div");
+    var panel = document.createElement("div");
     panel.id = "asst-panel";
     panel.className = "asst-panel";
-    panel.innerHTML = `
-      <div class="asst-head">
-        <span class="asst-title">${t("panelTitle")}</span>
-        <button class="asst-close" type="button" aria-label="Close">${t("close")}</button>
-      </div>
-      <div class="asst-body" id="asst-body">
-        <!-- Messages appear here -->
-      </div>
-      <div class="asst-foot">
-        <input type="text" class="asst-input" id="asst-input" placeholder="${t("placeholder")}" autocomplete="off">
-        <button class="asst-send" id="asst-send" type="button">${t("send")}</button>
-      </div>
-    `;
+    panel.innerHTML = 
+      '<div class="asst-head">' +
+        '<span class="asst-title">' + t("panelTitle") + '</span>' +
+        '<button class="asst-close" type="button" aria-label="Close">' + t("close") + '</button>' +
+      '</div>' +
+      '<div class="asst-body" id="asst-body"></div>' +
+      '<div class="asst-foot">' +
+        '<input type="text" class="asst-input" id="asst-input" placeholder="' + t("placeholder") + '" autocomplete="off">' +
+        '<button class="asst-send" id="asst-send" type="button">' + t("send") + '</button>' +
+      '</div>';
 
     // Append to body
     document.body.appendChild(fab);
     document.body.appendChild(panel);
 
-    return { fab, panel };
+    console.log("[asst-widget] Widget elements created and appended to body");
+
+    return { fab: fab, panel: panel };
   }
 
   // ============================================================================
@@ -184,11 +199,11 @@
   // ============================================================================
   
   function appendMessage(role, text) {
-    const body = $("#asst-body");
+    var body = document.getElementById("asst-body");
     if (!body) return;
 
-    const msg = document.createElement("div");
-    msg.className = `asst-msg ${role}`;
+    var msg = document.createElement("div");
+    msg.className = "asst-msg " + role;
     msg.textContent = text;
     body.appendChild(msg);
     body.scrollTop = body.scrollHeight;
@@ -198,10 +213,10 @@
   }
 
   function showTyping(show) {
-    const body = $("#asst-body");
+    var body = document.getElementById("asst-body");
     if (!body) return;
 
-    let typingEl = $("#asst-typing");
+    var typingEl = document.getElementById("asst-typing");
     
     if (show) {
       if (!typingEl) {
@@ -219,32 +234,38 @@
 
   function persistChat() {
     try {
-      const body = $("#asst-body");
+      var body = document.getElementById("asst-body");
       if (!body) return;
       
-      const nodes = [...body.querySelectorAll(".asst-msg")];
-      const items = nodes.map((n) => ({
-        role: n.classList.contains("user") ? "user" : "bot",
-        text: n.textContent || ""
-      }));
+      var nodes = body.querySelectorAll(".asst-msg");
+      var items = [];
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        items.push({
+          role: n.classList.contains("user") ? "user" : "bot",
+          text: n.textContent || ""
+        });
+      }
       
       // Keep last 20 messages
-      const last = items.slice(-20);
+      var last = items.slice(-20);
       sessionStorage.setItem("asst_widget_chat", JSON.stringify(last));
-    } catch (_) {
+    } catch (e) {
       // Ignore storage errors
     }
   }
 
   function loadChat() {
     try {
-      const raw = sessionStorage.getItem("asst_widget_chat");
+      var raw = sessionStorage.getItem("asst_widget_chat");
       if (!raw) return false;
       
-      const items = JSON.parse(raw);
-      items.forEach((m) => appendMessage(m.role, m.text));
+      var items = JSON.parse(raw);
+      for (var i = 0; i < items.length; i++) {
+        appendMessage(items[i].role, items[i].text);
+      }
       return items.length > 0;
-    } catch (_) {
+    } catch (e) {
       return false;
     }
   }
@@ -253,15 +274,15 @@
   // EVENT HANDLERS
   // ============================================================================
   
-  let isPending = false;
+  var isPending = false;
 
-  async function handleSend() {
+  function handleSend() {
     if (isPending) return;
 
-    const input = $("#asst-input");
+    var input = document.getElementById("asst-input");
     if (!input) return;
 
-    const text = input.value.trim();
+    var text = input.value.trim();
     if (!text) return;
 
     appendMessage("user", text);
@@ -269,26 +290,26 @@
     showTyping(true);
     isPending = true;
 
-    try {
-      const lang = getLang();
-      const data = await callAssistantAPI(text, lang);
-      const reply = data?.reply || localHelper(text, lang);
-      
-      showTyping(false);
-      appendMessage("bot", reply);
-    } catch (err) {
-      console.error("[asst-widget] API error:", err);
-      showTyping(false);
-      appendMessage("bot", t("errorFallback"));
-      appendMessage("bot", localHelper(text, getLang()));
-    } finally {
-      isPending = false;
-    }
+    var lang = getLang();
+    callAssistantAPI(text, lang)
+      .then(function(data) {
+        var reply = (data && data.reply) || localHelper(text, lang);
+        showTyping(false);
+        appendMessage("bot", reply);
+        isPending = false;
+      })
+      .catch(function(err) {
+        console.error("[asst-widget] API error:", err);
+        showTyping(false);
+        appendMessage("bot", t("errorFallback"));
+        appendMessage("bot", localHelper(text, getLang()));
+        isPending = false;
+      });
   }
 
   function togglePanel(show) {
-    const panel = $("#asst-panel");
-    const fab = $("#asst-fab");
+    var panel = document.getElementById("asst-panel");
+    var fab = document.getElementById("asst-fab");
     
     if (!panel || !fab) return;
 
@@ -301,9 +322,9 @@
       fab.classList.add("clicked");
       
       // Focus input when opening
-      const input = $("#asst-input");
+      var input = document.getElementById("asst-input");
       if (input) {
-        setTimeout(() => input.focus(), 100);
+        setTimeout(function() { input.focus(); }, 100);
       }
     } else {
       panel.style.display = "none";
@@ -315,33 +336,48 @@
   // ============================================================================
   
   function init() {
-    const widgets = createWidget();
-    if (!widgets) return; // Don't initialize on assistant.html
+    console.log("[asst-widget] Initializing chatbot widget...");
+    
+    var widgets = createWidget();
+    if (!widgets) {
+      console.log("[asst-widget] Widget creation skipped");
+      return;
+    }
 
-    const { fab, panel } = widgets;
+    var fab = widgets.fab;
+    var panel = widgets.panel;
 
     // Toggle panel on FAB click
-    fab.addEventListener("click", () => {
+    fab.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
       fab.classList.add("clicked"); // Stop bounce animation
       togglePanel();
     });
 
     // Close button
-    const closeBtn = panel.querySelector(".asst-close");
+    var closeBtn = panel.querySelector(".asst-close");
     if (closeBtn) {
-      closeBtn.addEventListener("click", () => togglePanel(false));
+      closeBtn.addEventListener("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel(false);
+      });
     }
 
     // Send button
-    const sendBtn = $("#asst-send");
+    var sendBtn = document.getElementById("asst-send");
     if (sendBtn) {
-      sendBtn.addEventListener("click", handleSend);
+      sendBtn.addEventListener("click", function(e) {
+        e.preventDefault();
+        handleSend();
+      });
     }
 
     // Enter key to send
-    const input = $("#asst-input");
+    var input = document.getElementById("asst-input");
     if (input) {
-      input.addEventListener("keydown", (e) => {
+      input.addEventListener("keydown", function(e) {
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
           handleSend();
@@ -350,30 +386,33 @@
     }
 
     // Click outside to close
-    document.addEventListener("click", (e) => {
-      const panel = $("#asst-panel");
-      const fab = $("#asst-fab");
+    document.addEventListener("click", function(e) {
+      var panelEl = document.getElementById("asst-panel");
+      var fabEl = document.getElementById("asst-fab");
       
-      if (!panel || !fab) return;
-      if (panel.style.display !== "block") return;
+      if (!panelEl || !fabEl) return;
+      if (panelEl.style.display !== "block") return;
       
       // If click is outside both panel and fab, close
-      if (!panel.contains(e.target) && !fab.contains(e.target)) {
+      if (!panelEl.contains(e.target) && !fabEl.contains(e.target)) {
         togglePanel(false);
       }
     });
 
     // Load previous chat or show greeting
-    const hasHistory = loadChat();
+    var hasHistory = loadChat();
     if (!hasHistory) {
       appendMessage("bot", t("greeting"));
     }
+
+    console.log("[asst-widget] Chatbot widget initialized successfully");
   }
 
   // Run on DOM ready
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
+    // DOM already ready, run now
     init();
   }
 })();
