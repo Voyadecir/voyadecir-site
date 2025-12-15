@@ -1,28 +1,14 @@
 /**
  * asst-widget.js - Floating Chatbot Widget for Voyadecir
  * Creates a floating button that opens a chat panel on any page
- * 
- * Usage: Include <script defer src="assets/js/asst-widget.js?v=4"></script> in your HTML
- * 
- * This widget uses the same deep agent backend as the assistant page,
- * with fallback to local helper when backend is unavailable.
  */
 (function () {
   "use strict";
 
-  // ============================================================================
-  // CONFIGURATION
-  // ============================================================================
-  
-  // Set this when your real assistant endpoint exists:
-  // Example: "https://voyadecir-ai-functions.azurewebsites.net"
-  const ASSISTANT_BASE = ""; // keep empty for now → uses safe local helper
+  // Set this when your real assistant endpoint exists
+  var ASSISTANT_BASE = "";
 
-  // ============================================================================
-  // UTILITY FUNCTIONS
-  // ============================================================================
-  
-  const $ = function(s) { return document.querySelector(s); };
+  function $(s) { return document.querySelector(s); }
 
   function getLang() {
     try {
@@ -32,27 +18,26 @@
     }
   }
 
-  // i18n strings for the widget
   var i18n = {
     en: {
-      fabLabel: "💬 Ask",
+      fabLabel: "Ask",
       panelTitle: "Voyadecir Assistant",
-      placeholder: "Type your question…",
+      placeholder: "Type your question...",
       send: "Send",
-      typing: "Typing…",
+      typing: "Typing...",
       greeting: "Hi! I can help you with translating bills, taking photos, OCR, and more. What would you like to know?",
-      errorFallback: "Server error. I'll use basic mode.",
-      close: "✕"
+      errorFallback: "Server error. Using basic mode.",
+      close: "X"
     },
     es: {
-      fabLabel: "💬 Preguntar",
+      fabLabel: "Preguntar",
       panelTitle: "Asistente Voyadecir",
-      placeholder: "Escribe tu pregunta…",
+      placeholder: "Escribe tu pregunta...",
       send: "Enviar",
-      typing: "Escribiendo…",
-      greeting: "¡Hola! Puedo ayudarte con traducir facturas, tomar fotos, OCR y más. ¿Qué te gustaría saber?",
-      errorFallback: "Error del servidor. Usaré el modo básico.",
-      close: "✕"
+      typing: "Escribiendo...",
+      greeting: "Hola! Puedo ayudarte con traducir facturas, tomar fotos, OCR y mas. Que te gustaria saber?",
+      errorFallback: "Error del servidor. Usando modo basico.",
+      close: "X"
     }
   };
 
@@ -61,123 +46,83 @@
     return (i18n[lang] && i18n[lang][key]) || i18n.en[key] || key;
   }
 
-  // ============================================================================
-  // LOCAL HELPER (fallback when backend is unavailable)
-  // ============================================================================
-  
   function localHelper(question, lang) {
     var q = (question || "").toLowerCase();
     
     var en = {
-      hello: "Hi! Ask me about translating bills, taking a photo, or supported file types. Try: "Can I upload a PDF?"",
-      pdf: "Yes, you can upload PDFs and images. Clear, well-lit photos work best. For multi-page PDFs, we process all pages.",
-      camera: "Use the Take Picture button on Mail & Bills. Make sure the text is sharp and fills the frame.",
-      ocr: "OCR reads text in your image or PDF. We use Azure Vision + Document Intelligence to extract key fields like amount and due date.",
-      translate: "Go to the Translate page for text translation, or use Mail & Bills for document images with OCR + translation.",
-      help: "I can help with: uploading documents, taking photos, OCR (text recognition), translation, and understanding bills/mail.",
-      defaultMsg: "Got it. I'll get smarter later when we connect the full assistant. For now, ask about upload, camera, OCR, or supported docs."
+      hello: "Hi! Ask me about translating bills, taking a photo, or supported file types.",
+      pdf: "Yes, you can upload PDFs and images. Clear, well-lit photos work best.",
+      camera: "Use the Take Picture button on Mail and Bills. Make sure the text is sharp and fills the frame.",
+      ocr: "OCR reads text in your image or PDF. We use Azure Vision to extract key fields like amount and due date.",
+      translate: "Go to the Translate page for text translation, or use Mail and Bills for document images.",
+      help: "I can help with: uploading documents, taking photos, OCR, translation, and understanding bills.",
+      defaultMsg: "Got it. Ask about upload, camera, OCR, or supported docs."
     };
     
     var es = {
-      hello: "¡Hola! Pregúntame sobre traducir facturas, tomar una foto o los tipos de archivo. Prueba: "¿Puedo subir un PDF?"",
-      pdf: "Sí, puedes subir archivos PDF e imágenes. Las fotos claras y bien iluminadas funcionan mejor. Procesamos todas las páginas.",
-      camera: "Usa el botón Tomar foto en Correo y Facturas. Asegúrate de que el texto esté nítido y ocupe el cuadro.",
-      ocr: "OCR lee el texto de tu imagen o PDF. Usamos Azure Vision + Document Intelligence para extraer campos clave como importe y fecha de vencimiento.",
-      translate: "Ve a la página Traducir para traducir texto, o usa Correo y Facturas para imágenes de documentos con OCR + traducción.",
-      help: "Puedo ayudar con: subir documentos, tomar fotos, OCR (reconocimiento de texto), traducción y entender facturas/correo.",
-      defaultMsg: "Entendido. Pronto seré más inteligente cuando conectemos el asistente completo. Por ahora, pregunta sobre subir, cámara, OCR o documentos soportados."
+      hello: "Hola! Preguntame sobre traducir facturas, tomar una foto o los tipos de archivo.",
+      pdf: "Si, puedes subir archivos PDF e imagenes. Las fotos claras funcionan mejor.",
+      camera: "Usa el boton Tomar foto en Correo y Facturas. Asegurate de que el texto este nitido.",
+      ocr: "OCR lee el texto de tu imagen o PDF. Usamos Azure Vision para extraer campos clave.",
+      translate: "Ve a la pagina Traducir para traducir texto, o usa Correo y Facturas para documentos.",
+      help: "Puedo ayudar con: subir documentos, tomar fotos, OCR, traduccion y entender facturas.",
+      defaultMsg: "Entendido. Pregunta sobre subir, camara, OCR o documentos."
     };
     
     var dict = lang === "es" ? es : en;
     
     if (q.indexOf("pdf") !== -1 || q.indexOf("upload") !== -1 || q.indexOf("subir") !== -1) return dict.pdf;
-    if (q.indexOf("camera") !== -1 || q.indexOf("foto") !== -1 || q.indexOf("picture") !== -1 || q.indexOf("photo") !== -1) return dict.camera;
+    if (q.indexOf("camera") !== -1 || q.indexOf("foto") !== -1 || q.indexOf("picture") !== -1) return dict.camera;
     if (q.indexOf("ocr") !== -1 || q.indexOf("scan") !== -1 || q.indexOf("read") !== -1) return dict.ocr;
-    if (q.indexOf("translate") !== -1 || q.indexOf("traducir") !== -1 || q.indexOf("translation") !== -1) return dict.translate;
-    if (q.indexOf("help") !== -1 || q.indexOf("ayuda") !== -1 || q.indexOf("what can") !== -1) return dict.help;
-    if (q.indexOf("hello") !== -1 || q.indexOf("hola") !== -1 || q.indexOf("hi") !== -1 || q.indexOf("hey") !== -1) return dict.hello;
+    if (q.indexOf("translate") !== -1 || q.indexOf("traducir") !== -1) return dict.translate;
+    if (q.indexOf("help") !== -1 || q.indexOf("ayuda") !== -1) return dict.help;
+    if (q.indexOf("hello") !== -1 || q.indexOf("hola") !== -1 || q.indexOf("hi") !== -1) return dict.hello;
     
     return dict.defaultMsg;
   }
 
-  // ============================================================================
-  // API CALL
-  // ============================================================================
-  
-  function fetchWithTimeout(url, opts, ms) {
-    opts = opts || {};
-    ms = ms || 12000;
-    
-    return new Promise(function(resolve, reject) {
-      var ctrl = new AbortController();
-      var timer = setTimeout(function() { ctrl.abort(); }, ms);
-      
-      fetch(url, Object.assign({}, opts, { signal: ctrl.signal }))
-        .then(function(res) {
-          clearTimeout(timer);
-          resolve(res);
-        })
-        .catch(function(err) {
-          clearTimeout(timer);
-          reject(err);
-        });
-    });
-  }
-
   function callAssistantAPI(message, lang) {
     if (!ASSISTANT_BASE) {
-      // No backend configured → use local helper
       return Promise.resolve({ reply: localHelper(message, lang), backend: "local" });
     }
     
     var url = ASSISTANT_BASE + "/api/assistant";
-    return fetchWithTimeout(url, {
+    return fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: message, lang: lang })
     }).then(function(res) {
       if (!res.ok) {
-        return res.text().then(function(text) {
-          throw new Error("Assistant server " + res.status + ": " + text);
-        });
+        throw new Error("Server error " + res.status);
       }
       return res.json();
     });
   }
 
-  // ============================================================================
-  // WIDGET DOM CREATION
-  // ============================================================================
-  
   function createWidget() {
-    // Don't create widget on the assistant.html page (it has its own full chat)
     if (window.location.pathname.indexOf("assistant.html") !== -1) {
-      console.log("[asst-widget] Skipping widget on assistant.html page");
+      console.log("[asst-widget] Skipping on assistant.html");
       return null;
     }
 
-    // Check if widget already exists (prevent duplicates)
     if (document.getElementById("asst-fab")) {
-      console.log("[asst-widget] Widget already exists, skipping creation");
+      console.log("[asst-widget] Already exists");
       return null;
     }
 
-    // Create FAB (Floating Action Button)
     var fab = document.createElement("button");
     fab.id = "asst-fab";
     fab.className = "asst-fab";
     fab.type = "button";
-    fab.setAttribute("aria-label", t("fabLabel"));
     fab.innerHTML = "<span>" + t("fabLabel") + "</span>";
 
-    // Create Panel
     var panel = document.createElement("div");
     panel.id = "asst-panel";
     panel.className = "asst-panel";
     panel.innerHTML = 
       '<div class="asst-head">' +
         '<span class="asst-title">' + t("panelTitle") + '</span>' +
-        '<button class="asst-close" type="button" aria-label="Close">' + t("close") + '</button>' +
+        '<button class="asst-close" type="button">' + t("close") + '</button>' +
       '</div>' +
       '<div class="asst-body" id="asst-body"></div>' +
       '<div class="asst-foot">' +
@@ -185,19 +130,13 @@
         '<button class="asst-send" id="asst-send" type="button">' + t("send") + '</button>' +
       '</div>';
 
-    // Append to body
     document.body.appendChild(fab);
     document.body.appendChild(panel);
 
-    console.log("[asst-widget] Widget elements created and appended to body");
-
+    console.log("[asst-widget] Created widget elements");
     return { fab: fab, panel: panel };
   }
 
-  // ============================================================================
-  // MESSAGE HANDLING
-  // ============================================================================
-  
   function appendMessage(role, text) {
     var body = document.getElementById("asst-body");
     if (!body) return;
@@ -207,8 +146,6 @@
     msg.textContent = text;
     body.appendChild(msg);
     body.scrollTop = body.scrollHeight;
-
-    // Persist to sessionStorage
     persistChat();
   }
 
@@ -240,19 +177,15 @@
       var nodes = body.querySelectorAll(".asst-msg");
       var items = [];
       for (var i = 0; i < nodes.length; i++) {
-        var n = nodes[i];
         items.push({
-          role: n.classList.contains("user") ? "user" : "bot",
-          text: n.textContent || ""
+          role: nodes[i].classList.contains("user") ? "user" : "bot",
+          text: nodes[i].textContent || ""
         });
       }
       
-      // Keep last 20 messages
       var last = items.slice(-20);
       sessionStorage.setItem("asst_widget_chat", JSON.stringify(last));
-    } catch (e) {
-      // Ignore storage errors
-    }
+    } catch (e) {}
   }
 
   function loadChat() {
@@ -270,10 +203,6 @@
     }
   }
 
-  // ============================================================================
-  // EVENT HANDLERS
-  // ============================================================================
-  
   var isPending = false;
 
   function handleSend() {
@@ -299,7 +228,7 @@
         isPending = false;
       })
       .catch(function(err) {
-        console.error("[asst-widget] API error:", err);
+        console.error("[asst-widget] Error:", err);
         showTyping(false);
         appendMessage("bot", t("errorFallback"));
         appendMessage("bot", localHelper(text, getLang()));
@@ -320,8 +249,6 @@
     if (show) {
       panel.style.display = "block";
       fab.classList.add("clicked");
-      
-      // Focus input when opening
       var input = document.getElementById("asst-input");
       if (input) {
         setTimeout(function() { input.focus(); }, 100);
@@ -331,31 +258,22 @@
     }
   }
 
-  // ============================================================================
-  // INITIALIZATION
-  // ============================================================================
-  
   function init() {
-    console.log("[asst-widget] Initializing chatbot widget...");
+    console.log("[asst-widget] Initializing...");
     
     var widgets = createWidget();
-    if (!widgets) {
-      console.log("[asst-widget] Widget creation skipped");
-      return;
-    }
+    if (!widgets) return;
 
     var fab = widgets.fab;
     var panel = widgets.panel;
 
-    // Toggle panel on FAB click
     fab.addEventListener("click", function(e) {
       e.preventDefault();
       e.stopPropagation();
-      fab.classList.add("clicked"); // Stop bounce animation
+      fab.classList.add("clicked");
       togglePanel();
     });
 
-    // Close button
     var closeBtn = panel.querySelector(".asst-close");
     if (closeBtn) {
       closeBtn.addEventListener("click", function(e) {
@@ -365,7 +283,6 @@
       });
     }
 
-    // Send button
     var sendBtn = document.getElementById("asst-send");
     if (sendBtn) {
       sendBtn.addEventListener("click", function(e) {
@@ -374,7 +291,6 @@
       });
     }
 
-    // Enter key to send
     var input = document.getElementById("asst-input");
     if (input) {
       input.addEventListener("keydown", function(e) {
@@ -385,7 +301,6 @@
       });
     }
 
-    // Click outside to close
     document.addEventListener("click", function(e) {
       var panelEl = document.getElementById("asst-panel");
       var fabEl = document.getElementById("asst-fab");
@@ -393,26 +308,22 @@
       if (!panelEl || !fabEl) return;
       if (panelEl.style.display !== "block") return;
       
-      // If click is outside both panel and fab, close
       if (!panelEl.contains(e.target) && !fabEl.contains(e.target)) {
         togglePanel(false);
       }
     });
 
-    // Load previous chat or show greeting
     var hasHistory = loadChat();
     if (!hasHistory) {
       appendMessage("bot", t("greeting"));
     }
 
-    console.log("[asst-widget] Chatbot widget initialized successfully");
+    console.log("[asst-widget] Initialized successfully");
   }
 
-  // Run on DOM ready
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
-    // DOM already ready, run now
     init();
   }
 })();
