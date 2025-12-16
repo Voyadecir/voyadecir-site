@@ -1,169 +1,155 @@
-/**
- * asst-widget.js - Floating Clara assistant widget (site-wide)
- * - Fully multilingual via window.voyT + window.VD_LANG
- * - Uses backend /api/assistant for answers
- * - Creates support tickets via /api/support when user reports an issue
- */
+/* =========================================================
+   Voyadecir Assistant Widget
+   Clara, your Assistant
+   ========================================================= */
+
 (function () {
-  "use strict";
+  let isOpen = false;
+  let currentLang = "en";
 
-  const API_BASE = "https://ai-translator-i5jb.onrender.com";
-  const ASSIST_URL = API_BASE + "/api/assistant";
-  const SUPPORT_URL = API_BASE + "/api/support";
-
-  const LS_LANG = "voyadecir_lang";
-  const MAX_OFFTOPIC = 2;
-
-  const $ = (s, r=document) => r.querySelector(s);
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text) e.textContent = text;
+    return e;
+  }
 
   function getLang() {
-    return window.VD_LANG ||
-      (function(){
-        try { return localStorage.getItem(LS_LANG) || sessionStorage.getItem(LS_LANG) || "en"; } catch(e){ return "en"; }
-      })();
+    return (
+      window.currentLang ||
+      localStorage.getItem("voyadecir_lang") ||
+      document.documentElement.lang ||
+      "en"
+    );
   }
 
-  function t(key, fallback) {
-    try {
-      if (typeof window.voyT === "function") return window.voyT(key, fallback);
-    } catch(e){}
-    return fallback;
+  function t(en, es) {
+    return getLang() === "es" ? es : en;
   }
 
-  function looksLikeIssue(msg){
-    const s = (msg||"").toLowerCase();
-    return /(bug|issue|problem|broken|not working|error|doesn'?t work|glitch|crash|stuck|freeze|failed|problema|no funciona|error|falló)/.test(s);
-  }
-
-  async function postJson(url, payload){
-    const res = await fetch(url, {
-      method:"POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json().catch(()=>null);
-    if(!res.ok) throw new Error((data && data.detail && data.detail.message) || "Request failed");
-    return data;
-  }
-
-  function buildUI(){
-    if ($(".asst-fab")) return;
-
-    const fab = document.createElement("button");
-    fab.className = "asst-fab glass";
+  function createWidget() {
+    // Floating button
+    const fab = el("button", "asst-fab");
     fab.type = "button";
-    fab.setAttribute("aria-label", t("assistant.open", "Open assistant"));
-    fab.textContent = t("assistant.fab", "Clara");
+    fab.textContent = "Clara, your Assistant";
 
-    const panel = document.createElement("div");
-    panel.className = "asst-panel glass";
-    panel.setAttribute("role", "dialog");
-    panel.setAttribute("aria-modal", "false");
-    panel.hidden = true;
+    // Panel
+    const panel = el("div", "asst-panel");
 
-    panel.innerHTML = `
-      <div class="asst-head">
-        <div class="asst-title" data-asst-title>${t("assistant.title","Clara, your assistant")}</div>
-        <button class="asst-close" type="button" aria-label="Close">×</button>
-      </div>
-      <div class="asst-body" data-asst-body></div>
-      <div class="asst-foot">
-        <input class="asst-input" type="text" data-asst-input placeholder="${t("assistant.placeholder","Type your message…")}" />
-        <button class="asst-send glass-button" type="button" data-asst-send>${t("assistant.send","Send")}</button>
+    const header = el("div", "asst-header");
+    header.textContent = "Clara, your Assistant";
+
+    const closeBtn = el("button", "asst-close", "×");
+    closeBtn.type = "button";
+
+    header.appendChild(closeBtn);
+
+    const body = el("div", "asst-body");
+    body.innerHTML = `
+      <div class="asst-msg">
+        ${t(
+          "Hi, I’m Clara. I can help explain how Voyadecir works, or help you understand your translations.",
+          "Hola, soy Clara. Puedo ayudarte a entender cómo funciona Voyadecir o aclarar tus traducciones."
+        )}
       </div>
     `;
 
-    document.body.appendChild(panel);
+    const inputWrap = el("div", "asst-input");
+    const input = el("input");
+    input.type = "text";
+    input.placeholder = t(
+      "Ask me about Voyadecir…",
+      "Pregúntame sobre Voyadecir…"
+    );
+
+    const sendBtn = el("button", "glass-button", t("Send", "Enviar"));
+
+    inputWrap.appendChild(input);
+    inputWrap.appendChild(sendBtn);
+
+    panel.appendChild(header);
+    panel.appendChild(body);
+    panel.appendChild(inputWrap);
+
     document.body.appendChild(fab);
+    document.body.appendChild(panel);
 
-    const body = panel.querySelector("[data-asst-body]");
-    const input = panel.querySelector("[data-asst-input]");
-    const sendBtn = panel.querySelector("[data-asst-send]");
-    const closeBtn = panel.querySelector(".asst-close");
-
-    let offTopicCount = 0;
-
-    function addMsg(text, who="bot"){
-      const div=document.createElement("div");
-      div.className = "asst-msg " + (who==="user" ? "user" : "bot");
-      div.textContent = text;
-      body.appendChild(div);
-      body.scrollTop = body.scrollHeight;
+    function open() {
+      panel.style.display = "block";
+      isOpen = true;
+      input.focus();
     }
 
-    function setStrings(){
-      fab.textContent = t("assistant.fab","Clara");
-      panel.querySelector("[data-asst-title]").textContent = t("assistant.title","Clara, your assistant");
-      input.setAttribute("placeholder", t("assistant.placeholder","Type your message…"));
-      sendBtn.textContent = t("assistant.send","Send");
+    function close() {
+      panel.style.display = "none";
+      isOpen = false;
     }
 
-    async function send(){
-      const msg = (input.value || "").trim();
-      if(!msg) return;
-      input.value="";
-      addMsg(msg,"user");
-
-      const lang = getLang();
-      addMsg(t("assistant.typing","Typing…"),"bot");
-      const typingEl = body.lastElementChild;
-
-      try{
-        const resp = await postJson(ASSIST_URL, { message: msg, lang });
-        typingEl.remove();
-
-        // Soft redirect behavior
-        if(!/voyadecir|translate|translation|mail|bill|ocr|assistant|clara|app|android|ios/i.test(msg)){
-          offTopicCount += 1;
-          if(offTopicCount <= MAX_OFFTOPIC){
-            addMsg(resp.reply,"bot");
-            addMsg(t("assistant.offtopic","Quick note: I can answer a couple general questions, but I’m mainly here for Voyadecir help and translation."),"bot");
-          } else {
-            addMsg(t("assistant.offtopic","Quick note: I can answer a couple general questions, but I’m mainly here for Voyadecir help and translation."),"bot");
-          }
-        } else {
-          offTopicCount = 0;
-          addMsg(resp.reply,"bot");
-        }
-
-        // Create support ticket if it looks like a bug report
-        if(looksLikeIssue(msg)){
-          try{
-            const ticket = await postJson(SUPPORT_URL, { message: msg, lang, page: location.pathname, userAgent: navigator.userAgent });
-            addMsg(`${t("assistant.ticket_ack","Got it. I’ve created a support request for Voyadecir.")} ${t("assistant.ticket_label","Ticket")}: ${ticket.ticket_id}`,"bot");
-          } catch(e){
-            // fallback: still acknowledge
-            addMsg(t("assistant.ticket_ack","Got it. I’ve created a support request for Voyadecir."),"bot");
-          }
-        }
-
-      } catch(err){
-        typingEl.remove();
-        addMsg("Server error. Please try again.","bot");
-      }
-    }
-
-    fab.addEventListener("click", ()=>{
-      panel.hidden = !panel.hidden;
-      if(!panel.hidden && body.childElementCount===0){
-        addMsg(t("assistant.greeting","Hi! I’m Clara."),"bot");
-      }
-      if(!panel.hidden){
-        setTimeout(()=>input.focus(), 50);
-      }
+    fab.addEventListener("click", () => {
+      isOpen ? close() : open();
     });
 
-    closeBtn.addEventListener("click", ()=>{ panel.hidden=true; });
+    closeBtn.addEventListener("click", close);
+
     sendBtn.addEventListener("click", send);
-    input.addEventListener("keydown", (e)=>{
-      if(e.key==="Enter") send();
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") send();
     });
 
-    window.addEventListener("voyadecir:lang-changed", setStrings);
+    async function send() {
+      const msg = input.value.trim();
+      if (!msg) return;
 
-    // Initial strings
-    setStrings();
+      body.insertAdjacentHTML(
+        "beforeend",
+        `<div class="asst-msg user">${msg}</div>`
+      );
+      input.value = "";
+      body.scrollTop = body.scrollHeight;
+
+      try {
+        const res = await fetch("/api/assistant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: msg,
+            lang: getLang()
+          })
+        });
+
+        const data = await res.json();
+        const reply =
+          data?.reply ||
+          t(
+            "I can help with Voyadecir-related questions. If you’re having trouble, tell me what’s going wrong.",
+            "Puedo ayudarte con preguntas sobre Voyadecir. Si tienes un problema, dime qué está pasando."
+          );
+
+        body.insertAdjacentHTML(
+          "beforeend",
+          `<div class="asst-msg">${reply}</div>`
+        );
+        body.scrollTop = body.scrollHeight;
+      } catch {
+        body.insertAdjacentHTML(
+          "beforeend",
+          `<div class="asst-msg">${t(
+            "Something went wrong. Please try again.",
+            "Algo salió mal. Inténtalo de nuevo."
+          )}</div>`
+        );
+      }
+    }
+
+    // React to language changes instantly
+    document.addEventListener("voyadecir:lang-changed", () => {
+      header.textContent = "Clara, your Assistant";
+      input.placeholder = t(
+        "Ask me about Voyadecir…",
+        "Pregúntame sobre Voyadecir…"
+      );
+    });
   }
 
-  window.addEventListener("DOMContentLoaded", buildUI);
+  document.addEventListener("DOMContentLoaded", createWidget);
 })();
