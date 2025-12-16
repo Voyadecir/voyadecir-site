@@ -1,158 +1,91 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Voyadecir — Translate</title>
-  <meta name="description" content="Translate documents, images, and text with Voyadecir.">
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
-  <link rel="alternate icon" href="assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="icon" href="assets/img/favicon.ico">
-  <meta name="theme-color" content="#020617">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="assets/css/styles.css?v=14">
-  \1
-  <script src="assets/js/theme-toggle.js?v=1"></script>
-  <script src="assets/js/paywall.js?v=1"></script>
-  <script defer src="assets/js/translate.js?v=11"></script>
-  <script defer src="assets/js/asst-widget.js?v=5"></script>
+  <meta name="description" content="Translate text with context-aware results. Voyadecir helps you understand meanings and usage like a human interpreter." />
+
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/assets/css/styles.css?v=101" />
+
+  <script defer src="/assets/js/main.js?v=101"></script>
+  <script defer src="/assets/js/translate.js?v=101"></script>
+  <script defer src="/assets/js/asst-widget.js?v=101"></script>
 </head>
-<body>
+
+<body class="translate-page">
+  <!-- Fixed header (always visible) -->
   <header>
     <div class="container nav">
+      <!-- Brand -->
       <div class="brand">
-        <img src="assets/img/Voyadecir%20Logo.svg" alt="Voyadecir Logo" class="logo">
+        <img
+          src="/assets/img/Voyadecir%20Logo.svg"
+          alt="Voyadecir logo"
+          class="logo"
+        />
         <div>
-          <div data-i18n="brand.title">Voyadecir</div>
-          <small class="tagline" data-i18n="brand.tagline">Translate. Understand. Connect.</small>
+          <div class="brand-title">Voyadecir</div>
+          <span class="tagline">Translate. Understand. Connect.</span>
         </div>
       </div>
-      <nav>
-        <a href="index.html" data-i18n="nav.home">Home</a>
-        <a href="translate.html" data-i18n="nav.translate">Translate</a>
-        <a href="mail-bills.html" data-i18n="nav.mailbills">Mail &amp; Bills</a>
-        <a href="about.html" data-i18n="nav.about">About</a>
-        <a href="contact.html" data-i18n="nav.contact">Contact</a>
+
+      <!-- Primary nav (Option C) -->
+      <nav class="primary-nav" aria-label="Primary navigation">
+        <a href="/index.html" data-nav="home">Home</a>
+        <a href="/translate.html" data-nav="translate" aria-current="page">Translate</a>
+        <a href="/mail-bills.html" data-nav="mail">Mail &amp; Bills</a>
+
+        <div class="nav-more" aria-label="More menu">
+          <button class="nav-more__button" type="button" aria-haspopup="true" aria-expanded="false">
+            More ▾
+          </button>
+          <ul class="nav-more__list" role="menu">
+            <li><a href="/about.html" role="menuitem">About</a></li>
+            <li><a href="/contact.html" role="menuitem">Contact</a></li>
+          </ul>
+        </div>
       </nav>
-        <button class="theme-toggle glass" type="button" aria-label="Toggle theme" title="Toggle theme"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" aria-hidden="true" focusable="false">
-  <defs>
-    <mask id="moonMask">
-      <rect x="225" y="215" width="350" height="170" rx="86" ry="86" fill="#FFF"/>
-      <circle class="moonMask" cx="487" cy="300" r="66" fill="#06070B"/>
-    </mask>
-    <clipPath id="outlineMask">
-      <rect x="225" y="215" width="350" height="170" rx="86" ry="86"/>
-    </clipPath>
-  </defs>
-  <g class="whole">
-    <rect class="outline" x="220" y="210" width="360" height="180" rx="90" ry="90" fill="#85E8FE" stroke="#FCFDFE" stroke-width="10"/>
-    <g class="starGroup" fill="#FFF" clip-path="url(#outlineMask)">
-      <polygon points="405 248.25 406.58 254.42 412.75 256 406.58 257.58 405 263.75 403.42 257.58 397.25 256 403.42 254.42 405 248.25"/>
-      <path d="M427.33,301.9a1.5,1.5,0,0,0,0-3,1.5,1.5,0,0,0,0,3Z"/>
-      <path d="M402.59,367.21a1.5,1.5,0,0,0,0-3,1.5,1.5,0,0,0,0,3Z"/>
-      <polygon points="447 325.5 450.17 337.83 462.5 341 450.17 344.17 447 356.5 443.83 344.17 431.5 341 443.83 337.83 447 325.5"/>
-      <path d="M464,241.53a1.5,1.5,0,0,0,0-3,1.5,1.5,0,0,0,0,3Z"/>
-      <polygon points="496 274.25 497.58 280.42 503.75 282 497.58 283.58 496 289.75 494.42 283.58 488.25 282 494.42 280.42 496 274.25"/>
-      <path d="M503.53,351.38a1.5,1.5,0,0,0,0-3,1.5,1.5,0,0,0,0,3Z"/>
-      <path d="M537.18,249.45a1.5,1.5,0,0,0,0-3,1.5,1.5,0,0,0,0,3Z"/>
-      <path d="M553,322.68a1.5,1.5,0,0,0,0-3,1.5,1.5,0,0,0,0,3Z"/>
-    </g>
-    <circle class="sun" cx="486" cy="300" r="66" fill="#FEC100"/>
-    <g mask="url(#moonMask)">
-      <circle class="moon" cx="403" cy="300" r="66" fill="#FFF" opacity="0"/>
-    </g>
-    <g class="cloudGroup" fill="#FFF" clip-path="url(#outlineMask)">
-      <g class="cloud">
-        <rect x="515.79" y="314.92" width="47.15" height="10.37" rx="5.19" ry="5.19"/>
-        <circle cx="521.45" cy="313.98" r="11.32"/>
-        <circle cx="540.84" cy="305.91" r="15.61"/>
-        <circle cx="556.82" cy="316.34" r="8.96"/>
-      </g>
-    </g>
-  </g>
-</svg>
-</button>
+
+      <!-- Language menu -->
+      <div class="lang-menu" aria-label="Language menu">
+        <button class="lang-menu__button" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Change language">
+          🌐
+        </button>
+        <ul class="lang-menu__list" role="menu" aria-label="Language options">
+          <li><button class="lang-menu__link" type="button" data-lang="en">English</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="es">Español</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="fr">Français</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="pt">Português</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="zh">中文</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="ar">العربية</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="hi">हिन्दी</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="bn">বাংলা</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="ru">Русский</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="ur">اردو</button></li>
+        </ul>
+      </div>
     </div>
   </header>
 
   <main class="container section">
     <div class="translate-shell">
-      <div class="lang-menu lang-menu--hero">
-        <input type="checkbox" id="lang-menu-toggle" class="lang-menu__toggler" aria-label="Open language menu">
-        <button class="lang-menu__button glass-button" type="button">
-          <img src="assets/img/lang-icon.png" alt="Language" class="lang-menu__icon">
-        </button>
-        <ul class="lang-menu__list">
-          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="en">EN</button></li>
-          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="es">ES</button></li>
-          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="pt">PT</button></li>
-          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="fr">FR</button></li>
-          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="zh">中文</button></li>
-          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="hi">हिन्दी</button></li>
-          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ar">العربية</button></li>
-          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="bn">বাংলা</button></li>
-          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ru">РУ</button></li>
-          <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ur">اردو</button></li>
-        </ul>
-      </div>
-
-      <h1 class="translate-title" data-i18n="translate.title">Translate a document</h1>
-      <p class="translate-sub" data-i18n="translate.subtitle">Type or paste text below, or use the Mail &amp; Bills Helper for photos and letters.</p>
-
-      <div class="mailbills-cta" style="margin: 0 0 16px 0; text-align:center;">
-        <button type="button" class="glass-button translate-btn secondary" onclick="window.location.href='mail-bills.html'">
-          <span data-i18n="translate.mailbillsCta">Need help with mail &amp; bills?</span>
-        </button>
-      </div>
+      <h1 class="translate-title">Translate</h1>
+      <p class="translate-sub">
+        Paste text to translate. Voyadecir is designed to translate with context, and can provide multiple meanings when needed.
+      </p>
 
       <div class="translate-actions">
-        <input type="file" id="file-input" accept=".pdf,image/*" style="display:none;">
-        <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none;">
-        
-        <button type="button" class="glass-button translate-btn" id="btn-upload" disabled title="Coming soon">
-          <span class="icon-doc"></span>
-          <span data-i18n="translate.upload">Upload document (soon)</span>
-        </button>
-        <button type="button" class="glass-button translate-btn" id="btn-camera" disabled title="Coming soon">
-          <span class="icon-camera"></span>
-          <span data-i18n="translate.camera">Take picture (soon)</span>
-        </button>
-        <button type="button" class="glass-button translate-btn" id="translate-run">
-          <span data-i18n="translate.run">Translate</span>
-        </button>
-        <button type="button" class="glass-button translate-btn secondary" id="btn-listen" disabled title="Coming soon">
-          <span class="icon-audio"></span>
-          <span data-i18n="translate.listen">Read it to me (soon)</span>
-        </button>
+        <button class="glass-button" type="button" id="btn-translate">Translate</button>
+        <button class="glass-button" type="button" id="btn-clear">Clear</button>
       </div>
 
-      <div class="translator-outer glass-panel">
+      <div class="translator-outer glass-panel glass glass-surface">
         <div class="translator-ui">
           <div class="translator-topbar">
             <div class="translator-lang">
-              <label data-i18n="translate.from">
-                From
-                <select id="src-lang">
-                  <option value="auto">Auto</option>
-                  <option value="en">English</option>
-                  <option value="es">Spanish</option>
-                  <option value="pt">Portuguese</option>
-                  <option value="fr">French</option>
-                  <option value="zh">Chinese</option>
-                  <option value="hi">Hindi</option>
-                  <option value="ar">Arabic</option>
-                  <option value="bn">Bengali</option>
-                  <option value="ru">Russian</option>
-                  <option value="ur">Urdu</option>
-                </select>
-              </label>
-              
-              <button type="button" id="swap-langs" class="glass-button swap-btn" title="Swap languages">
-                ⇄ <span data-i18n="translate.swap"></span>
-              </button>
-              
-              <label data-i18n="translate.to">
+              <label>
                 To
                 <select id="tgt-lang">
                   <option value="es">Spanish</option>
@@ -172,52 +105,52 @@
 
           <div class="translator-panels">
             <div class="translator-box">
-              <textarea id="source-text" data-i18n-placeholder="translate.sourcePlaceholder" placeholder="Type or paste text here…"></textarea>
+              <textarea id="src-text" placeholder="Enter text to translate…"></textarea>
+              <div class="inline-actions">
+                <button type="button" class="inline-btn" id="btn-paste">Paste</button>
+                <button type="button" class="inline-btn" id="btn-copy-src">Copy</button>
+              </div>
             </div>
+
             <div class="translator-box">
-              <textarea id="target-text" data-i18n-placeholder="translate.targetPlaceholder" placeholder="Translation will appear here…" readonly></textarea>
+              <textarea id="out-text" placeholder="Translation will appear here…" readonly></textarea>
+              <div class="inline-actions">
+                <button type="button" class="inline-btn" id="btn-copy-out">Copy</button>
+              </div>
             </div>
-<details id="translate-details" class="glass" style="margin-top:12px;" hidden>
-  <summary data-i18n="translate.moreDetails">More details</summary>
-  <div id="translate-warnings" style="margin-top:10px;"></div>
-  <div id="translate-enrichment" style="margin-top:10px;"></div>
-</details>
           </div>
 
           <div class="translator-foot">
-            <span id="translator-status" data-i18n="translate.status">Ready.</span>
-            <span class="translator-hint" data-i18n="translate.hint">For photos or scanned bills, use the Mail &amp; Bills Helper.</span>
+            <span id="t-status">Ready</span>
+            <span class="translator-hint">For best results, include context (who/what/where).</span>
           </div>
         </div>
       </div>
 
-      <div class="translate-panel" id="iframe-fallback" style="display:none; margin-top:16px;">
-        <iframe class="appframe" src="https://ai-translator-i5jb.onrender.com" frameborder="0" referrerpolicy="no-referrer" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
-        <div class="notice" style="display:block;">
-          If the translator doesn't load,
-          <a href="https://ai-translator-i5jb.onrender.com" target="_blank" rel="nofollow noopener">open it in a new tab.</a>
-        </div>
-      </div>
-
-      <p class="translate-footnote" data-i18n="translate.footnote">Future features: document upload, camera OCR, and text-to-speech — already available for bills and letters on the Mail &amp; Bills Helper page.</p>
+      <p class="translate-footnote">
+        Disclaimer: Voyadecir is for informational translation only and is not HIPAA- or FERPA-compliant. Do not upload personal health information (PHI) or student education records. Not legal, medical, or financial advice.
+      </p>
     </div>
   </main>
 
   <footer>
-    <div class="container">© 2025 Voyadecir — All rights reserved.</div>
-  <div class="social-footer" aria-label="Social links">
-  <div class="button-container">
-    <a class="glass glass-btn" href="#" aria-label="Facebook" title="Facebook">
-      <img src="https://i.postimg.cc/DwbWDQTx/facebook.png" alt="Facebook">
-    </a>
-    <a class="glass glass-btn" href="#" aria-label="YouTube" title="YouTube">
-      <img src="https://i.postimg.cc/LstJ4Hhf/youtube.png" alt="YouTube">
-    </a>
-    <a class="glass glass-btn" href="#" aria-label="SoundCloud" title="SoundCloud">
-      <img src="https://i.postimg.cc/tgQ1H1Rp/soundcloud.png" alt="SoundCloud">
-    </a>
-  </div>
-</div>
-</footer>
+    <div class="container footer-row">
+      <div class="footer-legal">© 2025 Voyadecir — All rights reserved.</div>
+
+      <div class="button-container" aria-label="Social links">
+        <a class="glass-btn" href="#" aria-label="Facebook">
+          <img src="https://i.postimg.cc/DwbWDQTx/facebook.png" alt="Facebook">
+        </a>
+
+        <a class="glass-btn" href="#" aria-label="YouTube">
+          <img src="https://i.postimg.cc/LstJ4Hhf/youtube.png" alt="YouTube">
+        </a>
+
+        <a class="glass-btn" href="#" aria-label="SoundCloud">
+          <img src="https://i.postimg.cc/tgQ1H1Rp/soundcloud.png" alt="SoundCloud">
+        </a>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
