@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Voyadecir favicon">
+  <defs>
+    <linearGradient id="voya" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111111"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="16" y="16" width="224" height="224" rx="56" fill="url(#voya)"/>
+  <path d="M72 84 L112 184 L144 184 L184 84 L156 84 L128 160 L100 84 Z"
+        fill="#FFFFFF"/>
+</svg>
