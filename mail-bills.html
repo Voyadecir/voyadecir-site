@@ -1,101 +1,101 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Voyadecir — Mail & Bills Helper</title>
-  <meta name="description" content="Upload your mail and bills or translate everyday text with Voyadecir — a minimalist AI helper for multilingual documents.">
-  <meta name="author" content="Voyadecir">
+  <meta name="description" content="Upload a photo or PDF of mail or bills. Voyadecir reads it, translates it, and explains it clearly." />
 
-  <!-- Favicons (we will add favicon.svg next to stop 404s everywhere) -->
-  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/assets/css/styles.css?v=101" />
 
-  <link rel="manifest" href="manifest.webmanifest">
-
-  <!-- Preload the correct logo -->
-  <link rel="preload" as="image" href="assets/img/Voyadecir%20Logo.svg">
-
-  <link rel="stylesheet" href="assets/css/styles.css?v=15">
-
-  <script defer src="assets/js/main.js?v=6"></script>
-  <script defer src="assets/js/mailbills.js?v=12"></script>
-  <script defer src="assets/js/asst-widget.js?v=5"></script>
+  <script defer src="/assets/js/main.js?v=101"></script>
+  <script defer src="/assets/js/mailbills.js?v=101"></script>
+  <script defer src="/assets/js/asst-widget.js?v=101"></script>
 </head>
 
 <body class="mailbills-page">
+  <!-- Fixed header (always visible) -->
   <header>
     <div class="container nav">
+      <!-- Brand -->
       <div class="brand">
-        <img src="assets/img/Voyadecir%20Logo.svg" alt="Voyadecir Logo" class="logo">
+        <img
+          src="/assets/img/Voyadecir%20Logo.svg"
+          alt="Voyadecir logo"
+          class="logo"
+        />
         <div>
-          <div data-i18n="brand.title">Voyadecir</div>
-          <small class="tagline" data-i18n="brand.tagline">Translate. Understand. Connect.</small>
+          <div class="brand-title">Voyadecir</div>
+          <span class="tagline">Translate. Understand. Connect.</span>
         </div>
       </div>
 
-      <nav>
-        <a href="index.html" data-i18n="nav.home">Home</a>
-        <a href="translate.html" data-i18n="nav.translate">Translate</a>
-        <a href="mail-bills.html" data-i18n="nav.mailbills">Mail &amp; Bills</a>
-        <a href="about.html" data-i18n="nav.about">About</a>
-        <a href="contact.html" data-i18n="nav.contact">Contact</a>
+      <!-- Primary nav (Option C) -->
+      <nav class="primary-nav" aria-label="Primary navigation">
+        <a href="/index.html" data-nav="home">Home</a>
+        <a href="/translate.html" data-nav="translate">Translate</a>
+        <a href="/mail-bills.html" data-nav="mail" aria-current="page">Mail &amp; Bills</a>
+
+        <div class="nav-more" aria-label="More menu">
+          <button class="nav-more__button" type="button" aria-haspopup="true" aria-expanded="false">
+            More ▾
+          </button>
+          <ul class="nav-more__list" role="menu">
+            <li><a href="/about.html" role="menuitem">About</a></li>
+            <li><a href="/contact.html" role="menuitem">Contact</a></li>
+          </ul>
+        </div>
       </nav>
+
+      <!-- Language menu (always on top) -->
+      <div class="lang-menu" aria-label="Language menu">
+        <button class="lang-menu__button" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Change language">
+          🌐
+        </button>
+        <ul class="lang-menu__list" role="menu" aria-label="Language options">
+          <li><button class="lang-menu__link" type="button" data-lang="en">English</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="es">Español</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="fr">Français</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="pt">Português</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="zh">中文</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="ar">العربية</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="hi">हिन्दी</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="bn">বাংলা</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="ru">Русский</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="ur">اردو</button></li>
+        </ul>
+      </div>
     </div>
   </header>
 
   <main class="container section">
-    <!-- Language menu -->
-    <div class="lang-menu lang-menu--hero">
-      <button class="lang-menu__button glass-button" type="button" aria-label="Language">
-        <img src="assets/img/lang-icon.png" alt="Language" class="lang-menu__icon">
-      </button>
-
-      <ul class="lang-menu__list" role="menu" aria-label="Language options">
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="en">EN</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="es">ES</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="pt">PT</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="fr">FR</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="zh">中文</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="hi">हिन्दी</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ar">العربية</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="bn">বাংলা</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ru">РУ</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ur">اردو</button></li>
-      </ul>
-    </div>
-
     <div class="translate-shell">
-      <h1 class="translate-title" data-i18n="mb.title">Mail & Bills Helper</h1>
-      <p class="translate-sub" data-i18n="mb.subtitle">Upload a photo or PDF of your bill, letter, or document.</p>
+      <h1 class="translate-title">Mail &amp; Bills Helper</h1>
+      <p class="translate-sub">
+        Upload a photo or PDF of your bill, letter, or notice. Voyadecir will read it, translate it, and explain it clearly.
+      </p>
 
-      <!-- Hidden inputs (JS will trigger them via buttons) -->
-      <input type="file" id="mb-file-input" accept=".pdf,image/*" style="display:none;" multiple>
-      <input type="file" id="mb-camera-input" accept="image/*" capture="environment" style="display:none;" multiple>
+      <!-- File inputs (hidden) -->
+      <input id="mb-file-input" type="file" accept=".pdf,image/*" multiple style="display:none;">
+      <input id="mb-camera-input" type="file" accept="image/*" capture="environment" multiple style="display:none;">
 
+      <!-- Actions -->
       <div class="translate-actions">
-        <button type="button" class="glass-button translate-btn" id="btn-upload">
-          <span data-i18n="mb.upload">Upload Document</span>
-        </button>
-
-        <button type="button" class="glass-button translate-btn" id="btn-camera">
-          <span data-i18n="mb.camera">Take Picture</span>
-        </button>
-
-        <!-- Removed: Translate Full Text (now automatic) -->
-
-        <button type="button" class="glass-button translate-btn" id="mb-clear">
-          <span data-i18n="mb.clear">Clear</span>
-        </button>
+        <button class="glass-button" type="button" id="btn-upload">Upload Document</button>
+        <button class="glass-button" type="button" id="btn-camera">Take Picture</button>
+        <button class="glass-button" type="button" id="mb-clear">Clear</button>
       </div>
 
-      <!-- Status + error -->
+      <!-- Errors -->
       <div id="mb-error" class="mb-error" style="display:none;"></div>
 
-      <div class="translator-outer glass-panel">
+      <!-- Main glass panel -->
+      <div class="translator-outer glass-panel glass glass-surface">
         <div class="translator-ui">
           <div class="translator-topbar">
             <div class="translator-lang">
-              <label data-i18n="mb.to">
+              <label>
                 To
                 <select id="mb-tgt-lang">
                   <option value="es">Spanish</option>
@@ -111,54 +111,62 @@
                 </select>
               </label>
 
-              <button type="button" id="mb-swap-langs" class="glass-button swap-btn" title="Swap languages">⇄</button>
+              <button class="glass-button" type="button" id="mb-swap-langs" title="Swap languages">⇄</button>
             </div>
           </div>
 
           <div class="translator-panels">
+            <!-- Left: OCR / translated full text -->
             <div class="translator-box">
-              <textarea id="ocr-text"
-                        data-i18n-placeholder="mb.ocrPlaceholder"
-                        placeholder="Extracted text will appear here…"
-                        readonly></textarea>
-
-              <button type="button" id="mb-copy-ocr" class="glass-button inline-btn">
-                <span data-i18n="mb.copyOcr">Copy Text</span>
-              </button>
+              <textarea id="ocr-text" placeholder="Text from your document will appear here…" readonly></textarea>
+              <div class="inline-actions">
+                <button type="button" class="inline-btn" id="mb-copy-ocr">Copy Text</button>
+              </div>
             </div>
 
+            <!-- Right: Summary / explanation -->
             <div class="translator-box">
-              <textarea id="summary-text"
-                        data-i18n-placeholder="mb.summaryPlaceholder"
-                        placeholder="Summary and explanation will appear here…"
-                        readonly></textarea>
-
+              <textarea id="summary-text" placeholder="Summary and explanation will appear here…" readonly></textarea>
               <div class="inline-actions">
-                <button type="button" id="mb-copy-summary" class="glass-button inline-btn">
-                  <span data-i18n="mb.copySummary">Copy Summary</span>
-                </button>
-
-                <button type="button" id="mb-download-pdf" class="glass-button inline-btn" disabled>
-                  <span data-i18n="mb.downloadPdf">Download PDF</span>
-                </button>
+                <button type="button" class="inline-btn" id="mb-copy-summary">Copy Summary</button>
+                <button type="button" class="inline-btn" id="mb-download-pdf" disabled>Download PDF</button>
               </div>
             </div>
           </div>
 
           <div class="translator-foot">
-            <span id="mb-status" data-i18n="mb.status">Ready</span>
-            <span class="translator-hint" data-i18n="mb.hint">Upload clear photos for best results.</span>
+            <span id="mb-status">Ready</span>
+            <span class="translator-hint">Clear photos help. Avoid glare and shadows.</span>
           </div>
         </div>
       </div>
 
-      <p class="translate-footnote" data-i18n="mb.footnote">Your document is processed securely and not stored permanently.</p>
+      <p class="translate-footnote">
+        Disclaimer: Voyadecir is for informational translation only and is not HIPAA- or FERPA-compliant. Do not upload personal health information (PHI) or student education records. Not legal, medical, or financial advice.
+      </p>
     </div>
   </main>
 
-  <!-- Bottom bar (will be minimized via CSS file) -->
   <footer>
-    <div class="container">© 2025 Voyadecir — All rights reserved.</div>
+    <div class="container footer-row">
+      <div class="footer-legal">
+        © 2025 Voyadecir — All rights reserved.
+      </div>
+
+      <div class="button-container" aria-label="Social links">
+        <a class="glass-btn" href="#" aria-label="Facebook">
+          <img src="https://i.postimg.cc/DwbWDQTx/facebook.png" alt="Facebook">
+        </a>
+
+        <a class="glass-btn" href="#" aria-label="YouTube">
+          <img src="https://i.postimg.cc/LstJ4Hhf/youtube.png" alt="YouTube">
+        </a>
+
+        <a class="glass-btn" href="#" aria-label="SoundCloud">
+          <img src="https://i.postimg.cc/tgQ1H1Rp/soundcloud.png" alt="SoundCloud">
+        </a>
+      </div>
+    </div>
   </footer>
 </body>
 </html>
