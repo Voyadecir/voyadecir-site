@@ -1,111 +1,119 @@
 /* =========================================================
-   Voyadecir – Main (global)
-   - Language dropdown open/close + persistence
-   - Dispatches lang change event for Clara and pages
-   - Removes theme toggle logic (disabled by request)
+   Voyadecir — main.js
+   Global UI controller:
+   - Language menu (always clickable, persists choice)
+   - "More" menu for mobile/tablet nav option C
+   - Broadcast language changes to all components
    ========================================================= */
 
 (function () {
-  const STORAGE_KEY = "voyadecir_lang";
+  const LANG_KEY = "voyadecir_lang";
 
-  function getPreferredLang() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return saved;
+  function qs(sel, root = document) {
+    return root.querySelector(sel);
+  }
+  function qsa(sel, root = document) {
+    return Array.from(root.querySelectorAll(sel));
+  }
 
-    const nav = (navigator.language || "en").toLowerCase();
-    if (nav.startsWith("es")) return "es";
-    if (nav.startsWith("pt")) return "pt";
-    if (nav.startsWith("fr")) return "fr";
-    if (nav.startsWith("zh")) return "zh";
-    if (nav.startsWith("hi")) return "hi";
-    if (nav.startsWith("ar")) return "ar";
-    if (nav.startsWith("bn")) return "bn";
-    if (nav.startsWith("ru")) return "ru";
-    if (nav.startsWith("ur")) return "ur";
+  function getBrowserLang() {
+    const raw = (navigator.language || "en").toLowerCase();
+    if (raw.startsWith("es")) return "es";
+    if (raw.startsWith("pt")) return "pt";
+    if (raw.startsWith("fr")) return "fr";
+    if (raw.startsWith("zh")) return "zh";
+    if (raw.startsWith("hi")) return "hi";
+    if (raw.startsWith("ar")) return "ar";
+    if (raw.startsWith("bn")) return "bn";
+    if (raw.startsWith("ru")) return "ru";
+    if (raw.startsWith("ur")) return "ur";
     return "en";
   }
 
-  function setLang(lang) {
-    if (!lang) lang = "en";
-
-    localStorage.setItem(STORAGE_KEY, lang);
-    document.documentElement.lang = lang;
-    window.currentLang = lang;
-
-    document.dispatchEvent(
-      new CustomEvent("voyadecir:lang-changed", { detail: { lang } })
-    );
+  function getLang() {
+    return localStorage.getItem(LANG_KEY) || getBrowserLang() || "en";
   }
 
-  function wireLanguageMenus() {
-    const menus = document.querySelectorAll(".lang-menu");
-    if (!menus.length) return;
+  function setLang(lang) {
+    if (!lang) return;
+    localStorage.setItem(LANG_KEY, lang);
+    window.currentLang = lang;
+    document.documentElement.lang = lang;
 
-    // Toggle open/close
-    menus.forEach((menu) => {
-      const btn = menu.querySelector(".lang-menu__button");
-      const list = menu.querySelector(".lang-menu__list");
-      if (!btn || !list) return;
+    document.dispatchEvent(new CustomEvent("voyadecir:lang-changed", { detail: { lang } }));
+  }
 
-      btn.addEventListener("click", (e) => {
+  function closeAllMenus() {
+    qsa(".lang-menu.is-open").forEach((m) => m.classList.remove("is-open"));
+    qsa(".nav-more.is-open").forEach((m) => m.classList.remove("is-open"));
+  }
+
+  function initLanguageMenu() {
+    const menu = qs(".lang-menu");
+    if (!menu) return;
+
+    const btn = qs(".lang-menu__button", menu);
+    const list = qs(".lang-menu__list", menu);
+    if (!btn || !list) return;
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = menu.classList.contains("is-open");
+      closeAllMenus();
+      if (!isOpen) menu.classList.add("is-open");
+    });
+
+    qsa(".lang-menu__link", menu).forEach((b) => {
+      b.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-
-        // close others
-        menus.forEach((m) => {
-          if (m !== menu) m.classList.remove("is-open");
-        });
-
-        menu.classList.toggle("is-open");
-      });
-
-      // Each option
-      menu.querySelectorAll("[data-lang]").forEach((opt) => {
-        opt.addEventListener("click", (e) => {
-          e.preventDefault();
-          const lang = opt.getAttribute("data-lang");
-          setLang(lang);
-          menu.classList.remove("is-open");
-        });
+        const lang = b.getAttribute("data-lang");
+        setLang(lang);
+        menu.classList.remove("is-open");
       });
     });
+  }
 
-    // Click outside closes
-    document.addEventListener("click", () => {
-      menus.forEach((m) => m.classList.remove("is-open"));
+  function initMoreMenu() {
+    const more = qs(".nav-more");
+    if (!more) return;
+
+    const btn = qs(".nav-more__button", more);
+    const list = qs(".nav-more__list", more);
+    if (!btn || !list) return;
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = more.classList.contains("is-open");
+      closeAllMenus();
+      if (!isOpen) more.classList.add("is-open");
     });
 
-    // Escape closes
+    qsa("a", list).forEach((a) => {
+      a.addEventListener("click", () => {
+        more.classList.remove("is-open");
+      });
+    });
+  }
+
+  function initOutsideClickClose() {
+    document.addEventListener("click", () => closeAllMenus());
+    window.addEventListener("blur", () => closeAllMenus());
+    window.addEventListener("resize", () => closeAllMenus());
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") menus.forEach((m) => m.classList.remove("is-open"));
+      if (e.key === "Escape") closeAllMenus();
     });
   }
 
-  function injectLiquidGlassFilter() {
-    // Add the SVG distortion filter once per page if it's missing
-    if (document.getElementById("lg-dist")) return;
+  function init() {
+    // Establish language at startup
+    const lang = getLang();
+    setLang(lang);
 
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("style", "display:none");
-
-    svg.innerHTML = `
-      <filter id="lg-dist" x="0%" y="0%" width="100%" height="100%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.008 0.008" numOctaves="2" seed="92" result="noise" />
-        <feGaussianBlur in="noise" stdDeviation="2" result="blurred" />
-        <feDisplacementMap in="SourceGraphic" in2="blurred" scale="70" xChannelSelector="R" yChannelSelector="G" />
-      </filter>
-    `;
-
-    document.body.appendChild(svg);
+    initLanguageMenu();
+    initMoreMenu();
+    initOutsideClickClose();
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    // Language
-    const initial = getPreferredLang();
-    setLang(initial);
-    wireLanguageMenus();
-
-    // Glass filter for pages using it
-    injectLiquidGlassFilter();
-  });
+  document.addEventListener("DOMContentLoaded", init);
 })();
