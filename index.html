@@ -1,141 +1,123 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Voyadecir — Mail & Bills Helper & Translation</title>
-  <meta name="description" content="Upload your mail and bills or translate everyday text with Voyadecir — a minimalist AI helper for English and Spanish.">
-  <meta name="author" content="Voyadecir">
-  <meta property="og:title" content="Voyadecir — Mail & Bills Helper & Translation">
-  <meta property="og:description" content="Upload your mail and bills or translate everyday text with Voyadecir — a minimalist AI helper for English and Spanish.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://voyadecir.com/">
-  <meta property="og:image" content="https://voyadecir.com/assets/img/favicon-32x32.png">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Voyadecir — Mail & Bills Helper & Translation">
-  <meta name="twitter:description" content="Upload your mail and bills or translate everyday text with Voyadecir — a minimalist AI helper for English and Spanish.">
-  <link rel="canonical" href="https://voyadecir.com/">
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
-  <link rel="alternate icon" href="assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="icon" href="assets/img/favicon.ico">
-  <meta name="theme-color" content="#020617">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="preload" as="image" href="assets/img/Voyadecir%20Logo.svg">
-  <link rel="stylesheet" href="assets/css/styles.css?v=14">
-  \1
-  <script src="assets/js/theme-toggle.js?v=1"></script>
-  <script src="assets/js/paywall.js?v=1"></script>
-  <script defer src="assets/js/asst-widget.js?v=5"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Voyadecir — Translate. Understand. Connect.</title>
+  <meta name="description" content="Voyadecir helps you translate and understand documents like bills and mail. Privacy-first, multilingual, and built to remove language barriers." />
+
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/assets/css/styles.css?v=101" />
+
+  <script defer src="/assets/js/main.js?v=101"></script>
+  <script defer src="/assets/js/asst-widget.js?v=101"></script>
 </head>
-<body>
+
+<body class="home-page">
+  <!-- Fixed header (always visible) -->
   <header>
     <div class="container nav">
+      <!-- Brand -->
       <div class="brand">
-        <img src="assets/img/Voyadecir%20Logo.svg" alt="Voyadecir Logo" class="logo">
+        <img
+          src="/assets/img/Voyadecir%20Logo.svg"
+          alt="Voyadecir logo"
+          class="logo"
+        />
         <div>
-          <div data-i18n="brand.title">Voyadecir</div>
-          <small class="tagline" data-i18n="brand.tagline">Translate. Understand. Connect.</small>
+          <div class="brand-title">Voyadecir</div>
+          <span class="tagline">Translate. Understand. Connect.</span>
         </div>
       </div>
-      <nav>
-        <a href="index.html" data-i18n="nav.home">Home</a>
-        <a href="translate.html" data-i18n="nav.translate">Translate</a>
-        <a href="mail-bills.html" data-i18n="nav.mailbills">Mail &amp; Bills</a>
-        <a href="about.html" data-i18n="nav.about">About</a>
-        <a href="contact.html" data-i18n="nav.contact">Contact</a>
+
+      <!-- Primary nav (Option C: 3 links always visible, About/Contact in More on small screens) -->
+      <nav class="primary-nav" aria-label="Primary navigation">
+        <a href="/index.html" data-nav="home">Home</a>
+        <a href="/translate.html" data-nav="translate">Translate</a>
+        <a href="/mail-bills.html" data-nav="mail">Mail &amp; Bills</a>
+
+        <div class="nav-more" aria-label="More menu">
+          <button class="nav-more__button" type="button" aria-haspopup="true" aria-expanded="false">
+            More ▾
+          </button>
+          <ul class="nav-more__list" role="menu">
+            <li><a href="/about.html" role="menuitem">About</a></li>
+            <li><a href="/contact.html" role="menuitem">Contact</a></li>
+          </ul>
+        </div>
       </nav>
-        <button class="theme-toggle glass" type="button" aria-label="Toggle theme" title="Toggle theme"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" aria-hidden="true" focusable="false">
-  <defs>
-    <mask id="moonMask">
-      <rect x="225" y="215" width="350" height="170" rx="86" ry="86" fill="#FFF"/>
-      <circle class="moonMask" cx="487" cy="300" r="66" fill="#06070B"/>
-    </mask>
-    <clipPath id="outlineMask">
-      <rect x="225" y="215" width="350" height="170" rx="86" ry="86"/>
-    </clipPath>
-  </defs>
-  <g class="whole">
-    <rect class="outline" x="220" y="210" width="360" height="180" rx="90" ry="90" fill="#85E8FE" stroke="#FCFDFE" stroke-width="10"/>
-    <g class="starGroup" fill="#FFF" clip-path="url(#outlineMask)">
-      <polygon points="405 248.25 406.58 254.42 412.75 256 406.58 257.58 405 263.75 403.42 257.58 397.25 256 403.42 254.42 405 248.25"/>
-      <path d="M427.33,301.9a1.5,1.5,0,0,0,0-3,1.5,1.5,0,0,0,0,3Z"/>
-      <path d="M402.59,367.21a1.5,1.5,0,0,0,0-3,1.5,1.5,0,0,0,0,3Z"/>
-      <polygon points="447 325.5 450.17 337.83 462.5 341 450.17 344.17 447 356.5 443.83 344.17 431.5 341 443.83 337.83 447 325.5"/>
-      <path d="M464,241.53a1.5,1.5,0,0,0,0-3,1.5,1.5,0,0,0,0,3Z"/>
-      <polygon points="496 274.25 497.58 280.42 503.75 282 497.58 283.58 496 289.75 494.42 283.58 488.25 282 494.42 280.42 496 274.25"/>
-      <path d="M503.53,351.38a1.5,1.5,0,0,0,0-3,1.5,1.5,0,0,0,0,3Z"/>
-      <path d="M537.18,249.45a1.5,1.5,0,0,0,0-3,1.5,1.5,0,0,0,0,3Z"/>
-      <path d="M553,322.68a1.5,1.5,0,0,0,0-3,1.5,1.5,0,0,0,0,3Z"/>
-    </g>
-    <circle class="sun" cx="486" cy="300" r="66" fill="#FEC100"/>
-    <g mask="url(#moonMask)">
-      <circle class="moon" cx="403" cy="300" r="66" fill="#FFF" opacity="0"/>
-    </g>
-    <g class="cloudGroup" fill="#FFF" clip-path="url(#outlineMask)">
-      <g class="cloud">
-        <rect x="515.79" y="314.92" width="47.15" height="10.37" rx="5.19" ry="5.19"/>
-        <circle cx="521.45" cy="313.98" r="11.32"/>
-        <circle cx="540.84" cy="305.91" r="15.61"/>
-        <circle cx="556.82" cy="316.34" r="8.96"/>
-      </g>
-    </g>
-  </g>
-</svg>
-</button>
+
+      <!-- Language menu (always on top) -->
+      <div class="lang-menu" aria-label="Language menu">
+        <button class="lang-menu__button" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Change language">
+          🌐
+        </button>
+        <ul class="lang-menu__list" role="menu" aria-label="Language options">
+          <li><button class="lang-menu__link" type="button" data-lang="en">English</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="es">Español</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="fr">Français</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="pt">Português</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="zh">中文</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="ar">العربية</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="hi">हिन्दी</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="bn">বাংলা</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="ru">Русский</button></li>
+          <li><button class="lang-menu__link" type="button" data-lang="ur">اردو</button></li>
+        </ul>
+      </div>
     </div>
   </header>
 
-  <main class="container">
-    <div class="lang-menu lang-menu--hero">
-      <input type="checkbox" id="lang-menu-toggle" class="lang-menu__toggler" aria-label="Open language menu">
-      <button class="lang-menu__button glass-button" type="button">
-        <img src="assets/img/lang-icon.png" alt="Language" class="lang-menu__icon">
-      </button>
-      <ul class="lang-menu__list">
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="en">EN</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="es">ES</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="pt">PT</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="fr">FR</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="zh">中文</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="hi">हिन्दी</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ar">العربية</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="bn">বাংলা</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ru">РУ</button></li>
-        <li class="lang-menu__item"><button type="button" class="lang-menu__link" data-lang="ur">اردو</button></li>
-      </ul>
-    </div>
+  <main class="container section">
+    <section class="hero">
+      <h1 class="hero-title">Translate and understand clearly.</h1>
+      <p class="hero-sub">
+        Voyadecir helps you translate and explain everyday documents: bills, letters, school paperwork, and more.
+        Built to reduce language barriers with professional-grade translations and clear summaries.
+      </p>
 
-    <section class="hero glass" style="text-align:center;">
-      <h1 data-i18n="hero.h1">Understand your mail and bills in English and Spanish.</h1>
-      <p data-i18n="hero.sub">Upload a photo or PDF of your utility bill or mail, and Voyadecir will read it, pull out the important details, and explain it in simple language — plus everyday text translation when you need it.</p>
-      <button class="btn glass glass-button" type="button" onclick="window.location.href='mail-bills.html'">
-        <span data-i18n="cta.mailbills">Open Mail &amp; Bills Helper</span>
-      </button>
+      <div class="cta-row">
+        <a class="glass-button" href="/translate.html">Translate Text</a>
+        <a class="glass-button" href="/mail-bills.html">Mail &amp; Bills Helper</a>
+      </div>
     </section>
 
     <section class="section">
-      <div class="card glass" style="text-align:center;">
-        <p data-i18n="hero.feature">Minimalist, fast, and privacy-respecting — built to help families who didn't grow up with technology quickly understand their bills, mail, and everyday text.</p>
+      <div class="card glass glass-surface">
+        <div class="inner">
+          <h2>Why Voyadecir</h2>
+          <p>
+            Most translators give one definition and move on. Voyadecir aims to translate like a human interpreter:
+            multiple meanings when needed, context-aware wording, and explanations that actually help.
+          </p>
+
+          <div class="cta-row" style="justify-content:flex-start;">
+            <a class="glass-button" href="/about.html">Learn More</a>
+            <a class="glass-button" href="/contact.html">Get Support</a>
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
   <footer>
-    <div class="container">© 2025 Voyadecir — All rights reserved.</div>
-  <div class="social-footer" aria-label="Social links">
-  <div class="button-container">
-    <a class="glass glass-btn" href="#" aria-label="Facebook" title="Facebook">
-      <img src="https://i.postimg.cc/DwbWDQTx/facebook.png" alt="Facebook">
-    </a>
-    <a class="glass glass-btn" href="#" aria-label="YouTube" title="YouTube">
-      <img src="https://i.postimg.cc/LstJ4Hhf/youtube.png" alt="YouTube">
-    </a>
-    <a class="glass glass-btn" href="#" aria-label="SoundCloud" title="SoundCloud">
-      <img src="https://i.postimg.cc/tgQ1H1Rp/soundcloud.png" alt="SoundCloud">
-    </a>
-  </div>
-</div>
-</footer>
+    <div class="container footer-row">
+      <div class="footer-legal">© 2025 Voyadecir — All rights reserved.</div>
+
+      <div class="button-container" aria-label="Social links">
+        <a class="glass-btn" href="#" aria-label="Facebook">
+          <img src="https://i.postimg.cc/DwbWDQTx/facebook.png" alt="Facebook">
+        </a>
+
+        <a class="glass-btn" href="#" aria-label="YouTube">
+          <img src="https://i.postimg.cc/LstJ4Hhf/youtube.png" alt="YouTube">
+        </a>
+
+        <a class="glass-btn" href="#" aria-label="SoundCloud">
+          <img src="https://i.postimg.cc/tgQ1H1Rp/soundcloud.png" alt="SoundCloud">
+        </a>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
