@@ -1,34 +1,27 @@
 {
   "brand.title": "Voyadecir",
   "brand.tagline": "अनुवाद करें. समझें. जुड़ें.",
-
   "nav.home": "होम",
   "nav.translate": "अनुवाद",
   "nav.mailbills": "डाक और बिल",
   "nav.assistant": "सहायक",
   "nav.about": "हमारे बारे में",
   "nav.contact": "संपर्क",
-
   "hero.h1": "Voyadecir — अनुवाद करें. समझें. जुड़ें.",
   "hero.sub": "नवीनतम एआई तकनीक के साथ Voyadecir अलग-अलग भाषाओं को स्मार्ट अनुवाद और व्याख्या के ज़रिए जोड़ता है, ताकि आप दुनिया भर में आसानी से अनुवाद कर सकें, समझ सकें और लोगों से जुड़ सकें।",
   "cta.start": "अनुवाद शुरू करें",
-
   "about.title": "Voyadecir के बारे में",
   "about.body": "Voyadecir लोगों को अलग-अलग भाषाओं में साफ़ और सरल तरीके से बात करने में मदद करता है, एक सुथरे और सुंदर अनुभव के साथ। हम वैश्विक जुड़ाव, स्मार्ट औज़ारों और शांत, अच्छी तरह किए गए काम में विश्वास करते हैं।",
-
   "contact.title": "हमसे संपर्क करें",
   "contact.intro": "हमें संदेश भेजें। हम जल्द ही जवाब देंगे।",
   "contact.name": "नाम",
   "contact.email": "ई-मेल",
   "contact.msg": "संदेश",
   "contact.send": "भेजें",
-
   "privacy.title": "गोपनीयता नीति",
   "privacy.body": "हम हमेशा गोपनीयता को सबसे पहले रखते हैं। यह स्थिर वेबसाइट डिफ़ॉल्ट रूप से कोई कुकीज़ या ट्रैकर्स इस्तेमाल नहीं करती। अगर आप हमारा अनुवादक इस्तेमाल करते हैं, तो वह तीसरे पक्ष की APIs पर निर्भर हो सकता है, उनकी अपनी नीतियों के अनुसार।",
-
   "terms.title": "सेवा की शर्तें",
   "terms.body": "Voyadecir का ज़िम्मेदारी से उपयोग करें। हम सेवा को ‘जैसा है’ वैसा ही प्रदान करते हैं, बिना किसी गारंटी के। वेबसाइट का उपयोग करके, आप सेवा का गलत उपयोग न करने से सहमत होते हैं।",
-
   "translate.title": "दस्तावेज़ का अनुवाद करें",
   "translate.subtitle": "नीचे टेक्स्ट टाइप करें या पेस्ट करें, या फ़ोटो और चिट्ठियों के लिए डाक और बिल सहायक का इस्तेमाल करें।",
   "translate.upload": "दस्तावेज़ अपलोड करें (जल्द ही)",
@@ -43,7 +36,6 @@
   "translate.status": "तैयार.",
   "translate.hint": "फ़ोटो या स्कैन की हुई बिलों के लिए, डाक और बिल सहायक का उपयोग करें।",
   "translate.mailbillsCta": "डाक और बिल में मदद चाहिए?",
-
   "mb.title": "डाक और बिल सहायक",
   "mb.sub": "कोई बिल या चिट्ठी अपलोड करें। हम उसे पढ़ेंगे, ज़रूरी जानकारी निकालेंगे और आपके भाषा में उसका सार बताएँगे।",
   "mb.btnUpload": "दस्तावेज़ अपलोड करें",
@@ -78,11 +70,29 @@
   "mb.status.translated": "अनुवाद हो गया.",
   "mb.status.doneWithAgent": "पूरा हुआ. सार और जानकारी निकाल ली गई है।",
   "mb.status.ocrDone": "टेक्स्ट निकाल लिया गया है।",
-
   "asst.title": "सहायक",
   "asst.sub": "जल्दी सवाल पूछें। अगर स्मार्ट दिमाग ऑफ़लाइन है, तो मैं एक साधारण सहायक का उपयोग करूँगा।",
   "asst.placeholder": "अपना सवाल यहाँ लिखें…",
   "asst.send": "भेजें",
-  "asst.hint": "टिप: बिल, फ़ाइल अपलोड, कैमरा या OCR के बारे में पूछें।"
+  "asst.hint": "टिप: बिल, फ़ाइल अपलोड, कैमरा या OCR के बारे में पूछें।",
+  "assistant.title": "Clara, आपका सहायक",
+  "assistant.placeholder": "अपना संदेश लिखें…",
+  "assistant.send": "भेजें",
+  "assistant.typing": "लिख रही हूँ…",
+  "assistant.greeting": "नमस्ते, मैं Clara हूँ। Voyadecir (वेब या भविष्य के ऐप्स), अनुवाद, या Mail & Bills के बारे में पूछें। अगर कुछ काम नहीं कर रहा, बताइए क्या हुआ और मैं सपोर्ट रिक्वेस्ट बना दूँगी।",
+  "assistant.offtopic": "छोटा नोट: मैं 1–2 सामान्य सवालों का जवाब दे सकती हूँ, लेकिन मैं मुख्य रूप से Voyadecir सहायता और अनुवाद के लिए हूँ।",
+  "assistant.ticket_ack": "ठीक है। मैंने Voyadecir के लिए सपोर्ट रिक्वेस्ट बना दी है।",
+  "assistant.ticket_label": "टिकट",
+  "assistant.fab": "Clara",
+  "paywall.title": "Unlock unlimited use",
+  "paywall.subtitle": "You’ve used your 3 free uses.",
+  "paywall.monthly": "Monthly",
+  "paywall.annual": "Annual (save 1 month)",
+  "paywall.price_monthly": "$8.99/mo",
+  "paywall.price_annual": "$98.89/yr",
+  "paywall.cta": "Upgrade",
+  "paywall.later": "Not now",
+  "translate.moreDetails": "अधिक विवरण",
+  "translate.warnings": "चेतावनियाँ",
+  "translate.alternatives": "विकल्प और अर्थ"
 }
-

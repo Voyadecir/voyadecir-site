@@ -1,34 +1,27 @@
 {
   "brand.title": "Voyadecir",
   "brand.tagline": "Traducir. Entender. Conectar.",
-
   "nav.home": "Inicio",
   "nav.translate": "Traducir",
   "nav.mailbills": "Correo y facturas",
   "nav.assistant": "Asistente",
   "nav.about": "Acerca de",
   "nav.contact": "Contacto",
-
   "hero.h1": "Voyadecir — Traducir. Entender. Conectar.",
   "hero.sub": "Impulsado por los últimos avances en IA, Voyadecir une los idiomas con traducción e interpretación inteligentes, ayudándote a traducir, entender y conectar sin esfuerzo en todo el mundo.",
   "cta.start": "Comenzar a traducir",
-
   "about.title": "Acerca de Voyadecir",
   "about.body": "Voyadecir ayuda a las personas a comunicarse con claridad entre idiomas con una experiencia limpia y elegante. Creemos en la conexión global, las herramientas inteligentes y el trabajo bien hecho en silencio.",
-
   "contact.title": "Contáctanos",
   "contact.intro": "Envíanos un mensaje. Te responderemos pronto.",
   "contact.name": "Nombre",
   "contact.email": "Correo electrónico",
   "contact.msg": "Mensaje",
   "contact.send": "Enviar",
-
   "privacy.title": "Política de privacidad",
   "privacy.body": "Diseñamos con la privacidad primero. Este sitio estático no utiliza cookies ni rastreadores por defecto. Si decides usar nuestro traductor, puede depender de APIs de terceros según sus propias políticas.",
-
   "terms.title": "Términos de servicio",
   "terms.body": "Usa Voyadecir de forma responsable. Ofrecemos el servicio tal cual, sin garantías. Al usar el sitio, aceptas no hacer un uso indebido del servicio.",
-
   "translate.title": "Traduce un documento",
   "translate.subtitle": "Escribe o pega texto abajo, o usa el Ayudante de correo y facturas para fotos y cartas.",
   "translate.upload": "Subir documento (pronto)",
@@ -43,7 +36,6 @@
   "translate.status": "Listo.",
   "translate.hint": "Para fotos o facturas escaneadas, usa el Ayudante de correo y facturas.",
   "translate.mailbillsCta": "¿Necesitas ayuda con correo y facturas?",
-
   "mb.title": "Ayudante de correo y facturas",
   "mb.sub": "Sube una factura o carta. La leeremos, extraeremos la información clave y la resumiremos en tu idioma.",
   "mb.btnUpload": "Subir documento",
@@ -78,10 +70,29 @@
   "mb.status.translated": "Traducido.",
   "mb.status.doneWithAgent": "Listo. Resumen e información extraída.",
   "mb.status.ocrDone": "Texto extraído.",
-
   "asst.title": "Asistente",
   "asst.sub": "Haz preguntas rápidas. Si el cerebro inteligente está desconectado, usaré un ayudante sencillo.",
   "asst.placeholder": "Escribe tu pregunta…",
   "asst.send": "Enviar",
-  "asst.hint": "Consejo: pregunta sobre facturas, cargas de archivos, cámara u OCR."
+  "asst.hint": "Consejo: pregunta sobre facturas, cargas de archivos, cámara u OCR.",
+  "assistant.title": "Clara, tu asistente",
+  "assistant.placeholder": "Escribe tu mensaje…",
+  "assistant.send": "Enviar",
+  "assistant.typing": "Escribiendo…",
+  "assistant.greeting": "Hola, soy Clara. Pregúntame sobre Voyadecir (web o futuras apps), traducción o Mail & Bills. Si algo no funciona, dime qué pasó y crearé una solicitud de soporte.",
+  "assistant.offtopic": "Nota rápida: puedo responder un par de preguntas generales, pero principalmente estoy aquí para ayudar con Voyadecir y traducción.",
+  "assistant.ticket_ack": "Listo. He creado una solicitud de soporte para Voyadecir.",
+  "assistant.ticket_label": "Ticket",
+  "assistant.fab": "Clara",
+  "paywall.title": "Desbloquea uso ilimitado",
+  "paywall.subtitle": "Has usado tus 3 usos gratuitos.",
+  "paywall.monthly": "Mensual",
+  "paywall.annual": "Anual (ahorra 1 mes)",
+  "paywall.price_monthly": "$8.99/mes",
+  "paywall.price_annual": "$98.89/año",
+  "paywall.cta": "Actualizar",
+  "paywall.later": "Ahora no",
+  "translate.moreDetails": "Más detalles",
+  "translate.warnings": "Advertencias",
+  "translate.alternatives": "Alternativas y significados"
 }

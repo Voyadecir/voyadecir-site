@@ -1,34 +1,27 @@
 {
   "brand.title": "Voyadecir",
   "brand.tagline": "ترجم. افهم. اتصل.",
-
   "nav.home": "الصفحة الرئيسية",
   "nav.translate": "ترجمة",
   "nav.mailbills": "البريد والفواتير",
   "nav.assistant": "المساعد",
   "nav.about": "من نحن",
   "nav.contact": "اتصل بنا",
-
   "hero.h1": "Voyadecir — ترجم. افهم. اتصل.",
   "hero.sub": "باستخدام أحدث تقنيات الذكاء الاصطناعي، يربط Voyadecir بين اللغات من خلال ترجمة وشرح ذكيين، ليساعدك على الترجمة والفهم والتواصل مع العالم بسهولة.",
   "cta.start": "ابدأ الترجمة",
-
   "about.title": "عن Voyadecir",
   "about.body": "يساعد Voyadecir الناس على التواصل بوضوح بين اللغات من خلال تجربة نظيفة وأنيقة. نحن نؤمن بالاتصال العالمي والأدوات الذكية والعمل المتقن الهادئ.",
-
   "contact.title": "اتصل بنا",
   "contact.intro": "أرسل لنا رسالة، وسنرد عليك قريبًا.",
   "contact.name": "الاسم",
   "contact.email": "البريد الإلكتروني",
   "contact.msg": "الرسالة",
   "contact.send": "إرسال",
-
   "privacy.title": "سياسة الخصوصية",
   "privacy.body": "نضع الخصوصية في المقام الأول عند التصميم. هذا الموقع الثابت لا يستخدم ملفات تعريف الارتباط أو أدوات التتبع افتراضيًا. إذا اخترت استخدام المترجم، فقد يعتمد على واجهات برمجة تطبيقات لطرف ثالث وفقًا لسياساتها.",
-
   "terms.title": "شروط الخدمة",
   "terms.body": "استخدم Voyadecir بمسؤولية. نحن نقدّم الخدمة كما هي، دون أي ضمانات. باستخدامك للموقع، فإنك توافق على عدم إساءة استخدام الخدمة.",
-
   "translate.title": "ترجمة مستند",
   "translate.subtitle": "اكتب أو الصق النص أدناه، أو استخدم مساعد البريد والفواتير للصور والرسائل.",
   "translate.upload": "رفع مستند (قريبًا)",
@@ -43,7 +36,6 @@
   "translate.status": "جاهز.",
   "translate.hint": "للصور أو الفواتير الممسوحة ضوئيًا، استخدم مساعد البريد والفواتير.",
   "translate.mailbillsCta": "تحتاج مساعدة مع البريد والفواتير؟",
-
   "mb.title": "مساعد البريد والفواتير",
   "mb.sub": "ارفع فاتورة أو رسالة. سنقرأها، ونستخرج المعلومات الأساسية، ونلخصها بلغتك.",
   "mb.btnUpload": "رفع مستند",
@@ -78,11 +70,29 @@
   "mb.status.translated": "تمت الترجمة.",
   "mb.status.doneWithAgent": "تم. تم إنشاء الملخص واستخراج المعلومات.",
   "mb.status.ocrDone": "تم استخراج النص.",
-
   "asst.title": "المساعد",
   "asst.sub": "اطرح أسئلة سريعة. إذا كان الدماغ الذكي غير متصل، فسأستخدم مساعدًا بسيطًا.",
   "asst.placeholder": "اكتب سؤالك هنا…",
   "asst.send": "إرسال",
-  "asst.hint": "نصيحة: اسأل عن الفواتير، رفع الملفات، الكاميرا أو OCR."
+  "asst.hint": "نصيحة: اسأل عن الفواتير، رفع الملفات، الكاميرا أو OCR.",
+  "assistant.title": "كلارا، مساعدتك",
+  "assistant.placeholder": "اكتب رسالتك…",
+  "assistant.send": "إرسال",
+  "assistant.typing": "يكتب…",
+  "assistant.greeting": "مرحبًا، أنا كلارا. اسألني عن Voyadecir (الويب أو التطبيقات القادمة)، الترجمة، أو Mail & Bills. إذا كانت هناك مشكلة، أخبرني بما حدث وسأنشئ طلب دعم.",
+  "assistant.offtopic": "ملاحظة سريعة: يمكنني الإجابة عن سؤال أو سؤالين عامّين، لكنني هنا أساسًا لمساعدة Voyadecir والترجمة.",
+  "assistant.ticket_ack": "تم. أنشأت طلب دعم لـ Voyadecir.",
+  "assistant.ticket_label": "تذكرة",
+  "assistant.fab": "كلارا",
+  "paywall.title": "Unlock unlimited use",
+  "paywall.subtitle": "You’ve used your 3 free uses.",
+  "paywall.monthly": "Monthly",
+  "paywall.annual": "Annual (save 1 month)",
+  "paywall.price_monthly": "$8.99/mo",
+  "paywall.price_annual": "$98.89/yr",
+  "paywall.cta": "Upgrade",
+  "paywall.later": "Not now",
+  "translate.moreDetails": "مزيد من التفاصيل",
+  "translate.warnings": "تنبيهات",
+  "translate.alternatives": "بدائل ومعانٍ"
 }
-

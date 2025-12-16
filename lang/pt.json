@@ -1,34 +1,27 @@
 {
   "brand.title": "Voyadecir",
   "brand.tagline": "Traduzir. Entender. Conectar.",
-
   "nav.home": "Início",
   "nav.translate": "Traduzir",
   "nav.mailbills": "Correio e contas",
   "nav.assistant": "Assistente",
   "nav.about": "Sobre",
   "nav.contact": "Contato",
-
   "hero.h1": "Voyadecir — Traduzir. Entender. Conectar.",
   "hero.sub": "Impulsionado pelos avanços mais recentes em IA, o Voyadecir une idiomas com tradução e interpretação inteligentes, ajudando você a traduzir, entender e se conectar com o mundo sem esforço.",
   "cta.start": "Começar a traduzir",
-
   "about.title": "Sobre o Voyadecir",
   "about.body": "O Voyadecir ajuda as pessoas a se comunicar com clareza entre idiomas, com uma experiência limpa e elegante. Acreditamos em conexão global, ferramentas inteligentes e um trabalho cuidadoso e silencioso.",
-
   "contact.title": "Fale conosco",
   "contact.intro": "Envie uma mensagem. Responderemos em breve.",
   "contact.name": "Nome",
   "contact.email": "E-mail",
   "contact.msg": "Mensagem",
   "contact.send": "Enviar",
-
   "privacy.title": "Política de privacidade",
   "privacy.body": "Nosso design coloca a privacidade em primeiro lugar. Este site estático não usa cookies nem rastreadores por padrão. Se você optar por usar nosso tradutor, ele poderá depender de APIs de terceiros, de acordo com suas políticas.",
-
   "terms.title": "Termos de uso",
   "terms.body": "Use o Voyadecir de forma responsável. Fornecemos o serviço no estado em que se encontra, sem garantias. Ao usar o site, você concorda em não fazer uso indevido do serviço.",
-
   "translate.title": "Traduza um documento",
   "translate.subtitle": "Digite ou cole o texto abaixo, ou use o Assistente de correio e contas para fotos e cartas.",
   "translate.upload": "Enviar documento (em breve)",
@@ -43,7 +36,6 @@
   "translate.status": "Pronto.",
   "translate.hint": "Para fotos ou contas digitalizadas, use o Assistente de correio e contas.",
   "translate.mailbillsCta": "Precisa de ajuda com correio e contas?",
-
   "mb.title": "Assistente de correio e contas",
   "mb.sub": "Envie uma conta ou carta. Vamos ler, extrair as informações principais e fazer um resumo no seu idioma.",
   "mb.btnUpload": "Enviar documento",
@@ -78,11 +70,29 @@
   "mb.status.translated": "Traduzido.",
   "mb.status.doneWithAgent": "Concluído. Resumo e informações extraídas.",
   "mb.status.ocrDone": "Texto extraído.",
-
   "asst.title": "Assistente",
   "asst.sub": "Faça perguntas rápidas. Se o cérebro inteligente estiver offline, vou usar um ajudante simples.",
   "asst.placeholder": "Digite sua pergunta…",
   "asst.send": "Enviar",
-  "asst.hint": "Dica: pergunte sobre contas, uploads, câmera ou OCR."
+  "asst.hint": "Dica: pergunte sobre contas, uploads, câmera ou OCR.",
+  "assistant.title": "Clara, sua assistente",
+  "assistant.placeholder": "Digite sua mensagem…",
+  "assistant.send": "Enviar",
+  "assistant.typing": "Digitando…",
+  "assistant.greeting": "Olá, eu sou a Clara. Pergunte sobre o Voyadecir (web ou futuros apps), tradução ou Mail & Bills. Se algo não funcionar, diga o que aconteceu e eu criarei um pedido de suporte.",
+  "assistant.offtopic": "Nota rápida: posso responder algumas perguntas gerais, mas estou aqui principalmente para ajudar com o Voyadecir e tradução.",
+  "assistant.ticket_ack": "Certo. Criei um pedido de suporte para o Voyadecir.",
+  "assistant.ticket_label": "Chamado",
+  "assistant.fab": "Clara",
+  "paywall.title": "Unlock unlimited use",
+  "paywall.subtitle": "You’ve used your 3 free uses.",
+  "paywall.monthly": "Monthly",
+  "paywall.annual": "Annual (save 1 month)",
+  "paywall.price_monthly": "$8.99/mo",
+  "paywall.price_annual": "$98.89/yr",
+  "paywall.cta": "Upgrade",
+  "paywall.later": "Not now",
+  "translate.moreDetails": "Mais detalhes",
+  "translate.warnings": "Avisos",
+  "translate.alternatives": "Alternativas e significados"
 }
-

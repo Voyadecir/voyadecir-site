@@ -139,6 +139,11 @@
       const code = btn.getAttribute("data-lang");
       btn.classList.toggle("is-active", code === lang);
     });
+
+// Notify other components (e.g., Clara widget) that language changed
+try {
+  window.dispatchEvent(new CustomEvent("voyadecir:lang-changed", { detail: { lang } }));
+} catch (e) {}
   }
 
   async function setLang(lang) {
@@ -155,6 +160,20 @@
   // Init on page load
   //
   async function init() {
+    // Inject Liquid Glass SVG filter definition once per page (used by CSS filter:url(#lg-dist))
+    if (!document.getElementById("voy-lg-dist-svg")) {
+      const holder = document.createElement("div");
+      holder.innerHTML = `
+<svg id="voy-lg-dist-svg" style="display:none" aria-hidden="true">
+  <filter id="lg-dist" x="0%" y="0%" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.008 0.008" numOctaves="2" seed="92" result="noise"/>
+    <feGaussianBlur in="noise" stdDeviation="2" result="blurred"/>
+    <feDisplacementMap in="SourceGraphic" in2="blurred" scale="70" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>`;
+      document.body.appendChild(holder.firstElementChild);
+    }
+
     const initial = detect();
     await setLang(initial);
 

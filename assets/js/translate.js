@@ -65,6 +65,67 @@
 
       if (tgtBox) tgtBox.value = out;
       setStatus("Done.");
+
+// Show enrichment / warnings (human interpreter feel)
+try {
+  const details = document.getElementById("translate-details");
+  const warnEl = document.getElementById("translate-warnings");
+  const enrichEl = document.getElementById("translate-enrichment");
+
+  const warnings = data.warnings || [];
+  const enrichment = data.enrichment || {};
+
+  let hasAny = false;
+
+  if (warnEl) {
+    warnEl.innerHTML = "";
+    if (Array.isArray(warnings) && warnings.length) {
+      hasAny = true;
+      const h = document.createElement("h3");
+      h.textContent = (typeof window.voyT==="function" ? window.voyT("translate.warnings","Warnings") : "Warnings");
+      warnEl.appendChild(h);
+      const ul = document.createElement("ul");
+      warnings.forEach(w => {
+        const li = document.createElement("li");
+        li.textContent = typeof w === "string" ? w : JSON.stringify(w);
+        ul.appendChild(li);
+      });
+      warnEl.appendChild(ul);
+    }
+  }
+
+  if (enrichEl) {
+    enrichEl.innerHTML = "";
+    const ambiguous = enrichment.ambiguous_words || enrichment.ambiguous || [];
+    const meanings = enrichment.meanings || null;
+    if ((Array.isArray(ambiguous) && ambiguous.length) || meanings) {
+      hasAny = true;
+      const h2 = document.createElement("h3");
+      h2.textContent = (typeof window.voyT==="function" ? window.voyT("translate.alternatives","Alternatives & meanings") : "Alternatives & meanings");
+      enrichEl.appendChild(h2);
+
+      if (Array.isArray(ambiguous) && ambiguous.length) {
+        ambiguous.forEach(item => {
+          const div = document.createElement("div");
+          const word = item.word || "";
+          div.innerHTML = `<strong>${word}</strong>`;
+          const ul = document.createElement("ul");
+          (item.meanings || []).forEach(m => {
+            const li = document.createElement("li");
+            li.textContent = m;
+            ul.appendChild(li);
+          });
+          div.appendChild(ul);
+          enrichEl.appendChild(div);
+        });
+      }
+    }
+  }
+
+  if (details) {
+    details.hidden = !hasAny;
+  }
+} catch (e) {}
     } catch (err) {
       console.error("Network error", err);
       setStatus("Network error. Showing backup.");

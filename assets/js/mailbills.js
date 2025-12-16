@@ -407,6 +407,13 @@ async function runAgentPipeline(ocrText, initialFields) {
   try {
     const agentData = await callInterpret(cleanText);
 
+// Track successful uses (3 free) and show upgrade modal if threshold reached
+try {
+  if (window.VoyPaywall && typeof window.VoyPaywall.recordUse === "function") {
+    window.VoyPaywall.recordUse();
+  }
+} catch (e) {}
+
     const sumEl = $("#summary-text");
     const summaryText =
       agentData.summary_translated || agentData.summary_en || agentData.summary || "";

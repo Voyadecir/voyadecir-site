@@ -1,34 +1,27 @@
 {
   "brand.title": "Voyadecir",
   "brand.tagline": "翻译。理解。连接。",
-
   "nav.home": "首页",
   "nav.translate": "翻译",
   "nav.mailbills": "邮件和账单",
   "nav.assistant": "助手",
   "nav.about": "关于",
   "nav.contact": "联系",
-
   "hero.h1": "Voyadecir — 翻译。理解。连接。",
   "hero.sub": "借助最新的人工智能技术，Voyadecir 通过智能翻译和解释连接不同语言，帮助你轻松地在世界各地翻译、理解和沟通。",
   "cta.start": "开始翻译",
-
   "about.title": "关于 Voyadecir",
   "about.body": "Voyadecir 帮助人们在不同语言之间清晰沟通，界面简洁优雅。我们相信全球连接、智能工具和安静而精细的工艺。",
-
   "contact.title": "联系我们",
   "contact.intro": "给我们发一条消息，我们会尽快回复你。",
   "contact.name": "姓名",
   "contact.email": "电子邮箱",
   "contact.msg": "留言",
   "contact.send": "发送",
-
   "privacy.title": "隐私政策",
   "privacy.body": "我们在设计时首先考虑隐私。这个静态网站默认不使用任何 Cookie 或跟踪器。如果你选择使用我们的翻译功能，它可能会根据第三方 API 自身的政策来处理数据。",
-
   "terms.title": "服务条款",
   "terms.body": "请负责任地使用 Voyadecir。我们按“原样”提供服务，不作任何保证。使用本网站即表示你同意不滥用本服务。",
-
   "translate.title": "翻译文档",
   "translate.subtitle": "在下面输入或粘贴文本，或使用“邮件和账单助手”处理照片和信件。",
   "translate.upload": "上传文档（即将推出）",
@@ -43,7 +36,6 @@
   "translate.status": "就绪。",
   "translate.hint": "对于照片或扫描的账单，请使用“邮件和账单助手”。",
   "translate.mailbillsCta": "需要帮忙查看邮件和账单吗？",
-
   "mb.title": "邮件和账单助手",
   "mb.sub": "上传一份账单或信件。我们会读取内容，提取关键信息，并用你的语言总结给你。",
   "mb.btnUpload": "上传文档",
@@ -78,11 +70,29 @@
   "mb.status.translated": "已翻译。",
   "mb.status.doneWithAgent": "完成。已生成摘要并提取信息。",
   "mb.status.ocrDone": "文本已提取。",
-
   "asst.title": "助手",
   "asst.sub": "提一些简单的问题。如果智能大脑离线，我会用一个更简单的助手来帮你。",
   "asst.placeholder": "在这里输入你的问题…",
   "asst.send": "发送",
-  "asst.hint": "小提示：可以问关于账单、文件上传、相机或 OCR 的问题。"
+  "asst.hint": "小提示：可以问关于账单、文件上传、相机或 OCR 的问题。",
+  "assistant.title": "Clara，你的助手",
+  "assistant.placeholder": "输入你的消息…",
+  "assistant.send": "发送",
+  "assistant.typing": "正在输入…",
+  "assistant.greeting": "你好，我是 Clara。可以问我关于 Voyadecir（网页或未来应用）、翻译或 Mail & Bills 的问题。如果遇到问题，告诉我发生了什么，我会创建支持请求。",
+  "assistant.offtopic": "提示：我可以回答一两条通用问题，但我主要用于 Voyadecir 帮助和翻译。",
+  "assistant.ticket_ack": "收到。我已为 Voyadecir 创建支持请求。",
+  "assistant.ticket_label": "工单",
+  "assistant.fab": "Clara",
+  "paywall.title": "Unlock unlimited use",
+  "paywall.subtitle": "You’ve used your 3 free uses.",
+  "paywall.monthly": "Monthly",
+  "paywall.annual": "Annual (save 1 month)",
+  "paywall.price_monthly": "$8.99/mo",
+  "paywall.price_annual": "$98.89/yr",
+  "paywall.cta": "Upgrade",
+  "paywall.later": "Not now",
+  "translate.moreDetails": "更多详情",
+  "translate.warnings": "提示",
+  "translate.alternatives": "替代译法与含义"
 }
-

@@ -1,329 +1,169 @@
 /**
- * asst-widget.js - Floating Chatbot Widget for Voyadecir
- * Creates a floating button that opens a chat panel on any page
+ * asst-widget.js - Floating Clara assistant widget (site-wide)
+ * - Fully multilingual via window.voyT + window.VD_LANG
+ * - Uses backend /api/assistant for answers
+ * - Creates support tickets via /api/support when user reports an issue
  */
 (function () {
   "use strict";
 
-  // Set this when your real assistant endpoint exists
-  var ASSISTANT_BASE = "";
+  const API_BASE = "https://ai-translator-i5jb.onrender.com";
+  const ASSIST_URL = API_BASE + "/api/assistant";
+  const SUPPORT_URL = API_BASE + "/api/support";
 
-  function $(s) { return document.querySelector(s); }
+  const LS_LANG = "voyadecir_lang";
+  const MAX_OFFTOPIC = 2;
+
+  const $ = (s, r=document) => r.querySelector(s);
 
   function getLang() {
+    return window.VD_LANG ||
+      (function(){
+        try { return localStorage.getItem(LS_LANG) || sessionStorage.getItem(LS_LANG) || "en"; } catch(e){ return "en"; }
+      })();
+  }
+
+  function t(key, fallback) {
     try {
-      return sessionStorage.getItem("voyadecir_lang") || "en";
-    } catch (e) {
-      return "en";
-    }
+      if (typeof window.voyT === "function") return window.voyT(key, fallback);
+    } catch(e){}
+    return fallback;
   }
 
-  var i18n = {
-    en: {
-      fabLabel: "Ask",
-      panelTitle: "Voyadecir Assistant",
-      placeholder: "Type your question...",
-      send: "Send",
-      typing: "Typing...",
-      greeting: "Hi! I can help you with translating bills, taking photos, OCR, and more. What would you like to know?",
-      errorFallback: "Server error. Using basic mode.",
-      close: "X"
-    },
-    es: {
-      fabLabel: "Preguntar",
-      panelTitle: "Asistente Voyadecir",
-      placeholder: "Escribe tu pregunta...",
-      send: "Enviar",
-      typing: "Escribiendo...",
-      greeting: "Hola! Puedo ayudarte con traducir facturas, tomar fotos, OCR y mas. Que te gustaria saber?",
-      errorFallback: "Error del servidor. Usando modo basico.",
-      close: "X"
-    }
-  };
-
-  function t(key) {
-    var lang = getLang();
-    return (i18n[lang] && i18n[lang][key]) || i18n.en[key] || key;
+  function looksLikeIssue(msg){
+    const s = (msg||"").toLowerCase();
+    return /(bug|issue|problem|broken|not working|error|doesn'?t work|glitch|crash|stuck|freeze|failed|problema|no funciona|error|falló)/.test(s);
   }
 
-  function localHelper(question, lang) {
-    var q = (question || "").toLowerCase();
-    
-    var en = {
-      hello: "Hi! Ask me about translating bills, taking a photo, or supported file types.",
-      pdf: "Yes, you can upload PDFs and images. Clear, well-lit photos work best.",
-      camera: "Use the Take Picture button on Mail and Bills. Make sure the text is sharp and fills the frame.",
-      ocr: "OCR reads text in your image or PDF. We use Azure Vision to extract key fields like amount and due date.",
-      translate: "Go to the Translate page for text translation, or use Mail and Bills for document images.",
-      help: "I can help with: uploading documents, taking photos, OCR, translation, and understanding bills.",
-      defaultMsg: "Got it. Ask about upload, camera, OCR, or supported docs."
-    };
-    
-    var es = {
-      hello: "Hola! Preguntame sobre traducir facturas, tomar una foto o los tipos de archivo.",
-      pdf: "Si, puedes subir archivos PDF e imagenes. Las fotos claras funcionan mejor.",
-      camera: "Usa el boton Tomar foto en Correo y Facturas. Asegurate de que el texto este nitido.",
-      ocr: "OCR lee el texto de tu imagen o PDF. Usamos Azure Vision para extraer campos clave.",
-      translate: "Ve a la pagina Traducir para traducir texto, o usa Correo y Facturas para documentos.",
-      help: "Puedo ayudar con: subir documentos, tomar fotos, OCR, traduccion y entender facturas.",
-      defaultMsg: "Entendido. Pregunta sobre subir, camara, OCR o documentos."
-    };
-    
-    var dict = lang === "es" ? es : en;
-    
-    if (q.indexOf("pdf") !== -1 || q.indexOf("upload") !== -1 || q.indexOf("subir") !== -1) return dict.pdf;
-    if (q.indexOf("camera") !== -1 || q.indexOf("foto") !== -1 || q.indexOf("picture") !== -1) return dict.camera;
-    if (q.indexOf("ocr") !== -1 || q.indexOf("scan") !== -1 || q.indexOf("read") !== -1) return dict.ocr;
-    if (q.indexOf("translate") !== -1 || q.indexOf("traducir") !== -1) return dict.translate;
-    if (q.indexOf("help") !== -1 || q.indexOf("ayuda") !== -1) return dict.help;
-    if (q.indexOf("hello") !== -1 || q.indexOf("hola") !== -1 || q.indexOf("hi") !== -1) return dict.hello;
-    
-    return dict.defaultMsg;
-  }
-
-  function callAssistantAPI(message, lang) {
-    if (!ASSISTANT_BASE) {
-      return Promise.resolve({ reply: localHelper(message, lang), backend: "local" });
-    }
-    
-    var url = ASSISTANT_BASE + "/api/assistant";
-    return fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: message, lang: lang })
-    }).then(function(res) {
-      if (!res.ok) {
-        throw new Error("Server error " + res.status);
-      }
-      return res.json();
+  async function postJson(url, payload){
+    const res = await fetch(url, {
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
     });
+    const data = await res.json().catch(()=>null);
+    if(!res.ok) throw new Error((data && data.detail && data.detail.message) || "Request failed");
+    return data;
   }
 
-  function createWidget() {
-    if (window.location.pathname.indexOf("assistant.html") !== -1) {
-      console.log("[asst-widget] Skipping on assistant.html");
-      return null;
-    }
+  function buildUI(){
+    if ($(".asst-fab")) return;
 
-    if (document.getElementById("asst-fab")) {
-      console.log("[asst-widget] Already exists");
-      return null;
-    }
-
-    var fab = document.createElement("button");
-    fab.id = "asst-fab";
-    fab.className = "asst-fab";
+    const fab = document.createElement("button");
+    fab.className = "asst-fab glass";
     fab.type = "button";
-    fab.innerHTML = "<span>" + t("fabLabel") + "</span>";
+    fab.setAttribute("aria-label", t("assistant.open", "Open assistant"));
+    fab.textContent = t("assistant.fab", "Clara");
 
-    var panel = document.createElement("div");
-    panel.id = "asst-panel";
-    panel.className = "asst-panel";
-    panel.innerHTML = 
-      '<div class="asst-head">' +
-        '<span class="asst-title">' + t("panelTitle") + '</span>' +
-        '<button class="asst-close" type="button">' + t("close") + '</button>' +
-      '</div>' +
-      '<div class="asst-body" id="asst-body"></div>' +
-      '<div class="asst-foot">' +
-        '<input type="text" class="asst-input" id="asst-input" placeholder="' + t("placeholder") + '" autocomplete="off">' +
-        '<button class="asst-send" id="asst-send" type="button">' + t("send") + '</button>' +
-      '</div>';
+    const panel = document.createElement("div");
+    panel.className = "asst-panel glass";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-modal", "false");
+    panel.hidden = true;
 
-    document.body.appendChild(fab);
+    panel.innerHTML = `
+      <div class="asst-head">
+        <div class="asst-title" data-asst-title>${t("assistant.title","Clara, your assistant")}</div>
+        <button class="asst-close" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="asst-body" data-asst-body></div>
+      <div class="asst-foot">
+        <input class="asst-input" type="text" data-asst-input placeholder="${t("assistant.placeholder","Type your message…")}" />
+        <button class="asst-send glass-button" type="button" data-asst-send>${t("assistant.send","Send")}</button>
+      </div>
+    `;
+
     document.body.appendChild(panel);
+    document.body.appendChild(fab);
 
-    console.log("[asst-widget] Created widget elements");
-    return { fab: fab, panel: panel };
-  }
+    const body = panel.querySelector("[data-asst-body]");
+    const input = panel.querySelector("[data-asst-input]");
+    const sendBtn = panel.querySelector("[data-asst-send]");
+    const closeBtn = panel.querySelector(".asst-close");
 
-  function appendMessage(role, text) {
-    var body = document.getElementById("asst-body");
-    if (!body) return;
+    let offTopicCount = 0;
 
-    var msg = document.createElement("div");
-    msg.className = "asst-msg " + role;
-    msg.textContent = text;
-    body.appendChild(msg);
-    body.scrollTop = body.scrollHeight;
-    persistChat();
-  }
-
-  function showTyping(show) {
-    var body = document.getElementById("asst-body");
-    if (!body) return;
-
-    var typingEl = document.getElementById("asst-typing");
-    
-    if (show) {
-      if (!typingEl) {
-        typingEl = document.createElement("div");
-        typingEl.id = "asst-typing";
-        typingEl.className = "asst-msg bot";
-        typingEl.textContent = t("typing");
-        body.appendChild(typingEl);
-        body.scrollTop = body.scrollHeight;
-      }
-    } else if (typingEl) {
-      typingEl.remove();
-    }
-  }
-
-  function persistChat() {
-    try {
-      var body = document.getElementById("asst-body");
-      if (!body) return;
-      
-      var nodes = body.querySelectorAll(".asst-msg");
-      var items = [];
-      for (var i = 0; i < nodes.length; i++) {
-        items.push({
-          role: nodes[i].classList.contains("user") ? "user" : "bot",
-          text: nodes[i].textContent || ""
-        });
-      }
-      
-      var last = items.slice(-20);
-      sessionStorage.setItem("asst_widget_chat", JSON.stringify(last));
-    } catch (e) {}
-  }
-
-  function loadChat() {
-    try {
-      var raw = sessionStorage.getItem("asst_widget_chat");
-      if (!raw) return false;
-      
-      var items = JSON.parse(raw);
-      for (var i = 0; i < items.length; i++) {
-        appendMessage(items[i].role, items[i].text);
-      }
-      return items.length > 0;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  var isPending = false;
-
-  function handleSend() {
-    if (isPending) return;
-
-    var input = document.getElementById("asst-input");
-    if (!input) return;
-
-    var text = input.value.trim();
-    if (!text) return;
-
-    appendMessage("user", text);
-    input.value = "";
-    showTyping(true);
-    isPending = true;
-
-    var lang = getLang();
-    callAssistantAPI(text, lang)
-      .then(function(data) {
-        var reply = (data && data.reply) || localHelper(text, lang);
-        showTyping(false);
-        appendMessage("bot", reply);
-        isPending = false;
-      })
-      .catch(function(err) {
-        console.error("[asst-widget] Error:", err);
-        showTyping(false);
-        appendMessage("bot", t("errorFallback"));
-        appendMessage("bot", localHelper(text, getLang()));
-        isPending = false;
-      });
-  }
-
-  function togglePanel(show) {
-    var panel = document.getElementById("asst-panel");
-    var fab = document.getElementById("asst-fab");
-    
-    if (!panel || !fab) return;
-
-    if (show === undefined) {
-      show = panel.style.display !== "block";
+    function addMsg(text, who="bot"){
+      const div=document.createElement("div");
+      div.className = "asst-msg " + (who==="user" ? "user" : "bot");
+      div.textContent = text;
+      body.appendChild(div);
+      body.scrollTop = body.scrollHeight;
     }
 
-    if (show) {
-      panel.style.display = "block";
-      fab.classList.add("clicked");
-      var input = document.getElementById("asst-input");
-      if (input) {
-        setTimeout(function() { input.focus(); }, 100);
-      }
-    } else {
-      panel.style.display = "none";
-    }
-  }
-
-  function init() {
-    console.log("[asst-widget] Initializing...");
-    
-    var widgets = createWidget();
-    if (!widgets) return;
-
-    var fab = widgets.fab;
-    var panel = widgets.panel;
-
-    fab.addEventListener("click", function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      fab.classList.add("clicked");
-      togglePanel();
-    });
-
-    var closeBtn = panel.querySelector(".asst-close");
-    if (closeBtn) {
-      closeBtn.addEventListener("click", function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        togglePanel(false);
-      });
+    function setStrings(){
+      fab.textContent = t("assistant.fab","Clara");
+      panel.querySelector("[data-asst-title]").textContent = t("assistant.title","Clara, your assistant");
+      input.setAttribute("placeholder", t("assistant.placeholder","Type your message…"));
+      sendBtn.textContent = t("assistant.send","Send");
     }
 
-    var sendBtn = document.getElementById("asst-send");
-    if (sendBtn) {
-      sendBtn.addEventListener("click", function(e) {
-        e.preventDefault();
-        handleSend();
-      });
-    }
+    async function send(){
+      const msg = (input.value || "").trim();
+      if(!msg) return;
+      input.value="";
+      addMsg(msg,"user");
 
-    var input = document.getElementById("asst-input");
-    if (input) {
-      input.addEventListener("keydown", function(e) {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          handleSend();
+      const lang = getLang();
+      addMsg(t("assistant.typing","Typing…"),"bot");
+      const typingEl = body.lastElementChild;
+
+      try{
+        const resp = await postJson(ASSIST_URL, { message: msg, lang });
+        typingEl.remove();
+
+        // Soft redirect behavior
+        if(!/voyadecir|translate|translation|mail|bill|ocr|assistant|clara|app|android|ios/i.test(msg)){
+          offTopicCount += 1;
+          if(offTopicCount <= MAX_OFFTOPIC){
+            addMsg(resp.reply,"bot");
+            addMsg(t("assistant.offtopic","Quick note: I can answer a couple general questions, but I’m mainly here for Voyadecir help and translation."),"bot");
+          } else {
+            addMsg(t("assistant.offtopic","Quick note: I can answer a couple general questions, but I’m mainly here for Voyadecir help and translation."),"bot");
+          }
+        } else {
+          offTopicCount = 0;
+          addMsg(resp.reply,"bot");
         }
-      });
+
+        // Create support ticket if it looks like a bug report
+        if(looksLikeIssue(msg)){
+          try{
+            const ticket = await postJson(SUPPORT_URL, { message: msg, lang, page: location.pathname, userAgent: navigator.userAgent });
+            addMsg(`${t("assistant.ticket_ack","Got it. I’ve created a support request for Voyadecir.")} ${t("assistant.ticket_label","Ticket")}: ${ticket.ticket_id}`,"bot");
+          } catch(e){
+            // fallback: still acknowledge
+            addMsg(t("assistant.ticket_ack","Got it. I’ve created a support request for Voyadecir."),"bot");
+          }
+        }
+
+      } catch(err){
+        typingEl.remove();
+        addMsg("Server error. Please try again.","bot");
+      }
     }
 
-    document.addEventListener("click", function(e) {
-      var panelEl = document.getElementById("asst-panel");
-      var fabEl = document.getElementById("asst-fab");
-      
-      if (!panelEl || !fabEl) return;
-      if (panelEl.style.display !== "block") return;
-      
-      if (!panelEl.contains(e.target) && !fabEl.contains(e.target)) {
-        togglePanel(false);
+    fab.addEventListener("click", ()=>{
+      panel.hidden = !panel.hidden;
+      if(!panel.hidden && body.childElementCount===0){
+        addMsg(t("assistant.greeting","Hi! I’m Clara."),"bot");
+      }
+      if(!panel.hidden){
+        setTimeout(()=>input.focus(), 50);
       }
     });
 
-    var hasHistory = loadChat();
-    if (!hasHistory) {
-      appendMessage("bot", t("greeting"));
-    }
+    closeBtn.addEventListener("click", ()=>{ panel.hidden=true; });
+    sendBtn.addEventListener("click", send);
+    input.addEventListener("keydown", (e)=>{
+      if(e.key==="Enter") send();
+    });
 
-    console.log("[asst-widget] Initialized successfully");
+    window.addEventListener("voyadecir:lang-changed", setStrings);
+
+    // Initial strings
+    setStrings();
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
+  window.addEventListener("DOMContentLoaded", buildUI);
 })();

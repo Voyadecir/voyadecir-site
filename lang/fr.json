@@ -1,34 +1,27 @@
 {
   "brand.title": "Voyadecir",
   "brand.tagline": "Traduire. Comprendre. Se connecter.",
-
   "nav.home": "Accueil",
   "nav.translate": "Traduire",
   "nav.mailbills": "Courrier et factures",
   "nav.assistant": "Assistant",
   "nav.about": "À propos",
   "nav.contact": "Contact",
-
   "hero.h1": "Voyadecir — Traduire. Comprendre. Se connecter.",
   "hero.sub": "Propulsé par les dernières avancées en IA, Voyadecir rapproche les langues grâce à une traduction et une interprétation intelligentes, pour vous aider à traduire, comprendre et vous connecter facilement partout dans le monde.",
   "cta.start": "Commencer à traduire",
-
   "about.title": "À propos de Voyadecir",
   "about.body": "Voyadecir aide les personnes à communiquer clairement entre les langues avec une expérience épurée et élégante. Nous croyons à la connexion globale, aux outils intelligents et au travail discret bien fait.",
-
   "contact.title": "Contactez-nous",
   "contact.intro": "Envoyez-nous un message. Nous vous répondrons bientôt.",
   "contact.name": "Nom",
   "contact.email": "E-mail",
   "contact.msg": "Message",
   "contact.send": "Envoyer",
-
   "privacy.title": "Politique de confidentialité",
   "privacy.body": "Nous concevons en mettant la confidentialité en premier. Ce site statique n’utilise par défaut aucun cookie ni traqueur. Si vous choisissez d’utiliser notre traducteur, il peut s’appuyer sur des API tierces selon leurs propres politiques.",
-
   "terms.title": "Conditions d’utilisation",
   "terms.body": "Utilisez Voyadecir de manière responsable. Nous fournissons le service « tel quel », sans garantie. En utilisant le site, vous acceptez de ne pas faire un mauvais usage du service.",
-
   "translate.title": "Traduire un document",
   "translate.subtitle": "Saisissez ou collez du texte ci-dessous, ou utilisez l’assistant Courrier et factures pour les photos et les lettres.",
   "translate.upload": "Téléverser un document (bientôt)",
@@ -43,7 +36,6 @@
   "translate.status": "Prêt.",
   "translate.hint": "Pour les photos ou les factures scannées, utilisez l’assistant Courrier et factures.",
   "translate.mailbillsCta": "Besoin d’aide avec le courrier et les factures ?",
-
   "mb.title": "Assistant pour le courrier et les factures",
   "mb.sub": "Téléversez une facture ou une lettre. Nous la lirons, extrairons les informations clés et la résumerons dans votre langue.",
   "mb.btnUpload": "Téléverser un document",
@@ -78,11 +70,29 @@
   "mb.status.translated": "Traduit.",
   "mb.status.doneWithAgent": "Terminé. Résumé et informations extraits.",
   "mb.status.ocrDone": "Texte extrait.",
-
   "asst.title": "Assistant",
   "asst.sub": "Posez des questions rapides. Si le cerveau intelligent est hors ligne, j’utiliserai un assistant simple.",
   "asst.placeholder": "Tapez votre question…",
   "asst.send": "Envoyer",
-  "asst.hint": "Astuce : posez des questions sur les factures, les fichiers envoyés, la caméra ou l’OCR."
+  "asst.hint": "Astuce : posez des questions sur les factures, les fichiers envoyés, la caméra ou l’OCR.",
+  "assistant.title": "Clara, votre assistante",
+  "assistant.placeholder": "Écrivez votre message…",
+  "assistant.send": "Envoyer",
+  "assistant.typing": "Je tape…",
+  "assistant.greeting": "Bonjour, je suis Clara. Demandez-moi tout sur Voyadecir (web ou futures apps), la traduction, ou Mail & Bills. Si quelque chose ne marche pas, dites-moi ce qui s’est passé et je créerai une demande de support.",
+  "assistant.offtopic": "Petite note : je peux répondre à une ou deux questions générales, mais je suis surtout là pour Voyadecir et la traduction.",
+  "assistant.ticket_ack": "C’est noté. J’ai créé une demande de support pour Voyadecir.",
+  "assistant.ticket_label": "Ticket",
+  "assistant.fab": "Clara",
+  "paywall.title": "Unlock unlimited use",
+  "paywall.subtitle": "You’ve used your 3 free uses.",
+  "paywall.monthly": "Monthly",
+  "paywall.annual": "Annual (save 1 month)",
+  "paywall.price_monthly": "$8.99/mo",
+  "paywall.price_annual": "$98.89/yr",
+  "paywall.cta": "Upgrade",
+  "paywall.later": "Not now",
+  "translate.moreDetails": "Plus de détails",
+  "translate.warnings": "Avertissements",
+  "translate.alternatives": "Alternatives et sens"
 }
-

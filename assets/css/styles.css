@@ -2,15 +2,45 @@
    BASE THEME & GLOBAL
    ========================================= */
 :root {
-  --bg:#020617;
-  --fg:#f9fafb;
-  --muted:#e5e7eb;
-  --accent:#000000;
-  --panel-shadow:0 18px 45px rgba(0,0,0,0.45);
+  /* Theme colors */
+  --bg:#F2F7FD;
+  --fg:#0B0F1A;
+  --muted:#3B4252;
+  --accent:#111111;
+
+  /* Glass tuning knobs (edit these later to change the whole site) */
+  --glass-bg: rgba(255,255,255,0.22);
+  --glass-border: rgba(255,255,255,0.28);
+  --glass-blur: 10px;
+  --glass-sat: 160%;
+  --glass-shadow: 0 14px 40px rgba(0,0,0,0.18);
+  --glass-inset: inset 0 1px 0 rgba(255,255,255,0.40);
+  --glass-highlight: rgba(255,255,255,0.55);
+
+  /* Radii */
   --radius-card:24px;
   --radius-button:18px;
   --lang-menu-radius:90px;
+
+  /* Background image (swap this later to your word-cloud world map) */
+  --bg-image: url("assets/img/bg-ink.jpg");
 }
+
+html[data-theme="dark"]{
+  --bg:#020617;
+  --fg:#f9fafb;
+  --muted:#e5e7eb;
+  --accent:#ffffff;
+
+  --glass-bg: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.18);
+  --glass-blur: 10px;
+  --glass-sat: 160%;
+  --glass-shadow: 0 18px 45px rgba(0,0,0,0.45);
+  --glass-inset: inset 0 1px 0 rgba(255,255,255,0.12);
+  --glass-highlight: rgba(255,255,255,0.35);
+}
+
 
 * {
   box-sizing:border-box;
@@ -39,11 +69,18 @@ body::before {
   content:"";
   position:fixed;
   inset:0;
-  background-image:radial-gradient(rgba(255,255,255,0.08) 1px, transparent 0);
-  background-size:18px 18px;
-  opacity:0.18;
+  /* Multilingual background layer: subtle + readable */
+  background-image:
+    radial-gradient(rgba(255,255,255,0.08) 1px, transparent 0),
+    var(--bg-image);
+  background-size:18px 18px, cover;
+  background-position:0 0, center center;
+  background-repeat:repeat, no-repeat;
+  background-attachment:fixed, fixed;
+  opacity:0.30;
+  filter:saturate(115%) contrast(105%);
   pointer-events:none;
-  z-index:0;
+  z-index:-1;
 }
 
 body > * {
@@ -287,18 +324,69 @@ nav a:hover {
 .glass,
 .glass-panel,
 .glass-button,
-.lang-menu__button {
+.lang-menu__button,
+button.glass,
+a.glass {
   position:relative;
-  background:rgba(255, 255, 255, 0.06);
-  backdrop-filter:blur(8px) saturate(160%);
-  -webkit-backdrop-filter:blur(8px) saturate(160%);
-  border:1px solid rgba(255, 255, 255, 0.18);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.37),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background:var(--glass-bg);
+  backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border:1px solid var(--glass-border);
+  box-shadow:var(--glass-shadow), var(--glass-inset);
   overflow:hidden;
   isolation:isolate;
 }
+
+/* Distortion layer (uses the hidden SVG filter #lg-dist injected once per page) */
+.glass::before,
+.glass-panel::before,
+.glass-button::before,
+.lang-menu__button::before,
+button.glass::before,
+a.glass::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  backdrop-filter:blur(0px);
+  filter:url(#lg-dist);
+  opacity:0.40;
+}
+
+/* Specular highlight */
+.glass::after,
+.glass-panel::after,
+.glass-button::after,
+.lang-menu__button::after,
+button.glass::after,
+a.glass::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  border-radius:inherit;
+  box-shadow:
+    inset 1px 1px 0 var(--glass-highlight),
+    inset 0 0 6px rgba(255,255,255,0.30);
+  background:linear-gradient(
+    135deg,
+    rgba(255,255,255,0.18) 0%,
+    rgba(255,255,255,0.04) 45%,
+    rgba(255,255,255,0.12) 100%
+  );
+  opacity:0.65;
+}
+
+.glass > *,
+.glass-panel > *,
+.glass-button > *,
+.lang-menu__button > * {
+  position:relative;
+  z-index:2;
+}
+
 
 .glass::after,
 .glass-panel::after,
@@ -690,13 +778,13 @@ body.mailbills-page .result-value {
   color:#fff;
   border:1px solid rgba(255, 255, 255, 0.2);
   border-radius:999px;
-  padding:14px 18px;
+  padding:16px 22px;
   box-shadow:0 6px 20px rgba(0,0,0,0.3);
   cursor:pointer;
-  font-size:14px;
+  font-size:15px;
   font-weight:600;
   transition:all 0.2s ease;
-  animation: fabBounce 0.6s ease-in-out 2s 1;
+  animation: fabBounce 0.7s ease-in-out 1.6s 2;
 }
 
 .asst-fab.clicked {
@@ -907,4 +995,126 @@ small.tagline {
   .translator-foot {
     flex-direction:column;
   }
+}
+
+
+/* Theme toggle button (small, responsive) */
+.theme-toggle{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  border:1px solid var(--glass-border);
+  background:var(--glass-bg);
+  backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+  cursor:pointer;
+}
+
+.theme-toggle svg{ width:34px; height:26px; display:block; }
+
+/* Animate your day/night SVG with CSS (no external animation libs) */
+.theme-toggle .starGroup{ opacity:0; transition:opacity .35s ease; }
+.theme-toggle .cloudGroup{ opacity:1; transition:opacity .35s ease; }
+.theme-toggle .moon{ opacity:0; transition:opacity .35s ease; }
+.theme-toggle .sun{ opacity:1; transition:opacity .35s ease; }
+
+html[data-theme="dark"] .theme-toggle .starGroup{ opacity:1; }
+html[data-theme="dark"] .theme-toggle .cloudGroup{ opacity:0; }
+html[data-theme="dark"] .theme-toggle .moon{ opacity:1; }
+html[data-theme="dark"] .theme-toggle .sun{ opacity:0; }
+
+
+/* Social footer (glass buttons) */
+.social-footer{
+  padding:24px 0;
+}
+.social-footer .button-container{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:1.5rem;
+  flex-wrap:wrap;
+}
+.social-footer .glass-btn{
+  width:72px;
+  height:72px;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+}
+.social-footer .glass-btn img{
+  width:44px;
+  height:44px;
+}
+
+
+/* Paywall modal */
+.voy-modal-open{ overflow:hidden; }
+
+.voy-paywall{
+  position:fixed;
+  inset:0;
+  z-index:10050;
+}
+.voy-paywall__overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.40);
+  backdrop-filter:blur(2px);
+}
+.voy-paywall__card{
+  position:relative;
+  max-width:520px;
+  margin:10vh auto 0;
+  padding:20px;
+  border-radius:24px;
+}
+.voy-paywall__plans{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin:14px 0 10px;
+}
+.voy-plan{
+  text-align:left;
+  padding:14px;
+  border-radius:18px;
+  border:1px solid var(--glass-border);
+  background:var(--glass-bg);
+}
+.voy-plan.is-selected{
+  outline:2px solid rgba(0,0,0,0.12);
+}
+html[data-theme="dark"] .voy-plan.is-selected{
+  outline:2px solid rgba(255,255,255,0.18);
+}
+.voy-paywall__actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin-top:10px;
+}
+.voy-paywall__cta{
+  flex:1;
+}
+.voy-paywall__later{
+  background:none;
+  border:none;
+  color:var(--fg);
+  cursor:pointer;
+  opacity:0.85;
+}
+.voy-paywall__note{
+  display:block;
+  margin-top:10px;
+  opacity:0.7;
+}
+@media (max-width:520px){
+  .voy-paywall__plans{ grid-template-columns:1fr; }
+  .voy-paywall__card{ margin:6vh 12px 0; }
 }
