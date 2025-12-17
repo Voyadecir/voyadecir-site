@@ -1,280 +1,346 @@
-(function () {
-  const LS_KEY = "voyadecir_lang";
-  const SUPPORTED_LANGS = ["en", "es", "pt", "fr", "zh", "hi", "ar", "bn", "ru", "ur"];
+/**
+ * Voyadecir main.js
+ * Responsibilities:
+ * - Sticky top bar behaviors (More menu dropdown)
+ * - Language selector (globe button) + language persistence
+ * - Page-wide i18n for elements using data-i18n + data-i18n-placeholder
+ * - Emits a global event so other scripts (assistant/mailbills/translate) can react
+ */
 
-  const $ = (s, root = document) => root.querySelector(s);
-  const $$ = (s, root = document) => Array.from(root.querySelectorAll(s));
+(() => {
+  "use strict";
 
-  let currentDict = {};
+  // ---- Config ----
+  const STORAGE_KEY = "voyadecir_lang";
 
-  function t(key, fallback) {
+  const SUPPORTED_LANGS = [
+    { code: "en", label: "English" },
+    { code: "es", label: "Spanish" },
+    { code: "pt", label: "Portuguese" },
+    { code: "fr", label: "French" },
+    { code: "zh", label: "Chinese" },
+    { code: "hi", label: "Hindi" },
+    { code: "ar", label: "Arabic" },
+    { code: "bn", label: "Bengali" },
+    { code: "ru", label: "Russian" },
+    { code: "ur", label: "Urdu" },
+  ];
+
+  // Minimal built-in fallback strings (so the site never goes blank)
+  const FALLBACK_EN = {
+    "nav.home": "Home",
+    "nav.translate": "Translate",
+    "nav.mail": "Mail & Bills",
+    "nav.more": "More",
+    "nav.about": "About",
+    "nav.contact": "Contact",
+    "nav.privacy": "Privacy",
+    "nav.terms": "Terms",
+
+    "mb.title": "Mail & Bills Helper",
+    "mb.subtitle": "Upload a photo or PDF of your bill, letter, or document.",
+    "mb.upload": "Upload Document",
+    "mb.camera": "Take Picture",
+    "mb.translate": "Translate Full Text",
+    "mb.clear": "Clear",
+    "mb.to": "To",
+    "mb.footnote": "Your document is processed securely and not stored permanently.",
+
+    "site.disclaimer":
+      "Disclaimer: Voyadecir is for informational translation only and is not HIPAA- or FERPA-compliant. Do not upload personal health information (PHI) or student education records. Not legal, medical, or financial advice.",
+  };
+
+  // ---- Utilities ----
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+  function safeGetLang() {
     try {
-      const dict = window.VOY_LANGUAGE_MAP || currentDict || {};
-      if (Object.prototype.hasOwnProperty.call(dict, key)) return dict[key];
-    } catch (_) {}
-    return fallback || key;
-  }
-
-  async function fetchJsonSafe(url) {
-    try {
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) return null;
-      const data = await res.json();
-      if (!data || typeof data !== "object" || Array.isArray(data)) return null;
-      return data;
+      return sessionStorage.getItem(STORAGE_KEY);
     } catch (_) {
       return null;
     }
   }
 
-  async function loadDict(lang) {
-    const ok = SUPPORTED_LANGS.includes(lang) ? lang : "en";
-    const candidates = [`/lang/${ok}.json`, `lang/${ok}.json`];
-
-    for (const url of candidates) {
-      const data = await fetchJsonSafe(url);
-      if (data) return data;
-    }
-    return {};
+  function safeSetLang(lang) {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, lang);
+    } catch (_) {}
   }
 
-  function detect() {
+  function normalizeLang(code) {
+    const c = String(code || "").toLowerCase().trim();
+    if (!c) return "en";
+    const short = c.split("-")[0];
+    return SUPPORTED_LANGS.some((l) => l.code === short) ? short : "en";
+  }
+
+  function detectLang() {
+    const stored = safeGetLang();
+    if (stored) return normalizeLang(stored);
+
+    const nav = navigator.language || "en";
+    return normalizeLang(nav);
+  }
+
+  // ---- i18n Loader ----
+  async function loadLangDict(lang) {
+    // Try assets/i18n/{lang}.json, fallback to en, then fallback dict.
+    const url = `assets/i18n/${lang}.json?v=1`;
+
     try {
-      const saved = sessionStorage.getItem(LS_KEY);
-      if (SUPPORTED_LANGS.includes(saved)) return saved;
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error("i18n fetch failed");
+      const json = await res.json();
+      if (json && typeof json === "object") return json;
     } catch (_) {}
 
-    const raw = (navigator.language || "en").toLowerCase();
-    if (raw.startsWith("es")) return "es";
-    if (raw.startsWith("pt")) return "pt";
-    if (raw.startsWith("fr")) return "fr";
-    if (raw.startsWith("zh")) return "zh";
-    if (raw.startsWith("hi")) return "hi";
-    if (raw.startsWith("ar")) return "ar";
-    if (raw.startsWith("bn")) return "bn";
-    if (raw.startsWith("ru")) return "ru";
-    if (raw.startsWith("ur")) return "ur";
-    return "en";
+    if (lang !== "en") {
+      try {
+        const resEn = await fetch(`assets/i18n/en.json?v=1`, { cache: "no-store" });
+        if (resEn.ok) {
+          const j = await resEn.json();
+          if (j && typeof j === "object") return j;
+        }
+      } catch (_) {}
+    }
+
+    return FALLBACK_EN;
   }
 
-  async function apply(lang) {
-    const dict = await loadDict(lang);
-    currentDict = dict;
-    window.VOY_LANGUAGE_MAP = dict;
-    window.voyT = t;
-    window.VD_LANG = lang;
-
-    document.querySelectorAll("[data-i18n]").forEach((el) => {
+  function applyDict(dict) {
+    // Text nodes
+    $$("[data-i18n]").forEach((el) => {
       const key = el.getAttribute("data-i18n");
       if (!key) return;
-      if (!Object.prototype.hasOwnProperty.call(dict, key)) return;
-
-      if (el.querySelector("select, input, textarea")) return;
-      el.textContent = dict[key];
+      const value = dict[key];
+      if (typeof value === "string") el.textContent = value;
     });
 
-    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    // Placeholders
+    $$("[data-i18n-placeholder]").forEach((el) => {
       const key = el.getAttribute("data-i18n-placeholder");
       if (!key) return;
-      if (!Object.prototype.hasOwnProperty.call(dict, key)) return;
-      el.setAttribute("placeholder", dict[key]);
+      const value = dict[key];
+      if (typeof value === "string") el.setAttribute("placeholder", value);
     });
-
-    document.documentElement.setAttribute("lang", lang);
-
-    $$(".lang-menu__link, .js-lang-option").forEach((btn) => {
-      const code = btn.getAttribute("data-lang");
-      btn.classList.toggle("is-active", code === lang);
-    });
-
-    try {
-      window.dispatchEvent(new CustomEvent("voyadecir:lang-changed", { detail: { lang } }));
-    } catch (_) {}
   }
 
-  async function setLang(lang) {
-    const code = SUPPORTED_LANGS.includes(lang) ? lang : "en";
-    try {
-      sessionStorage.setItem(LS_KEY, code);
-    } catch (_) {}
-    await apply(code);
+  // ---- Language Menu UI ----
+  function buildLangMenu(langMenuEl, currentLang) {
+    langMenuEl.innerHTML = "";
+
+    const list = document.createElement("div");
+    list.className = "lang-menu-list";
+    list.setAttribute("role", "menu");
+
+    SUPPORTED_LANGS.forEach((l) => {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "lang-menu-item";
+      item.setAttribute("role", "menuitem");
+      item.setAttribute("data-lang", l.code);
+      item.textContent = l.label;
+
+      if (l.code === currentLang) {
+        item.classList.add("active");
+        item.setAttribute("aria-current", "true");
+      }
+
+      item.addEventListener("click", () => {
+        setLanguage(l.code);
+        closeLangMenu();
+      });
+
+      list.appendChild(item);
+    });
+
+    langMenuEl.appendChild(list);
   }
 
-  // ---- Fix: topbar must never lose Home/Translate/Mail Bills, even split-screen ----
-  function setupResponsiveNav() {
-    const nav = $("header nav");
-    if (!nav) return;
+  function openLangMenu() {
+    const menu = $("#lang-menu");
+    const btn = $("#lang-btn");
+    if (!menu || !btn) return;
 
-    nav.style.position = nav.style.position || "relative";
+    menu.style.display = "block";
+    menu.setAttribute("aria-hidden", "false");
+    btn.setAttribute("aria-expanded", "true");
+    menu.classList.add("open");
 
-    const primaryMatchers = [
-      /(^|\/)index\.html(\?|#|$)/i,
-      /(^|\/)translate\.html(\?|#|$)/i,
-      /(^|\/)mail-bills\.html(\?|#|$)/i,
-    ];
+    // Ensure it stays above everything clickable
+    menu.style.zIndex = "99999";
+  }
 
-    const isPrimary = (href) => primaryMatchers.some((re) => re.test(href || ""));
+  function closeLangMenu() {
+    const menu = $("#lang-menu");
+    const btn = $("#lang-btn");
+    if (!menu || !btn) return;
 
-    let moreBtn =
-      $("#nav-more") ||
-      nav.querySelector(".nav-more-btn") ||
-      nav.querySelector("[data-nav-more]");
+    menu.classList.remove("open");
+    menu.style.display = "none";
+    menu.setAttribute("aria-hidden", "true");
+    btn.setAttribute("aria-expanded", "false");
+  }
 
-    let moreMenu =
-      $("#nav-more-menu") ||
-      nav.querySelector(".nav-more-menu");
+  function toggleLangMenu() {
+    const menu = $("#lang-menu");
+    if (!menu) return;
+    const isOpen = menu.getAttribute("aria-hidden") === "false";
+    if (isOpen) closeLangMenu();
+    else openLangMenu();
+  }
 
-    // Create button/menu if missing (keeps “More” from being a dead prop)
-    if (!moreBtn) {
-      moreBtn = document.createElement("button");
-      moreBtn.type = "button";
-      moreBtn.id = "nav-more";
-      moreBtn.className = "glass-button nav-more-btn";
-      moreBtn.textContent = "More";
-      nav.appendChild(moreBtn);
-    }
+  // ---- More Menu UI ----
+  function openMoreMenu() {
+    const btn = $("#nav-more-btn");
+    const menu = $("#nav-more-menu");
+    if (!btn || !menu) return;
+    btn.setAttribute("aria-expanded", "true");
+    menu.classList.add("open");
+    menu.style.display = "block";
+    menu.style.zIndex = "99998";
+  }
 
-    if (!moreMenu) {
-      moreMenu = document.createElement("div");
-      moreMenu.id = "nav-more-menu";
-      moreMenu.className = "glass-panel nav-more-menu";
-      moreMenu.style.position = "absolute";
-      moreMenu.style.right = "0";
-      moreMenu.style.top = "calc(100% + 10px)";
-      moreMenu.style.zIndex = "9999";
-      moreMenu.style.minWidth = "180px";
-      moreMenu.style.padding = "10px";
-      moreMenu.style.display = "none";
-      nav.appendChild(moreMenu);
-    }
+  function closeMoreMenu() {
+    const btn = $("#nav-more-btn");
+    const menu = $("#nav-more-menu");
+    if (!btn || !menu) return;
+    btn.setAttribute("aria-expanded", "false");
+    menu.classList.remove("open");
+    menu.style.display = "none";
+  }
 
-    moreBtn.setAttribute("aria-haspopup", "menu");
-    moreBtn.setAttribute("aria-expanded", "false");
+  function toggleMoreMenu() {
+    const menu = $("#nav-more-menu");
+    if (!menu) return;
+    if (menu.classList.contains("open")) closeMoreMenu();
+    else openMoreMenu();
+  }
 
-    function closeMenu() {
-      moreMenu.style.display = "none";
-      moreBtn.setAttribute("aria-expanded", "false");
-    }
+  // ---- Language setter ----
+  let CURRENT_LANG = "en";
+  let CURRENT_DICT = FALLBACK_EN;
 
-    function openMenu() {
-      moreMenu.style.display = "block";
-      moreBtn.setAttribute("aria-expanded", "true");
-    }
+  async function setLanguage(lang) {
+    const normalized = normalizeLang(lang);
+    CURRENT_LANG = normalized;
+    safeSetLang(normalized);
 
-    function toggleMenu(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      const open = moreBtn.getAttribute("aria-expanded") === "true";
-      if (open) closeMenu();
-      else openMenu();
-    }
+    document.documentElement.setAttribute("lang", normalized);
 
-    moreBtn.addEventListener("click", toggleMenu);
+    // Load and apply dict
+    CURRENT_DICT = await loadLangDict(normalized);
+    applyDict(CURRENT_DICT);
 
+    // Rebuild menu highlighting
+    const langMenu = $("#lang-menu");
+    if (langMenu) buildLangMenu(langMenu, CURRENT_LANG);
+
+    // Broadcast (assistant / mailbills / translate scripts can listen)
+    window.dispatchEvent(
+      new CustomEvent("voyadecir:lang-change", {
+        detail: { lang: CURRENT_LANG, dict: CURRENT_DICT },
+      })
+    );
+  }
+
+  // ---- Wire up events ----
+  function wireGlobalClickHandlers() {
     document.addEventListener("click", (e) => {
-      if (!nav.contains(e.target)) closeMenu();
+      const langMenu = $("#lang-menu");
+      const langBtn = $("#lang-btn");
+
+      const moreMenu = $("#nav-more-menu");
+      const moreBtn = $("#nav-more-btn");
+
+      // Close language menu on outside click
+      if (langMenu && langBtn) {
+        const clickedLang = langMenu.contains(e.target) || langBtn.contains(e.target);
+        if (!clickedLang) closeLangMenu();
+      }
+
+      // Close more menu on outside click
+      if (moreMenu && moreBtn) {
+        const clickedMore = moreMenu.contains(e.target) || moreBtn.contains(e.target);
+        if (!clickedMore) closeMoreMenu();
+      }
     });
 
-    window.addEventListener("scroll", closeMenu, { passive: true });
-    window.addEventListener("resize", compute);
-
-    function compute() {
-      const links = Array.from(nav.querySelectorAll("a"));
-      const primary = links.filter((a) => isPrimary(a.getAttribute("href") || ""));
-      const secondary = links.filter((a) => !primary.includes(a));
-
-      // Primary: NEVER hide.
-      primary.forEach((a) => (a.style.display = "inline-flex"));
-
-      // If you have no secondary links, hide More.
-      if (!secondary.length) {
-        moreBtn.style.display = "none";
-        closeMenu();
-        return;
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeLangMenu();
+        closeMoreMenu();
       }
-
-      // Consider “split-screen” a narrow viewport too.
-      const narrow = window.matchMedia("(max-width: 900px)").matches;
-
-      if (narrow) {
-        secondary.forEach((a) => (a.style.display = "none"));
-        moreBtn.style.display = "inline-flex";
-
-        // Populate menu fresh
-        moreMenu.innerHTML = "";
-        secondary.forEach((a) => {
-          const item = a.cloneNode(true);
-          item.style.display = "block";
-          item.style.margin = "8px 6px";
-          item.style.opacity = "0.95";
-          item.style.textDecoration = "none";
-          item.style.color = "inherit";
-          item.addEventListener("click", () => closeMenu());
-          moreMenu.appendChild(item);
-        });
-      } else {
-        secondary.forEach((a) => (a.style.display = "inline-flex"));
-        moreBtn.style.display = "none";
-        closeMenu();
-      }
-    }
-
-    compute();
+    });
   }
 
+  function wireButtons() {
+    const langBtn = $("#lang-btn");
+    if (langBtn) {
+      langBtn.setAttribute("aria-haspopup", "true");
+      langBtn.setAttribute("aria-expanded", "false");
+
+      // Click + touchstart to keep it responsive on mobile
+      langBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        toggleLangMenu();
+      });
+
+      langBtn.addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault();
+          toggleLangMenu();
+        },
+        { passive: false }
+      );
+    }
+
+    const moreBtn = $("#nav-more-btn");
+    if (moreBtn) {
+      moreBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        toggleMoreMenu();
+      });
+
+      moreBtn.addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault();
+          toggleMoreMenu();
+        },
+        { passive: false }
+      );
+    }
+  }
+
+  // ---- Init ----
   async function init() {
-    // Inject Liquid Glass SVG filter definition once per page
-    if (!document.getElementById("voy-lg-dist-svg")) {
-      const holder = document.createElement("div");
-      holder.innerHTML = `
-<svg id="voy-lg-dist-svg" style="display:none" aria-hidden="true">
-  <filter id="lg-dist" x="0%" y="0%" width="100%" height="100%">
-    <feTurbulence type="fractalNoise" baseFrequency="0.008 0.008" numOctaves="2" seed="92" result="noise"/>
-    <feGaussianBlur in="noise" stdDeviation="2" result="blurred"/>
-    <feDisplacementMap in="SourceGraphic" in2="blurred" scale="70" xChannelSelector="R" yChannelSelector="G"/>
-  </filter>
-</svg>`;
-      document.body.appendChild(holder.firstElementChild);
+    // If markup forgot to include menus, don’t explode.
+    const langMenu = $("#lang-menu");
+    if (langMenu) {
+      langMenu.style.display = "none";
+      langMenu.setAttribute("aria-hidden", "true");
+      langMenu.style.position = "fixed"; // keep above content even when scrolling
+      langMenu.style.top = "72px"; // just under header
+      langMenu.style.right = "16px";
     }
 
-    const initial = detect();
-    await setLang(initial);
-
-    // Circle menus
-    const menus = $$(".lang-menu");
-    if (menus.length) {
-      menus.forEach((menu) => {
-        const toggler = menu.querySelector(".lang-menu__toggler");
-        const centerButton = menu.querySelector(".lang-menu__button");
-        const options = menu.querySelectorAll(".lang-menu__link, .js-lang-option");
-
-        if (centerButton && toggler) {
-          centerButton.addEventListener("click", (e) => {
-            e.stopPropagation();
-            toggler.checked = !toggler.checked;
-          });
-        }
-
-        options.forEach((btn) => {
-          btn.addEventListener("click", async (e) => {
-            e.stopPropagation();
-            const code = btn.getAttribute("data-lang");
-            if (code) await setLang(code);
-            if (toggler) toggler.checked = false;
-          });
-        });
-      });
-
-      document.addEventListener("click", (e) => {
-        menus.forEach((menu) => {
-          const toggler = menu.querySelector(".lang-menu__toggler");
-          if (!toggler) return;
-          if (!menu.contains(e.target)) toggler.checked = false;
-        });
-      });
+    const moreMenu = $("#nav-more-menu");
+    if (moreMenu) {
+      moreMenu.style.display = "none";
     }
 
-    setupResponsiveNav();
+    wireButtons();
+    wireGlobalClickHandlers();
+
+    // Language default
+    const lang = detectLang();
+    await setLanguage(lang);
+
+    // Build lang menu once loaded
+    if (langMenu) buildLangMenu(langMenu, CURRENT_LANG);
   }
 
   if (document.readyState === "loading") {
