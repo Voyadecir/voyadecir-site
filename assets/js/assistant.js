@@ -1,178 +1,380 @@
-// Set this when your real assistant endpoint exists:
-// Example: const ASSISTANT_BASE = "https://voyadecir-ai-functions.azurewebsites.net";
-// It will POST to `${ASSISTANT_BASE}/api/assistant`.
-const ASSISTANT_BASE = ""; // keep empty for now → uses safe local helper
+/* =========================================================
+   Voyadecir Assistant
+   "Clara, your Assistant"
+   - Single instance (prevents duplicates)
+   - Language-aware UI strings
+   - Soft redirect to Voyadecir scope
+   - Optional support ticket submission (uses contact form if found)
+   ========================================================= */
 
-const $ = (s) => document.querySelector(s);
+(function () {
+  // Prevent duplicate injection even if script included twice
+  if (window.__VOYADECIR_CLARA_LOADED__) return;
+  window.__VOYADECIR_CLARA_LOADED__ = true;
 
-// language helper (from main.js convention)
-function getLang() {
-  try { return sessionStorage.getItem('voyadecir_lang') || 'en'; }
-  catch (_) { return 'en'; }
-}
-
-function setStatus(msg) { const el = $('#asst-status'); if (el) el.textContent = msg; }
-
-function appendMsg(role, text) {
-  const win = $('#chat-window');
-  const row = document.createElement('div');
-  row.className = `msg ${role}`;
-  row.innerText = text;
-  win.appendChild(row);
-  win.scrollTop = win.scrollHeight;
-  persistChat();
-}
-
-function showTyping(show) {
-  const win = $('#chat-window');
-  let t = $('#typing-dot');
-  if (show) {
-    if (!t) {
-      t = document.createElement('div');
-      t.id = 'typing-dot';
-      t.className = 'msg bot';
-      t.textContent = getLang() === 'es' ? 'Escribiendo…' : 'Typing…';
-      win.appendChild(t);
-      win.scrollTop = win.scrollHeight;
-    }
-  } else if (t) {
-    t.remove();
+  function qs(sel, root = document) {
+    return root.querySelector(sel);
   }
-}
-
-function loadChat() {
-  try {
-    const raw = sessionStorage.getItem('asst_chat');
-    if (!raw) return;
-    const items = JSON.parse(raw);
-    items.forEach(m => appendMsg(m.role, m.text));
-  } catch (_) {}
-}
-
-function persistChat() {
-  try {
-    const win = $('#chat-window');
-    const nodes = [...win.querySelectorAll('.msg')];
-    const items = nodes.map(n => ({
-      role: n.classList.contains('user') ? 'user' : 'bot',
-      text: n.innerText || ''
-    }));
-    // keep last 20
-    const last = items.slice(-20);
-    sessionStorage.setItem('asst_chat', JSON.stringify(last));
-  } catch (_) {}
-}
-
-// very basic built-in helper so this page works today
-function localHelper(question, lang) {
-  const q = (question || "").toLowerCase();
-  const en = {
-    hello: "Hi! Ask me about translating bills, taking a photo, or supported file types. Try: “Can I upload a PDF?”",
-    pdf: "Yes, you can upload PDFs and images. Clear, well-lit photos work best. For multi-page PDFs, we’ll start with page 1 now and add full-doc soon.",
-    camera: "Use the Take Picture button on Mail & Bills. Make sure the text is sharp and fills the frame.",
-    ocr: "OCR reads text in your image or PDF. We use Azure Vision + Document Intelligence to pull key fields like amount and due date.",
-    default: "Got it. I’ll get smarter later when we connect the full assistant. For now, ask about upload, camera, OCR, or supported docs."
-  };
-  const es = {
-    hello: "¡Hola! Pregúntame sobre traducir facturas, tomar una foto o los tipos de archivo. Prueba: “¿Puedo subir un PDF?”",
-    pdf: "Sí, puedes subir archivos PDF e imágenes. Las fotos claras y bien iluminadas funcionan mejor. Para PDF de varias páginas, ahora usamos la primera página y pronto todo el documento.",
-    camera: "Usa el botón Tomar foto en Correo y Facturas. Asegúrate de que el texto esté nítido y ocupe el cuadro.",
-    ocr: "OCR lee el texto de tu imagen o PDF. Usamos Azure Vision + Document Intelligence para extraer campos clave como importe y fecha de vencimiento.",
-    default: "Entendido. Pronto seré más inteligente cuando conectemos el asistente completo. Por ahora, pregunta sobre subir, cámara, OCR o documentos soportados."
-  };
-  const t = lang === 'es' ? es : en;
-  if (q.includes("pdf")) return t.pdf;
-  if (q.includes("camera") || q.includes("foto") || q.includes("picture")) return t.camera;
-  if (q.includes("ocr")) return t.ocr;
-  if (q.includes("hello") || q.includes("hola") || q.includes("hi")) return t.hello;
-  return t.default;
-}
-
-// fetch with timeout wrapper
-async function fetchWithTimeout(url, opts = {}, ms = 12000) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), ms);
-  try {
-    const res = await fetch(url, { ...opts, signal: ctrl.signal });
-    return res;
-  } finally {
-    clearTimeout(t);
-  }
-}
-
-async function callAssistantAPI(message, lang) {
-  if (!ASSISTANT_BASE) {
-    // no backend yet → local helper
-    return { reply: localHelper(message, lang), backend: "local" };
-  }
-  const url = `${ASSISTANT_BASE}/api/assistant`;
-  const res = await fetchWithTimeout(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, lang })
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Assistant server ${res.status}: ${text}`);
-  }
-  return res.json();
-}
-
-// prevent parallel requests
-let pending = false;
-
-window.addEventListener('DOMContentLoaded', function () {
-  const form = $('#chat-form');
-  const input = $('#chat-text');
-  const btn = $('#chat-send');
-
-  // restore previous chat
-  loadChat();
-
-  // greeting
-  if (!$('#chat-window')?.querySelector('.msg')) {
-    appendMsg('bot', getLang() === 'es'
-      ? "Soy tu asistente de Voyadecir. Pregúntame sobre facturas, correo, OCR o cargas."
-      : "I’m your Voyadecir assistant. Ask me about bills, mail, OCR, or uploads.");
+  function qsa(sel, root = document) {
+    return Array.from(root.querySelectorAll(sel));
   }
 
-  // Enter submits, Shift+Enter makes a newline
-  input?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      btn?.click();
-    }
-  });
-
-  form?.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    if (pending) return;
-    const text = input.value.trim();
-    if (!text) return;
-
-    appendMsg('user', text);
-    input.value = "";
-    setStatus(getLang() === 'es' ? 'Pensando…' : 'Thinking…');
-    showTyping(true);
-    pending = true;
-
+  // Language source of truth: sessionStorage set by main.js
+  function getLang() {
     try {
-      const lang = getLang();
-      const data = await callAssistantAPI(text, lang);
-      const reply = data?.reply || (lang === 'es' ? "Lo siento, no pude responder." : "Sorry, I couldn’t answer.");
-      showTyping(false);
-      appendMsg('bot', reply);
-      setStatus(getLang() === 'es' ? 'Listo' : 'Ready');
-    } catch (err) {
-      console.error(err);
-      showTyping(false);
-      appendMsg('bot', getLang() === 'es'
-        ? "Error del servidor. Intentaré el modo básico."
-        : "Server error. I’ll fall back to the basic mode.");
-      appendMsg('bot', localHelper(text, getLang()));
-      setStatus(getLang() === 'es' ? 'Listo' : 'Ready');
-    } finally {
-      pending = false;
+      return sessionStorage.getItem("voyadecir_lang") || "en";
+    } catch (_) {
+      return "en";
     }
-  });
-});
+  }
+
+  // Minimal strings (extend safely later)
+  const STR = {
+    en: {
+      title: "Clara, your Assistant",
+      close: "×",
+      placeholder: "Ask me about Voyadecir…",
+      send: "Send",
+      hello:
+        "Hi, I’m Clara. I can help explain how Voyadecir works, or help you understand your translations.",
+      scope:
+        "I can answer a couple questions, but I’m best at Voyadecir questions (web + future iOS/Android apps).",
+      bugPrompt:
+        "If this is a bug, describe what happened (what you uploaded, what you expected, and what you saw). I can log it for support.",
+      logged:
+        "Got it. I logged a support request for my bosses. You can also use the Contact page to follow up.",
+      thinking: "Thinking…",
+      error: "Something went wrong. Try again in a moment.",
+    },
+    es: {
+      title: "Clara, tu Asistente",
+      close: "×",
+      placeholder: "Pregúntame sobre Voyadecir…",
+      send: "Enviar",
+      hello:
+        "Hola, soy Clara. Puedo explicar cómo funciona Voyadecir o ayudarte a entender tus traducciones.",
+      scope:
+        "Puedo responder una o dos preguntas, pero soy mejor con preguntas sobre Voyadecir (web y futuras apps iOS/Android).",
+      bugPrompt:
+        "Si es un error, dime qué pasó (qué subiste, qué esperabas y qué viste). Puedo registrarlo para soporte.",
+      logged:
+        "Listo. Registré una solicitud de soporte para mis jefes. También puedes usar la página de Contacto para dar seguimiento.",
+      thinking: "Pensando…",
+      error: "Algo salió mal. Inténtalo de nuevo en un momento.",
+    },
+    pt: {
+      title: "Clara, sua Assistente",
+      close: "×",
+      placeholder: "Pergunte sobre o Voyadecir…",
+      send: "Enviar",
+      hello:
+        "Oi, eu sou a Clara. Posso explicar como o Voyadecir funciona ou ajudar você a entender suas traduções.",
+      scope:
+        "Posso responder uma ou duas perguntas, mas sou melhor com dúvidas sobre o Voyadecir (web e futuros apps iOS/Android).",
+      bugPrompt:
+        "Se for um bug, descreva o que aconteceu (o que você enviou, o que esperava e o que viu). Posso registrar para suporte.",
+      logged:
+        "Entendi. Registrei uma solicitação de suporte. Você também pode usar a página de Contato para acompanhar.",
+      thinking: "Pensando…",
+      error: "Algo deu errado. Tente novamente em instantes.",
+    },
+    fr: {
+      title: "Clara, votre Assistante",
+      close: "×",
+      placeholder: "Demandez-moi sur Voyadecir…",
+      send: "Envoyer",
+      hello:
+        "Bonjour, je suis Clara. Je peux expliquer comment Voyadecir fonctionne ou vous aider à comprendre vos traductions.",
+      scope:
+        "Je peux répondre à une ou deux questions, mais je suis surtout utile pour Voyadecir (web et futures apps iOS/Android).",
+      bugPrompt:
+        "Si c’est un bug, décrivez ce qui s’est passé (ce que vous avez envoyé, ce que vous attendiez, et ce que vous avez vu).",
+      logged:
+        "D’accord. J’ai enregistré une demande de support. Vous pouvez aussi utiliser la page Contact.",
+      thinking: "Réflexion…",
+      error: "Un problème est survenu. Réessayez dans un instant.",
+    },
+  };
+
+  function s(key) {
+    const lang = getLang();
+    return (STR[lang] && STR[lang][key]) ? STR[lang][key] : STR.en[key];
+  }
+
+  function escapeHtml(text) {
+    return String(text)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  // Inject CSS once
+  function injectCss() {
+    if (qs("#clara-widget-css")) return;
+    const style = document.createElement("style");
+    style.id = "clara-widget-css";
+    style.textContent = `
+      .clara-fab {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 99999;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 14px;
+        border-radius: 999px;
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .clara-fab span {
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .clara-panel {
+        position: fixed;
+        right: 24px;
+        bottom: 80px;
+        width: min(420px, calc(100vw - 32px));
+        height: min(520px, calc(100vh - 140px));
+        z-index: 99999;
+        display: none;
+        flex-direction: column;
+        border-radius: 16px;
+        overflow: hidden;
+      }
+
+      .clara-panel.open { display: flex; }
+
+      .clara-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+      }
+      .clara-title {
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .clara-close {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .clara-body {
+        padding: 12px 14px;
+        overflow: auto;
+        flex: 1;
+      }
+
+      .clara-msg {
+        margin: 10px 0;
+        padding: 10px 12px;
+        border-radius: 14px;
+        max-width: 92%;
+        line-height: 1.25;
+        font-size: 13px;
+      }
+      .clara-msg.user {
+        margin-left: auto;
+      }
+
+      .clara-footer {
+        padding: 10px 12px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .clara-input {
+        flex: 1;
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 13px;
+        outline: none;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(255,255,255,0.10);
+        color: inherit;
+      }
+      .clara-send {
+        padding: 10px 14px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 12px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(255,255,255,0.10);
+        color: inherit;
+      }
+
+      /* Keep above bottom bar if present */
+      @media (max-width: 600px) {
+        .clara-fab { right: 14px; bottom: 18px; }
+        .clara-panel { right: 14px; bottom: 74px; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Try to reuse glass class if site defines it
+  function applyGlass(el) {
+    el.classList.add("glass");
+  }
+
+  function buildWidget() {
+    injectCss();
+
+    // FAB
+    const fab = document.createElement("div");
+    fab.className = "clara-fab";
+    applyGlass(fab);
+    fab.setAttribute("role", "button");
+    fab.setAttribute("aria-label", s("title"));
+    fab.innerHTML = `<span>${escapeHtml(s("title"))}</span>`;
+
+    // Panel
+    const panel = document.createElement("div");
+    panel.className = "clara-panel";
+    applyGlass(panel);
+
+    panel.innerHTML = `
+      <div class="clara-header">
+        <div class="clara-title">${escapeHtml(s("title"))}</div>
+        <div class="clara-close" aria-label="${escapeHtml(s("close"))}">${escapeHtml(s("close"))}</div>
+      </div>
+      <div class="clara-body" id="clara-body"></div>
+      <div class="clara-footer">
+        <input class="clara-input" id="clara-input" type="text" placeholder="${escapeHtml(s("placeholder"))}" />
+        <button class="clara-send" id="clara-send" type="button">${escapeHtml(s("send"))}</button>
+      </div>
+    `;
+
+    document.body.appendChild(fab);
+    document.body.appendChild(panel);
+
+    // Initial messages
+    const body = qs("#clara-body", panel);
+    function add(role, text) {
+      const div = document.createElement("div");
+      div.className = `clara-msg ${role}`;
+      applyGlass(div);
+      div.innerHTML = escapeHtml(text);
+      body.appendChild(div);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    add("assistant", s("hello"));
+    add("assistant", s("scope"));
+    add("assistant", s("bugPrompt"));
+
+    // Open / close
+    function open() {
+      panel.classList.add("open");
+      const input = qs("#clara-input", panel);
+      if (input) input.focus();
+    }
+    function close() {
+      panel.classList.remove("open");
+    }
+
+    fab.addEventListener("click", open, { passive: true });
+    fab.addEventListener("touchstart", open, { passive: true });
+    qs(".clara-close", panel).addEventListener("click", close, { passive: true });
+
+    // Send logic
+    let softCount = 0;
+
+    async function send() {
+      const input = qs("#clara-input", panel);
+      const msg = (input.value || "").trim();
+      if (!msg) return;
+      input.value = "";
+
+      add("user", msg);
+
+      // Soft redirect after 1–2 off-topic questions
+      softCount++;
+
+      add("assistant", s("thinking"));
+
+      try {
+        const lang = getLang();
+
+        // Call real backend (ai-translator) by default.
+        const base = (window.VOY_ASSISTANT_BASE || "https://ai-translator-i5jb.onrender.com").replace(/\/$/, "");
+        const res = await fetch(base + "/api/assistant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: msg,
+            lang,
+            // lightweight context the backend can optionally use
+            page: location.pathname,
+          }),
+        });
+
+        if (!res.ok) {
+          // Remove "thinking" bubble then show error
+          body.removeChild(body.lastElementChild);
+          add("assistant", s("error"));
+          return;
+        }
+
+        const data = await res.json();
+
+        // Remove thinking bubble
+        body.removeChild(body.lastElementChild);
+
+        // Show reply
+        if (data && data.reply) {
+          add("assistant", data.reply);
+        } else {
+          add("assistant", s("error"));
+        }
+
+        // Soft redirect reminder (only if user keeps going off track)
+        if (softCount >= 3) {
+          add("assistant", s("scope"));
+          softCount = 0;
+        }
+      } catch (e) {
+        // Remove thinking bubble
+        if (body.lastElementChild) body.removeChild(body.lastElementChild);
+        add("assistant", s("error"));
+      }
+    }
+
+    qs("#clara-send", panel).addEventListener("click", send);
+    qs("#clara-input", panel).addEventListener("keydown", (e) => {
+      if (e.key === "Enter") send();
+    });
+
+    // Public hook for language refresh (main.js can call if desired)
+    window.__claraRefreshLang = function () {
+      // Update title/button/placeholder without re-injecting
+      try {
+        qs(".clara-title", panel).textContent = s("title");
+        qs("#clara-send", panel).textContent = s("send");
+        qs("#clara-input", panel).setAttribute("placeholder", s("placeholder"));
+        qs("span", fab).textContent = s("title");
+      } catch (_) {}
+    };
+  }
+
+  // Wait until DOM ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", buildWidget);
+  } else {
+    buildWidget();
+  }
+})();
