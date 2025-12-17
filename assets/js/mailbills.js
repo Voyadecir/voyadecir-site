@@ -1,286 +1,360 @@
-/* Voyadecir — Mail & Bills Helper (frontend)
-   Robust wiring for buttons/IDs across layout revisions.
-*/
-(function () {
+// Mail & Bills — client → OCR (Azure Functions) + Deep Agent (ai-translator)
+// Fixes:
+// - Upload Document / Take Picture always respond (desktop + iOS/iPadOS)
+// - Uses the correct element IDs from mail-bills.html
+// - Auto-runs OCR → interpret (no dead-end “Translate Full Text” behavior)
+// - Keeps UI exactly the same (just wiring + correctness)
+
+(() => {
   "use strict";
 
-  const OCR_API_BASE =
-    window.OCR_API_BASE ||
-    "https://voyadecir-ai-functions-aze4fqhjdcbzfkdu.centralus-01.azurewebsites.net";
+  // ===== Config (keep your existing services) =====
+  const AZURE_FUNCS_BASE =
+    (window.VOY_AZURE_FUNCS_BASE ||
+      "https://voyadecir-ai-functions-aze4fqhjdcbzfkdu.centralus-01.azurewebsites.net"
+    ).replace(/\/$/, "");
 
-  const BACKEND_BASE =
-    window.AGENT_API_BASE ||
-    window.INTERPRET_API_BASE ||
-    "https://ai-translator-i5jb.onrender.com";
+  const AI_TRANSLATOR_BASE =
+    (window.VOY_AI_TRANSLATOR_BASE || "https://ai-translator-i5jb.onrender.com"
+    ).replace(/\/$/, "");
 
-  const OCR_PARSE_API = `${OCR_API_BASE}/api/mailbills/parse`;
-  const INTERPRET_API = `${BACKEND_BASE}/api/mailbills/interpret`;
+  const URL_PARSE = `${AZURE_FUNCS_BASE}/api/mailbills/parse`;
+  const URL_INTERPRET = `${AI_TRANSLATOR_BASE}/api/mailbills/interpret`;
+  const URL_TRANSLATE_PDF = `${AI_TRANSLATOR_BASE}/api/mailbills/translate-pdf`;
 
-  // PDF export: try new, then old
-  const PDF_API_PRIMARY = `${BACKEND_BASE}/api/mailbills/translate-pdf`;
-  const PDF_API_FALLBACK = `${BACKEND_BASE}/api/mailbills/pdf`;
-
+  // ===== Helpers =====
   const $ = (sel) => document.querySelector(sel);
+  const on = (el, ev, fn, opt) => el && el.addEventListener(ev, fn, opt);
 
-  function firstExisting(selectors) {
-    for (const s of selectors) {
-      const el = $(s);
-      if (el) return el;
+  function getUiLang() {
+    try {
+      return sessionStorage.getItem("voyadecir_lang") || "en";
+    } catch (_) {
+      return "en";
     }
-    return null;
   }
 
-  // ---- Find elements (supports multiple versions of your HTML) ----
-  const elUploadBtn = firstExisting(["#btn-upload", "#mb-upload-btn", "#upload-btn"]);
-  const elCameraBtn = firstExisting(["#btn-camera", "#mb-photo-btn", "#camera-btn"]);
-  const elMoreBtn = firstExisting(["#nav-more", ".nav-more-btn", "[data-nav-more]"]); // harmless if absent
-
-  const elFileInput = firstExisting(["#file-input", "#mb-file", "#upload-input", "input[type=file]#file"]);
-  const elCameraInput = firstExisting(["#camera-input", "#mb-camera", "#camera-input-file"]);
-
-  const elClearBtn = firstExisting(["#mb-clear", "#mb-clear-btn", "#clear-btn"]);
-  const elDownloadBtn = firstExisting(["#mb-download-pdf", "#download-pdf", "#mb-download"]);
-
-  const elOcrText = firstExisting(["#ocr-text", "#mb-ocr-text", "#mb-ocrText"]);
-  const elSummaryText = firstExisting(["#summary-text", "#mb-summary", "#mb-summaryText"]);
-
-  const elStatus = firstExisting(["#status-line", "#mb-status", "#status"]);
-  const elError = firstExisting(["#mb-error", "#error-line", "#error"]);
-
-  const elTargetLang = firstExisting(["#mb-tgt-lang", "#target-lang", "#toLang"]);
-
-  // If an old “Translate Full Text” button exists, hide it (you want auto-run)
-  const elTranslateBtn = firstExisting(["#mb-translate-btn", "#translate-full", "#btn-translate-full"]);
-  if (elTranslateBtn) elTranslateBtn.style.display = "none";
-
-  // ---- UI helpers ----
   function setStatus(msg) {
-    if (elStatus) elStatus.textContent = msg || "";
-  }
-  function setError(msg) {
-    if (!elError) return;
-    elError.textContent = msg || "";
-    elError.style.display = msg ? "block" : "none";
-  }
-  function setDisabled(btn, disabled) {
-    if (!btn) return;
-    btn.disabled = !!disabled;
-    btn.setAttribute("aria-disabled", disabled ? "true" : "false");
+    const el = $("#status-line");
+    if (el) el.textContent = msg;
   }
 
-  function guessContentType(file) {
-    let ct = (file && file.type) || "application/octet-stream";
-    if (ct && ct !== "application/octet-stream") return ct;
+  function setBusy(isBusy) {
+    ["#btn-upload", "#btn-camera", "#mb-translate-btn", "#mb-clear", "#mb-download-pdf"].forEach((id) => {
+      const el = $(id);
+      if (el) el.disabled = !!isBusy;
+    });
+  }
 
-    const name = (file && file.name ? String(file.name) : "").toLowerCase();
+  function enablePdfButton(enabled) {
+    const b = $("#mb-download-pdf");
+    if (b) b.disabled = !enabled;
+  }
+
+  function getTargetLangEl() {
+    // New HTML uses #target-lang. Old versions used #mb-tgt-lang.
+    return $("#target-lang") || $("#mb-tgt-lang");
+  }
+
+  function getSwapBtnEl() {
+    // New HTML uses #swap-btn. Old versions used #mb-swap-langs.
+    return $("#swap-btn") || $("#mb-swap-langs");
+  }
+
+  function getFileInputEl() {
+    return $("#file-input");
+  }
+
+  function getCameraInputEl() {
+    return $("#camera-input");
+  }
+
+  function getOcrBox() {
+    return $("#ocr-text");
+  }
+
+  function getSummaryBox() {
+    return $("#summary-text");
+  }
+
+  function fileContentType(file) {
+    const name = (file?.name || "").toLowerCase();
     if (name.endsWith(".pdf")) return "application/pdf";
     if (name.endsWith(".png")) return "image/png";
     if (name.endsWith(".jpg") || name.endsWith(".jpeg")) return "image/jpeg";
-
-    return "application/octet-stream";
+    if (name.endsWith(".tif") || name.endsWith(".tiff")) return "image/tiff";
+    return file?.type || "application/octet-stream";
   }
 
-  async function ocrParse(file) {
-    const buf = await file.arrayBuffer();
-    const ct = guessContentType(file);
+  async function fetchJson(url, opts) {
+    const res = await fetch(url, opts);
+    let bodyText = "";
+    try { bodyText = await res.text(); } catch (_) {}
+    let json = null;
+    try { json = bodyText ? JSON.parse(bodyText) : null; } catch (_) { json = null; }
+    return { ok: res.ok, status: res.status, json, bodyText };
+  }
 
-    const headers = { "Content-Type": ct };
-    try {
-      if (file?.name) headers["x-filename"] = file.name;
-    } catch (_) {}
+  async function parseWithAzure(file) {
+    const bytes = await file.arrayBuffer();
+    const ct = fileContentType(file);
 
-    const res = await fetch(OCR_PARSE_API, {
+    const out = await fetchJson(URL_PARSE, {
       method: "POST",
-      headers,
-      body: buf,
+      headers: {
+        "Content-Type": ct,
+        "X-Voyadecir-Lang": getUiLang(),
+      },
+      body: bytes,
     });
 
-    const data = await res.json().catch(() => null);
-
-    if (!res.ok || !data?.ok) {
-      const msg = data?.message || `OCR failed (${res.status}).`;
-      throw new Error(msg);
-    }
-    return data;
-  }
-
-  async function interpretText(ocrText) {
-    const target_lang = (elTargetLang?.value || "").trim() || "es";
-
-    const payload = {
-      ocr_text: ocrText,
-      target_lang,
-      source_hint: "auto",
-    };
-
-    const res = await fetch(INTERPRET_API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await res.json().catch(() => null);
-    if (!res.ok || !data?.ok) {
-      const msg = data?.message || `Analyze failed (${res.status}).`;
-      throw new Error(msg);
-    }
-    return data;
-  }
-
-  async function exportPdf(last) {
-    const payload = {
-      ocr_text: last.ocr_text,
-      summary: last.summary || "",
-      target_lang: last.target_lang || (elTargetLang?.value || "es"),
-      fields: last.fields || {},
-    };
-
-    // Try primary endpoint
-    let res = await fetch(PDF_API_PRIMARY, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    // Fallback if endpoint doesn’t exist
-    if (!res.ok) {
-      res = await fetch(PDF_API_FALLBACK, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    if (!out.ok) {
+      const msg =
+        out.json?.message ||
+        out.json?.error ||
+        out.json?.body_preview ||
+        out.bodyText ||
+        `Analyze call failed with HTTP ${out.status}.`;
+      throw new Error(String(msg));
     }
 
-    if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      throw new Error(`PDF export failed (${res.status}). ${t}`.trim());
-    }
+    const j = out.json || {};
+    const text =
+      j.text ||
+      j.ocr_text ||
+      j.result?.text ||
+      j.result?.ocr_text ||
+      "";
 
-    const blob = await res.blob();
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "voyadecir.pdf";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }
-
-  async function handleFile(file) {
-    setError("");
-    setStatus("Uploading...");
-    setDisabled(elDownloadBtn, true);
-
-    const ocr = await ocrParse(file);
-    const text = (ocr.text || "").trim();
-
-    if (elOcrText) elOcrText.value = text;
-
-    if (!text) {
-      setStatus("Ready");
+    if (!String(text || "").trim()) {
       throw new Error("OCR returned no text. Try a clearer photo or PDF.");
     }
 
-    setStatus("Analyzing...");
-    const result = await interpretText(text);
-
-    if (elSummaryText) elSummaryText.value = result.summary || "";
-
-    window.__MB_LAST = {
-      ocr_text: text,
-      summary: result.summary || "",
-      target_lang: result.lang || (elTargetLang?.value || "es"),
-      fields: result.fields || {},
-      raw: result,
-    };
-
-    setDisabled(elDownloadBtn, false);
-    setStatus("Done");
+    return String(text);
   }
 
-  async function handleFiles(files) {
-    if (!files || !files.length) return;
-    await handleFile(files[0]);
+  async function interpretWithAgent(ocrText, targetLang) {
+    const out = await fetchJson(URL_INTERPRET, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: ocrText,
+        target_lang: targetLang,
+        ui_lang: getUiLang(),
+      }),
+    });
+
+    if (!out.ok) {
+      const msg =
+        out.json?.detail ||
+        out.json?.message ||
+        out.json?.error ||
+        out.bodyText ||
+        `Interpret failed with HTTP ${out.status}.`;
+      throw new Error(String(msg));
+    }
+
+    return out.json || {};
+  }
+
+  function renderInterpretation(data) {
+    const summaryBox = getSummaryBox();
+    if (summaryBox) {
+      const summary =
+        data.summary ||
+        data.explanation ||
+        data.message ||
+        data.result?.summary ||
+        data.result?.explanation ||
+        "";
+      summaryBox.value = String(summary || "");
+    }
+
+    const setList = (sectionId, listId, items) => {
+      const sec = document.getElementById(sectionId);
+      const ul = document.getElementById(listId);
+      if (!sec || !ul) return;
+      ul.innerHTML = "";
+      if (!Array.isArray(items) || items.length === 0) {
+        sec.style.display = "none";
+        return;
+      }
+      items.forEach((it) => {
+        const li = document.createElement("li");
+        li.textContent = String(it);
+        ul.appendChild(li);
+      });
+      sec.style.display = "block";
+    };
+
+    setList("identity-section", "identity-list", data.identity_items || data.identity || []);
+    setList("payment-section", "payment-list", data.payment_items || data.payment || []);
+    setList("other-amounts-section", "other-amounts-list", data.other_amounts_items || data.other_amounts || []);
+  }
+
+  async function handleFiles(fileList) {
+    const files = Array.from(fileList || []);
+    if (files.length === 0) return;
+
+    setBusy(true);
+    enablePdfButton(false);
+    setStatus("Reading document…");
+
+    try {
+      const file = files[0];
+
+      setStatus("Running OCR…");
+      const ocrText = await parseWithAzure(file);
+
+      const ocrBox = getOcrBox();
+      if (ocrBox) ocrBox.value = ocrText;
+
+      const tgt = getTargetLangEl();
+      const targetLang = tgt ? tgt.value : "es";
+
+      setStatus("Explaining and translating…");
+      const interpretation = await interpretWithAgent(ocrText, targetLang);
+
+      renderInterpretation(interpretation);
+      enablePdfButton(true);
+      setStatus("Done");
+    } catch (err) {
+      setStatus(err?.message ? err.message : String(err));
+    } finally {
+      setBusy(false);
+      const fi = getFileInputEl();
+      const ci = getCameraInputEl();
+      if (fi) fi.value = "";
+      if (ci) ci.value = "";
+    }
+  }
+
+  async function downloadTranslatedPdf() {
+    const ocrText = getOcrBox()?.value || "";
+    const summary = getSummaryBox()?.value || "";
+    const targetLang = getTargetLangEl()?.value || "es";
+
+    if (!ocrText.trim()) {
+      setStatus("No text to export yet.");
+      return;
+    }
+
+    setBusy(true);
+    setStatus("Building PDF…");
+
+    try {
+      const res = await fetch(URL_TRANSLATE_PDF, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: ocrText,
+          summary,
+          target_lang: targetLang,
+          ui_lang: getUiLang(),
+        }),
+      });
+
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        throw new Error(t || `PDF export failed with HTTP ${res.status}.`);
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "voyadecir-translation.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      setStatus("Downloaded");
+    } catch (err) {
+      setStatus(err?.message ? err.message : "PDF export failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function copyToClipboard(text) {
+    const v = String(text || "");
+    if (!v) return;
+    navigator.clipboard?.writeText(v).catch(() => {});
   }
 
   function wire() {
-    // Upload
-    if (elUploadBtn && elFileInput) {
-      elUploadBtn.addEventListener("click", () => elFileInput.click());
-      elUploadBtn.addEventListener("pointerup", () => elFileInput.click());
-    }
+    const btnUpload = $("#btn-upload");
+    const btnCamera = $("#btn-camera");
+    const btnClear = $("#mb-clear");
+    const btnTranslate = $("#mb-translate-btn");
+    const btnPdf = $("#mb-download-pdf");
 
-    // Camera
-    if (elCameraBtn && elCameraInput) {
-      elCameraBtn.addEventListener("click", () => elCameraInput.click());
-      elCameraBtn.addEventListener("pointerup", () => elCameraInput.click());
-    }
+    const fileInput = getFileInputEl();
+    const camInput = getCameraInputEl();
 
-    // Input change
-    if (elFileInput) {
-      elFileInput.addEventListener("change", async (e) => {
-        try {
-          const files = e.target.files ? Array.from(e.target.files) : [];
-          await handleFiles(files);
-        } catch (err) {
-          setError(String(err?.message || err));
-          setStatus("Ready");
-        } finally {
-          // allow re-uploading same file
-          try { elFileInput.value = ""; } catch (_) {}
-        }
+    const clickFile = () => fileInput && fileInput.click();
+    const clickCam = () => camInput && camInput.click();
+
+    // iPad needs touchstart to reliably open file/camera pickers
+    on(btnUpload, "click", clickFile);
+    on(btnUpload, "touchstart", (e) => { e.preventDefault(); clickFile(); }, { passive: false });
+
+    on(btnCamera, "click", clickCam);
+    on(btnCamera, "touchstart", (e) => { e.preventDefault(); clickCam(); }, { passive: false });
+
+    on(fileInput, "change", (e) => handleFiles(e.target.files));
+    on(camInput, "change", (e) => handleFiles(e.target.files));
+
+    // Manual rerun (UI keeps the button, but OCR upload auto-runs anyway)
+    on(btnTranslate, "click", async () => {
+      const ocrBox = getOcrBox();
+      if (!ocrBox || !ocrBox.value.trim()) {
+        setStatus("Upload a document first.");
+        return;
+      }
+      setBusy(true);
+      enablePdfButton(false);
+      setStatus("Explaining and translating…");
+      try {
+        const interpretation = await interpretWithAgent(
+          ocrBox.value,
+          getTargetLangEl()?.value || "es"
+        );
+        renderInterpretation(interpretation);
+        enablePdfButton(true);
+        setStatus("Done");
+      } catch (err) {
+        setStatus(err?.message ? err.message : "Interpret failed.");
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    on(btnClear, "click", () => {
+      if (getOcrBox()) getOcrBox().value = "";
+      if (getSummaryBox()) getSummaryBox().value = "";
+      enablePdfButton(false);
+      setStatus("Ready");
+      ["identity-section", "payment-section", "other-amounts-section"].forEach((id) => {
+        const sec = document.getElementById(id);
+        if (sec) sec.style.display = "none";
       });
-    }
+    });
 
-    if (elCameraInput) {
-      elCameraInput.addEventListener("change", async (e) => {
-        try {
-          const files = e.target.files ? Array.from(e.target.files) : [];
-          await handleFiles(files);
-        } catch (err) {
-          setError(String(err?.message || err));
-          setStatus("Ready");
-        } finally {
-          try { elCameraInput.value = ""; } catch (_) {}
-        }
-      });
-    }
+    on($("#mb-copy-text") || $("#mb-copy-ocr"), "click", () => copyToClipboard(getOcrBox()?.value || ""));
+    on($("#mb-copy-summary"), "click", () => copyToClipboard(getSummaryBox()?.value || ""));
+    on(btnPdf, "click", downloadTranslatedPdf);
 
-    // Clear
-    if (elClearBtn) {
-      elClearBtn.addEventListener("click", () => {
-        setError("");
-        setStatus("Ready");
-        if (elOcrText) elOcrText.value = "";
-        if (elSummaryText) elSummaryText.value = "";
-        setDisabled(elDownloadBtn, true);
-        window.__MB_LAST = null;
-      });
-    }
+    // Swap (optional)
+    on(getSwapBtnEl(), "click", () => {
+      const tgt = getTargetLangEl();
+      if (!tgt) return;
+      tgt.value = (tgt.value === "en") ? "es" : "en";
+    });
 
-    // Download PDF
-    if (elDownloadBtn) {
-      elDownloadBtn.addEventListener("click", async () => {
-        try {
-          const last = window.__MB_LAST;
-          if (!last?.ocr_text) return;
-          setError("");
-          setStatus("Exporting PDF...");
-          await exportPdf(last);
-          setStatus("Done");
-        } catch (err) {
-          setError(String(err?.message || err));
-          setStatus("Ready");
-        }
-      });
-    }
-
-    // If “More” exists on this page, don’t let it be a dead click
-    if (elMoreBtn) {
-      elMoreBtn.addEventListener("click", () => {
-        // main.js handles nav; this prevents “nothing happens” on some browsers
-      });
-    }
-
+    enablePdfButton(false);
     setStatus("Ready");
   }
 
