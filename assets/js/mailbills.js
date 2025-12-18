@@ -1,14 +1,7 @@
-// Mail & Bills — client → OCR (Azure Functions) + Deep Agent (ai-translator)
-// Fixes:
-// - Upload Document / Take Picture always respond (desktop + iOS/iPadOS)
-// - Uses the correct element IDs from mail-bills.html
-// - Auto-runs OCR → interpret (no dead-end “Translate Full Text” behavior)
-// - Keeps UI exactly the same (just wiring + correctness)
-
 (() => {
   "use strict";
 
-  // ===== Config (keep your existing services) =====
+  // ===== Endpoints (unchanged) =====
   const AZURE_FUNCS_BASE =
     (window.VOY_AZURE_FUNCS_BASE ||
       "https://voyadecir-ai-functions-aze4fqhjdcbzfkdu.centralus-01.azurewebsites.net"
@@ -26,7 +19,7 @@
   const $ = (sel) => document.querySelector(sel);
   const on = (el, ev, fn, opt) => el && el.addEventListener(ev, fn, opt);
 
-  function getUiLang() {
+  function uiLang() {
     try {
       return sessionStorage.getItem("voyadecir_lang") || "en";
     } catch (_) {
@@ -46,64 +39,129 @@
     });
   }
 
-  function enablePdfButton(enabled) {
+  function enablePdf(enabled) {
     const b = $("#mb-download-pdf");
     if (b) b.disabled = !enabled;
   }
 
-  function getTargetLangEl() {
-    // New HTML uses #target-lang. Old versions used #mb-tgt-lang.
-    return $("#target-lang") || $("#mb-tgt-lang");
+  function getTargetLang() {
+    const sel = $("#target-lang") || $("#mb-tgt-lang");
+    return sel ? sel.value : "es";
   }
 
-  function getSwapBtnEl() {
-    // New HTML uses #swap-btn. Old versions used #mb-swap-langs.
-    return $("#swap-btn") || $("#mb-swap-langs");
+  function getFileInput() { return $("#file-input"); }
+  function getCamInput() { return $("#camera-input"); }
+  function ocrBox() { return $("#ocr-text"); }
+  function summaryBox() { return $("#summary-text"); }
+
+  // ===== File type control (fixes 415) =====
+  const ALLOWED_EXT = new Set(["pdf", "png", "jpg", "jpeg", "tif", "tiff", "webp", "heic", "heif"]);
+  const ALLOWED_MIME = new Set([
+    "application/pdf",
+    "image/png",
+    "image/jpeg",
+    "image/tiff",
+    "image/webp",
+    "image/heic",
+    "image/heif",
+  ]);
+
+  function extOf(name) {
+    const n = (name || "").toLowerCase();
+    const idx = n.lastIndexOf(".");
+    return idx >= 0 ? n.slice(idx + 1) : "";
   }
 
-  function getFileInputEl() {
-    return $("#file-input");
+  function guessMime(file) {
+    const t = (file?.type || "").toLowerCase();
+    if (t) return t;
+
+    const ext = extOf(file?.name || "");
+    if (ext === "pdf") return "application/pdf";
+    if (ext === "png") return "image/png";
+    if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
+    if (ext === "tif" || ext === "tiff") return "image/tiff";
+    if (ext === "webp") return "image/webp";
+    if (ext === "heic") return "image/heic";
+    if (ext === "heif") return "image/heif";
+    return "application/octet-stream";
   }
 
-  function getCameraInputEl() {
-    return $("#camera-input");
+  function isAllowed(file) {
+    const ext = extOf(file?.name || "");
+    const mime = guessMime(file);
+    return (ext && ALLOWED_EXT.has(ext)) || (mime && ALLOWED_MIME.has(mime));
   }
 
-  function getOcrBox() {
-    return $("#ocr-text");
-  }
+  // Best-effort: convert HEIC/HEIF/WebP to JPEG in-browser (some browsers support decode, some don’t).
+  async function normalizeImageIfNeeded(file) {
+    const mime = guessMime(file);
 
-  function getSummaryBox() {
-    return $("#summary-text");
-  }
+    const needsConvert =
+      mime === "image/heic" || mime === "image/heif" || mime === "image/webp";
 
-  function fileContentType(file) {
-    const name = (file?.name || "").toLowerCase();
-    if (name.endsWith(".pdf")) return "application/pdf";
-    if (name.endsWith(".png")) return "image/png";
-    if (name.endsWith(".jpg") || name.endsWith(".jpeg")) return "image/jpeg";
-    if (name.endsWith(".tif") || name.endsWith(".tiff")) return "image/tiff";
-    return file?.type || "application/octet-stream";
+    if (!needsConvert) return file;
+
+    // Try decoding to canvas, then export JPEG.
+    try {
+      const blobUrl = URL.createObjectURL(file);
+      const img = new Image();
+      img.decoding = "async";
+      const loaded = new Promise((resolve, reject) => {
+        img.onload = () => resolve(true);
+        img.onerror = () => reject(new Error("Image decode failed"));
+      });
+      img.src = blobUrl;
+      await loaded;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+
+      const jpegBlob = await new Promise((resolve) =>
+        canvas.toBlob((b) => resolve(b), "image/jpeg", 0.92)
+      );
+
+      URL.revokeObjectURL(blobUrl);
+
+      if (!jpegBlob) return file;
+
+      const newName =
+        (file.name || "upload").replace(/\.(heic|heif|webp)$/i, "") + ".jpg";
+      return new File([jpegBlob], newName, { type: "image/jpeg" });
+    } catch (_) {
+      // If conversion fails, keep original and let backend decide.
+      return file;
+    }
   }
 
   async function fetchJson(url, opts) {
     const res = await fetch(url, opts);
-    let bodyText = "";
-    try { bodyText = await res.text(); } catch (_) {}
+    let text = "";
+    try { text = await res.text(); } catch (_) {}
     let json = null;
-    try { json = bodyText ? JSON.parse(bodyText) : null; } catch (_) { json = null; }
-    return { ok: res.ok, status: res.status, json, bodyText };
+    try { json = text ? JSON.parse(text) : null; } catch (_) {}
+    return { ok: res.ok, status: res.status, json, text };
   }
 
-  async function parseWithAzure(file) {
-    const bytes = await file.arrayBuffer();
-    const ct = fileContentType(file);
+  async function parseAzure(file) {
+    const normalized = await normalizeImageIfNeeded(file);
 
+    // Block garbage before Azure sees it (fixes your .txt test)
+    if (!isAllowed(normalized)) {
+      throw new Error("Unsupported file. Upload a PDF, JPG, or PNG.");
+    }
+
+    const ct = guessMime(normalized);
+
+    const bytes = await normalized.arrayBuffer();
     const out = await fetchJson(URL_PARSE, {
       method: "POST",
       headers: {
         "Content-Type": ct,
-        "X-Voyadecir-Lang": getUiLang(),
+        "X-Voyadecir-Lang": uiLang(),
       },
       body: bytes,
     });
@@ -112,8 +170,7 @@
       const msg =
         out.json?.message ||
         out.json?.error ||
-        out.json?.body_preview ||
-        out.bodyText ||
+        out.text ||
         `Analyze call failed with HTTP ${out.status}.`;
       throw new Error(String(msg));
     }
@@ -133,14 +190,14 @@
     return String(text);
   }
 
-  async function interpretWithAgent(ocrText, targetLang) {
+  async function interpretAgent(text, targetLang) {
     const out = await fetchJson(URL_INTERPRET, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        text: ocrText,
+        text,
         target_lang: targetLang,
-        ui_lang: getUiLang(),
+        ui_lang: uiLang(),
       }),
     });
 
@@ -148,8 +205,7 @@
       const msg =
         out.json?.detail ||
         out.json?.message ||
-        out.json?.error ||
-        out.bodyText ||
+        out.text ||
         `Interpret failed with HTTP ${out.status}.`;
       throw new Error(String(msg));
     }
@@ -157,9 +213,9 @@
     return out.json || {};
   }
 
-  function renderInterpretation(data) {
-    const summaryBox = getSummaryBox();
-    if (summaryBox) {
+  function render(data) {
+    const sb = summaryBox();
+    if (sb) {
       const summary =
         data.summary ||
         data.explanation ||
@@ -167,7 +223,7 @@
         data.result?.summary ||
         data.result?.explanation ||
         "";
-      summaryBox.value = String(summary || "");
+      sb.value = String(summary || "");
     }
 
     const setList = (sectionId, listId, items) => {
@@ -192,52 +248,42 @@
     setList("other-amounts-section", "other-amounts-list", data.other_amounts_items || data.other_amounts || []);
   }
 
-  async function handleFiles(fileList) {
-    const files = Array.from(fileList || []);
-    if (files.length === 0) return;
+  async function handleFiles(files) {
+    const list = Array.from(files || []);
+    if (!list.length) return;
 
     setBusy(true);
-    enablePdfButton(false);
+    enablePdf(false);
     setStatus("Reading document…");
 
     try {
-      const file = files[0];
+      const file = list[0];
 
       setStatus("Running OCR…");
-      const ocrText = await parseWithAzure(file);
-
-      const ocrBox = getOcrBox();
-      if (ocrBox) ocrBox.value = ocrText;
-
-      const tgt = getTargetLangEl();
-      const targetLang = tgt ? tgt.value : "es";
+      const text = await parseAzure(file);
+      if (ocrBox()) ocrBox().value = text;
 
       setStatus("Explaining and translating…");
-      const interpretation = await interpretWithAgent(ocrText, targetLang);
+      const data = await interpretAgent(text, getTargetLang());
+      render(data);
 
-      renderInterpretation(interpretation);
-      enablePdfButton(true);
+      enablePdf(true);
       setStatus("Done");
     } catch (err) {
       setStatus(err?.message ? err.message : String(err));
     } finally {
       setBusy(false);
-      const fi = getFileInputEl();
-      const ci = getCameraInputEl();
+      const fi = getFileInput();
+      const ci = getCamInput();
       if (fi) fi.value = "";
       if (ci) ci.value = "";
     }
   }
 
-  async function downloadTranslatedPdf() {
-    const ocrText = getOcrBox()?.value || "";
-    const summary = getSummaryBox()?.value || "";
-    const targetLang = getTargetLangEl()?.value || "es";
-
-    if (!ocrText.trim()) {
-      setStatus("No text to export yet.");
-      return;
-    }
+  async function downloadPdf() {
+    const text = ocrBox()?.value || "";
+    const summary = summaryBox()?.value || "";
+    if (!text.trim()) return setStatus("No text to export yet.");
 
     setBusy(true);
     setStatus("Building PDF…");
@@ -247,10 +293,10 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          text: ocrText,
+          text,
           summary,
-          target_lang: targetLang,
-          ui_lang: getUiLang(),
+          target_lang: getTargetLang(),
+          ui_lang: uiLang(),
         }),
       });
 
@@ -261,27 +307,20 @@
 
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-
       const a = document.createElement("a");
       a.href = url;
       a.download = "voyadecir-translation.pdf";
       document.body.appendChild(a);
       a.click();
       a.remove();
-
       setTimeout(() => URL.revokeObjectURL(url), 2000);
+
       setStatus("Downloaded");
     } catch (err) {
       setStatus(err?.message ? err.message : "PDF export failed.");
     } finally {
       setBusy(false);
     }
-  }
-
-  function copyToClipboard(text) {
-    const v = String(text || "");
-    if (!v) return;
-    navigator.clipboard?.writeText(v).catch(() => {});
   }
 
   function wire() {
@@ -291,13 +330,12 @@
     const btnTranslate = $("#mb-translate-btn");
     const btnPdf = $("#mb-download-pdf");
 
-    const fileInput = getFileInputEl();
-    const camInput = getCameraInputEl();
+    const fileInput = getFileInput();
+    const camInput = getCamInput();
 
     const clickFile = () => fileInput && fileInput.click();
     const clickCam = () => camInput && camInput.click();
 
-    // iPad needs touchstart to reliably open file/camera pickers
     on(btnUpload, "click", clickFile);
     on(btnUpload, "touchstart", (e) => { e.preventDefault(); clickFile(); }, { passive: false });
 
@@ -307,23 +345,18 @@
     on(fileInput, "change", (e) => handleFiles(e.target.files));
     on(camInput, "change", (e) => handleFiles(e.target.files));
 
-    // Manual rerun (UI keeps the button, but OCR upload auto-runs anyway)
+    // Keep button but it’s now just a re-run
     on(btnTranslate, "click", async () => {
-      const ocrBox = getOcrBox();
-      if (!ocrBox || !ocrBox.value.trim()) {
-        setStatus("Upload a document first.");
-        return;
-      }
+      const text = ocrBox()?.value || "";
+      if (!text.trim()) return setStatus("Upload a document first.");
+
       setBusy(true);
-      enablePdfButton(false);
+      enablePdf(false);
       setStatus("Explaining and translating…");
       try {
-        const interpretation = await interpretWithAgent(
-          ocrBox.value,
-          getTargetLangEl()?.value || "es"
-        );
-        renderInterpretation(interpretation);
-        enablePdfButton(true);
+        const data = await interpretAgent(text, getTargetLang());
+        render(data);
+        enablePdf(true);
         setStatus("Done");
       } catch (err) {
         setStatus(err?.message ? err.message : "Interpret failed.");
@@ -333,9 +366,9 @@
     });
 
     on(btnClear, "click", () => {
-      if (getOcrBox()) getOcrBox().value = "";
-      if (getSummaryBox()) getSummaryBox().value = "";
-      enablePdfButton(false);
+      if (ocrBox()) ocrBox().value = "";
+      if (summaryBox()) summaryBox().value = "";
+      enablePdf(false);
       setStatus("Ready");
       ["identity-section", "payment-section", "other-amounts-section"].forEach((id) => {
         const sec = document.getElementById(id);
@@ -343,18 +376,18 @@
       });
     });
 
-    on($("#mb-copy-text") || $("#mb-copy-ocr"), "click", () => copyToClipboard(getOcrBox()?.value || ""));
-    on($("#mb-copy-summary"), "click", () => copyToClipboard(getSummaryBox()?.value || ""));
-    on(btnPdf, "click", downloadTranslatedPdf);
-
-    // Swap (optional)
-    on(getSwapBtnEl(), "click", () => {
-      const tgt = getTargetLangEl();
-      if (!tgt) return;
-      tgt.value = (tgt.value === "en") ? "es" : "en";
+    on($("#mb-copy-text") || $("#mb-copy-ocr"), "click", () => {
+      const v = ocrBox()?.value || "";
+      if (v) navigator.clipboard?.writeText(v).catch(() => {});
+    });
+    on($("#mb-copy-summary"), "click", () => {
+      const v = summaryBox()?.value || "";
+      if (v) navigator.clipboard?.writeText(v).catch(() => {});
     });
 
-    enablePdfButton(false);
+    on(btnPdf, "click", downloadPdf);
+
+    enablePdf(false);
     setStatus("Ready");
   }
 
