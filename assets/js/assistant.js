@@ -45,6 +45,7 @@
         "Got it. I logged a support request for my bosses. You can also use the Contact page to follow up.",
       thinking: "Thinking…",
       error: "Something went wrong. Try again in a moment.",
+      clarify: "I see possible ambiguities. Please share more detail so I can respond correctly.",
     },
     es: {
       title: "Clara, tu Asistente",
@@ -61,6 +62,7 @@
         "Listo. Registré una solicitud de soporte para mis jefes. También puedes usar la página de Contacto para dar seguimiento.",
       thinking: "Pensando…",
       error: "Algo salió mal. Inténtalo de nuevo en un momento.",
+      clarify: "Veo posibles ambigüedades. Dame más detalles para responder bien.",
     },
     pt: {
       title: "Clara, sua Assistente",
@@ -77,6 +79,7 @@
         "Entendi. Registrei uma solicitação de suporte. Você também pode usar a página de Contato para acompanhar.",
       thinking: "Pensando…",
       error: "Algo deu errado. Tente novamente em instantes.",
+      clarify: "Vejo possíveis ambiguidades. Conte mais detalhes para eu responder bem.",
     },
     fr: {
       title: "Clara, votre Assistante",
@@ -93,11 +96,14 @@
         "D’accord. J’ai enregistré une demande de support. Vous pouvez aussi utiliser la page Contact.",
       thinking: "Réflexion…",
       error: "Un problème est survenu. Réessayez dans un instant.",
+      clarify: "Je vois des ambiguïtés possibles. Donnez plus de détails pour que je réponde correctement.",
     },
   };
 
   function s(key) {
     const lang = getLang();
+    const fromDict = window.VOY_I18N?.t?.(`assistant.${key}`, null);
+    if (typeof fromDict === "string") return fromDict;
     return (STR[lang] && STR[lang][key]) ? STR[lang][key] : STR.en[key];
   }
 
@@ -311,13 +317,14 @@
         const lang = getLang();
 
         // Call real backend (ai-translator) by default.
-        const base = (window.VOY_ASSISTANT_BASE || "https://ai-translator-i5jb.onrender.com").replace(/\/$/, "");
+        const base = (window.VOY_ASSISTANT_BASE || window.VOY_AI_TRANSLATOR_BASE || window.location.origin || "").replace(/\/$/, "");
         const res = await fetch(base + "/api/assistant", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             message: msg,
             lang,
+            ui_lang: lang,
             // lightweight context the backend can optionally use
             page: location.pathname,
           }),
@@ -340,6 +347,10 @@
           add("assistant", data.reply);
         } else {
           add("assistant", s("error"));
+        }
+
+        if (data?.enrichment?.ambiguous_words?.length) {
+          add("assistant", s("clarify"));
         }
 
         // Soft redirect reminder (only if user keeps going off track)

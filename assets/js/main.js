@@ -12,6 +12,7 @@
 
   // ---- Config ----
   const STORAGE_KEY = "voyadecir_lang";
+  const I18N_VERSION = "2";
 
   const SUPPORTED_LANGS = [
     { code: "en", label: "English" },
@@ -36,18 +37,56 @@
     "nav.contact": "Contact",
     "nav.privacy": "Privacy",
     "nav.terms": "Terms",
-
+    "site.disclaimer":
+      "Disclaimer: Voyadecir is for informational translation only and is not HIPAA- or FERPA-compliant. Do not upload personal health information (PHI) or student education records. Not legal, medical, or financial advice.",
     "mb.title": "Mail & Bills Helper",
     "mb.subtitle": "Upload a photo or PDF of your bill, letter, or document.",
     "mb.upload": "Upload Document",
     "mb.camera": "Take Picture",
-    "mb.translate": "Translate Full Text",
+    "mb.translate": "Translate",
     "mb.clear": "Clear",
     "mb.to": "To",
+    "mb.copy.text": "Copy Text",
+    "mb.copy.summary": "Copy Summary",
+    "mb.download": "Download PDF",
+    "mb.status.ready": "Ready",
+    "mb.status.reading": "Reading document…",
+    "mb.status.ocr": "Running OCR…",
+    "mb.status.interpreting": "Explaining and translating…",
+    "mb.status.done": "Done",
+    "mb.status.error": "Something went wrong",
+    "mb.status.no_text": "No text to export yet.",
+    "mb.status.building_pdf": "Building PDF…",
+    "mb.status.needs_upload": "Upload a document first.",
+    "mb.clarifications": "We found possible ambiguities. Please clarify:",
     "mb.footnote": "Your document is processed securely and not stored permanently.",
-
-    "site.disclaimer":
-      "Disclaimer: Voyadecir is for informational translation only and is not HIPAA- or FERPA-compliant. Do not upload personal health information (PHI) or student education records. Not legal, medical, or financial advice.",
+    "translate.title": "Translate",
+    "translate.subtitle": "Paste text to translate. Voyadecir is designed to translate with context, and can provide multiple meanings when needed.",
+    "translate.button.translate": "Translate",
+    "translate.button.clear": "Clear",
+    "translate.button.paste": "Paste",
+    "translate.button.copy": "Copy",
+    "translate.to": "To",
+    "translate.src.placeholder": "Enter text to translate…",
+    "translate.out.placeholder": "Translation will appear here…",
+    "translate.status.ready": "Ready",
+    "translate.status.detecting": "Detecting language…",
+    "translate.status.translating": "Translating…",
+    "translate.status.done": "Done.",
+    "translate.status.network_error": "Network error. Showing backup.",
+    "translate.status.server_error": "Could not reach translator server. Showing backup.",
+    "translate.status.need_text": "Type something to translate.",
+    "translate.status.ambiguous": "Multiple meanings detected. Please clarify.",
+    "translate.hint": "For best results, include context (who/what/where).",
+    "assistant.title": "Clara, your Assistant",
+    "assistant.placeholder": "Ask me about Voyadecir…",
+    "assistant.thinking": "Thinking…",
+    "assistant.error": "Something went wrong. Try again in a moment.",
+    "assistant.scope": "I can answer a couple questions, but I’m best at Voyadecir questions (web + future iOS/Android apps).",
+    "assistant.hello": "Hi, I’m Clara. I can help explain how Voyadecir works, or help you understand your translations.",
+    "assistant.bugPrompt": "If this is a bug, describe what happened (what you uploaded, what you expected, and what you saw). I can log it for support.",
+    "assistant.logged": "Got it. I logged a support request for my bosses. You can also use the Contact page to follow up.",
+    "assistant.clarify": "I see possible ambiguities. Please share more detail so I can respond correctly.",
   };
 
   // ---- Utilities ----
@@ -86,7 +125,7 @@
   // ---- i18n Loader ----
   async function loadLangDict(lang) {
     // Try assets/i18n/{lang}.json, fallback to en, then fallback dict.
-    const url = `assets/i18n/${lang}.json?v=1`;
+    const url = `assets/i18n/${lang}.json?v=${I18N_VERSION}`;
 
     try {
       const res = await fetch(url, { cache: "no-store" });
@@ -97,7 +136,7 @@
 
     if (lang !== "en") {
       try {
-        const resEn = await fetch(`assets/i18n/en.json?v=1`, { cache: "no-store" });
+        const resEn = await fetch(`assets/i18n/en.json?v=${I18N_VERSION}`, { cache: "no-store" });
         if (resEn.ok) {
           const j = await resEn.json();
           if (j && typeof j === "object") return j;
@@ -222,6 +261,12 @@
   let CURRENT_LANG = "en";
   let CURRENT_DICT = FALLBACK_EN;
 
+  function t(key, fallback = "") {
+    const val = CURRENT_DICT?.[key];
+    if (typeof val === "string") return val;
+    return fallback || key;
+  }
+
   async function setLanguage(lang) {
     const normalized = normalizeLang(lang);
     CURRENT_LANG = normalized;
@@ -232,6 +277,12 @@
     // Load and apply dict
     CURRENT_DICT = await loadLangDict(normalized);
     applyDict(CURRENT_DICT);
+
+    window.VOY_I18N = {
+      lang: CURRENT_LANG,
+      dict: CURRENT_DICT,
+      t,
+    };
 
     // Rebuild menu highlighting
     const langMenu = $("#lang-menu");

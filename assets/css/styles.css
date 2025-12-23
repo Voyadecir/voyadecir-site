@@ -318,6 +318,18 @@ header{
   z-index: var(--z-lang-list);
 }
 
+/* Translate page specific scaling */
+.translate-page .brand img.logo{
+  height:192px;
+}
+
+.translate-page #lang-btn.lang-menu__button,
+.translate-page .lang-menu__button{
+  width:72px;
+  height:72px;
+  font-size:42px;
+}
+
 .lang-menu__link{
   width:100%;
   display:flex;

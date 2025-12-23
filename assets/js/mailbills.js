@@ -18,6 +18,10 @@
   // ===== Helpers =====
   const $ = (sel) => document.querySelector(sel);
   const on = (el, ev, fn, opt) => el && el.addEventListener(ev, fn, opt);
+  const t = (key, fallback = "") => {
+    if (window.VOY_I18N?.t) return window.VOY_I18N.t(key, fallback);
+    return fallback || key;
+  };
 
   function uiLang() {
     try {
@@ -248,27 +252,50 @@
     setList("other-amounts-section", "other-amounts-list", data.other_amounts_items || data.other_amounts || []);
   }
 
+  function renderClarifications(list) {
+    const wrap = document.getElementById("clarification-section");
+    const ul = document.getElementById("clarification-list");
+    if (!wrap || !ul) return;
+
+    ul.innerHTML = "";
+    if (!Array.isArray(list) || list.length === 0) {
+      wrap.style.display = "none";
+      return;
+    }
+
+    list.forEach((item) => {
+      const li = document.createElement("li");
+      const question = item?.prompt || item?.question || item?.word || "";
+      li.textContent = String(question);
+      ul.appendChild(li);
+    });
+
+    wrap.style.display = "block";
+    setStatus(t("mb.clarifications", "We found possible ambiguities. Please clarify:"));
+  }
+
   async function handleFiles(files) {
     const list = Array.from(files || []);
     if (!list.length) return;
 
     setBusy(true);
     enablePdf(false);
-    setStatus("Reading document…");
+    setStatus(t("mb.status.reading", "Reading document…"));
 
     try {
       const file = list[0];
 
-      setStatus("Running OCR…");
+      setStatus(t("mb.status.ocr", "Running OCR…"));
       const text = await parseAzure(file);
       if (ocrBox()) ocrBox().value = text;
 
-      setStatus("Explaining and translating…");
+      setStatus(t("mb.status.interpreting", "Explaining and translating…"));
       const data = await interpretAgent(text, getTargetLang());
       render(data);
+      renderClarifications(data?.clarifications);
 
       enablePdf(true);
-      setStatus("Done");
+      setStatus(t("mb.status.done", "Done"));
     } catch (err) {
       setStatus(err?.message ? err.message : String(err));
     } finally {
@@ -283,10 +310,10 @@
   async function downloadPdf() {
     const text = ocrBox()?.value || "";
     const summary = summaryBox()?.value || "";
-    if (!text.trim()) return setStatus("No text to export yet.");
+    if (!text.trim()) return setStatus(t("mb.status.no_text", "No text to export yet."));
 
     setBusy(true);
-    setStatus("Building PDF…");
+    setStatus(t("mb.status.building_pdf", "Building PDF…"));
 
     try {
       const res = await fetch(URL_TRANSLATE_PDF, {
@@ -315,7 +342,7 @@
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 2000);
 
-      setStatus("Downloaded");
+      setStatus(t("mb.status.done", "Done"));
     } catch (err) {
       setStatus(err?.message ? err.message : "PDF export failed.");
     } finally {
@@ -348,16 +375,17 @@
     // Keep button but it’s now just a re-run
     on(btnTranslate, "click", async () => {
       const text = ocrBox()?.value || "";
-      if (!text.trim()) return setStatus("Upload a document first.");
+      if (!text.trim()) return setStatus(t("mb.status.needs_upload", "Upload a document first."));
 
       setBusy(true);
       enablePdf(false);
-      setStatus("Explaining and translating…");
+      setStatus(t("mb.status.interpreting", "Explaining and translating…"));
       try {
         const data = await interpretAgent(text, getTargetLang());
         render(data);
+        renderClarifications(data?.clarifications);
         enablePdf(true);
-        setStatus("Done");
+        setStatus(t("mb.status.done", "Done"));
       } catch (err) {
         setStatus(err?.message ? err.message : "Interpret failed.");
       } finally {
@@ -369,8 +397,8 @@
       if (ocrBox()) ocrBox().value = "";
       if (summaryBox()) summaryBox().value = "";
       enablePdf(false);
-      setStatus("Ready");
-      ["identity-section", "payment-section", "other-amounts-section"].forEach((id) => {
+      setStatus(t("mb.status.ready", "Ready"));
+      ["identity-section", "payment-section", "other-amounts-section", "clarification-section"].forEach((id) => {
         const sec = document.getElementById(id);
         if (sec) sec.style.display = "none";
       });
@@ -388,7 +416,7 @@
     on(btnPdf, "click", downloadPdf);
 
     enablePdf(false);
-    setStatus("Ready");
+    setStatus(t("mb.status.ready", "Ready"));
   }
 
   if (document.readyState === "loading") {
@@ -396,4 +424,8 @@
   } else {
     wire();
   }
+
+  window.addEventListener("voyadecir:lang-change", () => {
+    setStatus(t("mb.status.ready", "Ready"));
+  });
 })();

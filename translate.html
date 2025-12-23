@@ -33,24 +33,24 @@
 
       <!-- Primary nav (Option C) -->
       <nav class="primary-nav" aria-label="Primary navigation">
-        <a href="/index.html" data-nav="home">Home</a>
-        <a href="/translate.html" data-nav="translate" aria-current="page">Translate</a>
-        <a href="/mail-bills.html" data-nav="mail">Mail &amp; Bills</a>
+        <a href="/index.html" data-nav="home" data-i18n="nav.home">Home</a>
+        <a href="/translate.html" data-nav="translate" aria-current="page" data-i18n="nav.translate">Translate</a>
+        <a href="/mail-bills.html" data-nav="mail" data-i18n="nav.mail">Mail &amp; Bills</a>
 
         <div class="nav-more" aria-label="More menu">
-          <button class="nav-more__button" type="button" aria-haspopup="true" aria-expanded="false">
-            More ▾
+          <button class="nav-more__button" id="nav-more-btn" type="button" aria-haspopup="true" aria-expanded="false">
+            <span data-i18n="nav.more">More</span> ▾
           </button>
-          <ul class="nav-more__list" role="menu">
-            <li><a href="/about.html" role="menuitem">About</a></li>
-            <li><a href="/contact.html" role="menuitem">Contact</a></li>
+          <ul class="nav-more__list" role="menu" id="nav-more-menu">
+            <li><a href="/about.html" role="menuitem" data-i18n="nav.about">About</a></li>
+            <li><a href="/contact.html" role="menuitem" data-i18n="nav.contact">Contact</a></li>
           </ul>
         </div>
       </nav>
 
       <!-- Language menu -->
-      <div class="lang-menu" aria-label="Language menu">
-        <button class="lang-menu__button" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Change language">
+      <div class="lang-menu" aria-label="Language menu" id="lang-menu" aria-hidden="true">
+        <button class="lang-menu__button" id="lang-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Change language">
           🌐
         </button>
         <ul class="lang-menu__list" role="menu" aria-label="Language options">
@@ -71,14 +71,14 @@
 
   <main class="container section">
     <div class="translate-shell">
-      <h1 class="translate-title">Translate</h1>
-      <p class="translate-sub">
+      <h1 class="translate-title" data-i18n="translate.title">Translate</h1>
+      <p class="translate-sub" data-i18n="translate.subtitle">
         Paste text to translate. Voyadecir is designed to translate with context, and can provide multiple meanings when needed.
       </p>
 
       <div class="translate-actions">
-        <button class="glass-button" type="button" id="btn-translate">Translate</button>
-        <button class="glass-button" type="button" id="btn-clear">Clear</button>
+        <button class="glass-button" type="button" id="btn-translate" data-i18n="translate.button.translate">Translate</button>
+        <button class="glass-button" type="button" id="btn-clear" data-i18n="translate.button.clear">Clear</button>
       </div>
 
       <div class="translator-outer glass-panel glass glass-surface">
@@ -86,7 +86,7 @@
           <div class="translator-topbar">
             <div class="translator-lang">
               <label>
-                To
+                <span data-i18n="translate.to">To</span>
                 <select id="tgt-lang">
                   <option value="es">Spanish</option>
                   <option value="en">English</option>
@@ -103,26 +103,26 @@
             </div>
           </div>
 
-          <div class="translator-panels">
-            <div class="translator-box">
-              <textarea id="src-text" placeholder="Enter text to translate…"></textarea>
+        <div class="translator-panels">
+          <div class="translator-box">
+              <textarea id="src-text" data-i18n-placeholder="translate.src.placeholder" placeholder="Enter text to translate…"></textarea>
               <div class="inline-actions">
-                <button type="button" class="inline-btn" id="btn-paste">Paste</button>
-                <button type="button" class="inline-btn" id="btn-copy-src">Copy</button>
+                <button type="button" class="inline-btn" id="btn-paste" data-i18n="translate.button.paste">Paste</button>
+                <button type="button" class="inline-btn" id="btn-copy-src" data-i18n="translate.button.copy">Copy</button>
               </div>
             </div>
 
             <div class="translator-box">
-              <textarea id="out-text" placeholder="Translation will appear here…" readonly></textarea>
+              <textarea id="out-text" data-i18n-placeholder="translate.out.placeholder" placeholder="Translation will appear here…" readonly></textarea>
               <div class="inline-actions">
-                <button type="button" class="inline-btn" id="btn-copy-out">Copy</button>
+                <button type="button" class="inline-btn" id="btn-copy-out" data-i18n="translate.button.copy">Copy</button>
               </div>
             </div>
           </div>
 
           <div class="translator-foot">
-            <span id="t-status">Ready</span>
-            <span class="translator-hint">For best results, include context (who/what/where).</span>
+            <span id="t-status" data-i18n="translate.status.ready">Ready</span>
+            <span class="translator-hint" data-i18n="translate.hint">For best results, include context (who/what/where).</span>
           </div>
         </div>
       </div>
