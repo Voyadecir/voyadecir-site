@@ -58,7 +58,7 @@
   function ocrBox() { return $("#ocr-text"); }
   function summaryBox() { return $("#summary-text"); }
 
-  // ===== File type control (fixes 415) =====
+  // ===== File type control =====
   const ALLOWED_EXT = new Set(["pdf", "png", "jpg", "jpeg", "tif", "tiff", "webp", "heic", "heif"]);
   const ALLOWED_MIME = new Set([
     "application/pdf",
@@ -73,7 +73,7 @@
   // Explicitly blocked “document” types users might try to upload.
   // (We block these even if a browser gives a weird/empty MIME.)
   const BLOCKED_EXT = new Set([
-    "txt", "doc", "docx", "rtf", "odt", "pages",
+    "doc", "docx", "rtf", "odt", "pages",
     "xls", "xlsx", "csv",
     "ppt", "pptx",
     "zip", "rar", "7z",
@@ -98,6 +98,7 @@
     if (ext === "webp") return "image/webp";
     if (ext === "heic") return "image/heic";
     if (ext === "heif") return "image/heif";
+    if (ext === "txt") return "text/plain";
     return "application/octet-stream";
   }
 
@@ -114,28 +115,55 @@
     } catch (_) {}
   }
 
+  // Sniff common types from magic bytes (fixes Android Edge camera files with empty type/extension).
+  function sniffMimeFromBytes(buf) {
+    try {
+      const u = new Uint8Array(buf);
+      if (u.length >= 4) {
+        // PDF: 25 50 44 46 = %PDF
+        if (u[0] === 0x25 && u[1] === 0x50 && u[2] === 0x44 && u[3] === 0x46) return "application/pdf";
+        // JPEG: FF D8 FF
+        if (u[0] === 0xFF && u[1] === 0xD8 && u[2] === 0xFF) return "image/jpeg";
+        // PNG: 89 50 4E 47
+        if (u[0] === 0x89 && u[1] === 0x50 && u[2] === 0x4E && u[3] === 0x47) return "image/png";
+        // TIFF: II*\0 or MM\0*
+        if ((u[0] === 0x49 && u[1] === 0x49 && u[2] === 0x2A && u[3] === 0x00) ||
+            (u[0] === 0x4D && u[1] === 0x4D && u[2] === 0x00 && u[3] === 0x2A)) return "image/tiff";
+      }
+      // WEBP: "RIFF" .... "WEBP"
+      if (u.length >= 12) {
+        const riff = String.fromCharCode(u[0], u[1], u[2], u[3]);
+        const webp = String.fromCharCode(u[8], u[9], u[10], u[11]);
+        if (riff === "RIFF" && webp === "WEBP") return "image/webp";
+      }
+    } catch (_) {}
+    return "";
+  }
+
   function isAllowed(file) {
     const name = file?.name || "";
     const ext = extOf(name);
     const mime = guessMime(file);
 
-    // Hard block obvious non-photo docs (like .txt)
+    // Hard block obvious non-photo docs (like .docx)
     if (ext && BLOCKED_EXT.has(ext)) return false;
+
+    // Allow plain text (Option C: skip OCR, still translate/summarize/PDF)
+    if (ext === "txt" || mime === "text/plain") return true;
 
     // Normal allow: known extension or known mime
     if ((ext && ALLOWED_EXT.has(ext)) || (mime && ALLOWED_MIME.has(mime))) return true;
 
     // Android camera capture edge case:
     // Some browsers provide file.type="" and a name with no extension.
-    // If it came from our camera/file input, it’s still a real image blob.
-    // We accept it unless it clearly looks like a document.
-    const looksLikeUnknownButProbablyImage =
+    // We accept it if it has bytes and isn't clearly a document extension.
+    const looksLikeUnknownButProbablyBinary =
       (!mime || mime === "application/octet-stream") &&
       (!ext || ext.length === 0) &&
       typeof file?.size === "number" &&
       file.size > 0;
 
-    if (looksLikeUnknownButProbablyImage) return true;
+    if (looksLikeUnknownButProbablyBinary) return true;
 
     return false;
   }
@@ -199,14 +227,34 @@
     const normalized = await normalizeImageIfNeeded(file);
     debugFile(normalized, "NORMALIZED");
 
-    // Block garbage before Azure sees it (fixes your .txt test)
     if (!isAllowed(normalized)) {
-      throw new Error("Unsupported file. Upload a photo (camera image) or a PDF.");
+      throw new Error("Unsupported file. Upload a photo (camera image), a PDF, or a .txt file.");
     }
 
-    const ct = guessMime(normalized);
+    // If it's text, skip OCR completely (Option C).
+    const ext = extOf(normalized?.name || "");
+    const mimeGuess = guessMime(normalized);
+    if (ext === "txt" || mimeGuess === "text/plain") {
+      const text = await normalized.text().catch(() => "");
+      if (!String(text || "").trim()) throw new Error("That .txt file is empty.");
+      return { kind: "text", text: String(text) };
+    }
 
+    // Binary OCR path
     const bytes = await normalized.arrayBuffer();
+
+    // Some mobile browsers give type="" and name without extension.
+    // Sniff the real content type from bytes so Azure doesn’t return HTTP 400.
+    let ct = guessMime(normalized);
+    if (!ct || ct === "application/octet-stream") {
+      const sniffed = sniffMimeFromBytes(bytes);
+      if (sniffed) ct = sniffed;
+    }
+    if (!ct || ct === "application/octet-stream") {
+      // last-resort default; Azure Read usually handles jpeg, but we prefer sniffing above.
+      ct = "image/jpeg";
+    }
+
     const out = await fetchJson(URL_PARSE, {
       method: "POST",
       headers: {
@@ -237,7 +285,7 @@
       throw new Error("OCR returned no text. Try a clearer photo or PDF.");
     }
 
-    return String(text);
+    return { kind: "ocr", text: String(text) };
   }
 
   async function interpretAgent(text, targetLang) {
@@ -261,6 +309,24 @@
     }
 
     return out.json || {};
+  }
+
+  // Try to add a message into Clara's chat panel if it's present.
+  function pushClara(role, text) {
+    try {
+      const body = document.querySelector("#clara-body");
+      if (!body) return false;
+
+      const div = document.createElement("div");
+      div.className = `clara-msg ${role || "assistant"}`;
+      div.style.whiteSpace = "pre-wrap";
+      div.textContent = String(text || "");
+      body.appendChild(div);
+      body.scrollTop = body.scrollHeight;
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   function render(data) {
@@ -299,39 +365,43 @@
   }
 
   function renderClarifications(list) {
-    // Preferred: show clarifications through Clara (assistant widget) as clean bullet points.
     const items = Array.isArray(list) ? list : [];
-    const questions = items
-      .map((item) => (item?.prompt || item?.question || item?.text || item?.word || "").toString())
-      .filter(Boolean);
-
-    // Hide the old inline clarification box (we keep it as a fallback only).
-    const wrap = document.getElementById("clarification-section");
-    if (wrap) wrap.style.display = "none";
-
-    if (!questions.length) return;
-
-    // Ask through Clara if available
-    if (window.VOY_CLARA && typeof window.VOY_CLARA.clarify === "function") {
-      window.VOY_CLARA.clarify(items, {
-        intro: t(
-          "mb.clarifications_intro",
-          "Clara here. Quick question so I translate this correctly:"
-        ),
-      });
+    if (!items.length) {
+      const wrap = document.getElementById("clarification-section");
+      if (wrap) wrap.style.display = "none";
       return;
     }
 
-    // Fallback: show inline bullets if Clara widget is not present for some reason
+    // Clara-style + clean bullet points
+    const bullets = items
+      .map((item) => item?.prompt || item?.question || item?.word || "")
+      .map((s) => String(s || "").trim())
+      .filter(Boolean);
+
+    const text =
+      `${t("mb.clarifications.title", "Quick questions so I translate this correctly:")}\n` +
+      bullets.map((q) => `• ${q}`).join("\n");
+
+    const pushed = pushClara("assistant", text);
+
+    // Fallback: show in-page list if Clara panel isn’t available.
+    const wrap = document.getElementById("clarification-section");
     const ul = document.getElementById("clarification-list");
     if (!wrap || !ul) return;
 
     ul.innerHTML = "";
-    questions.forEach((q) => {
+    if (pushed) {
+      wrap.style.display = "none";
+      setStatus(t("mb.clarifications.sent", "Clara asked a couple questions above."));
+      return;
+    }
+
+    bullets.forEach((q) => {
       const li = document.createElement("li");
       li.textContent = q;
       ul.appendChild(li);
     });
+
     wrap.style.display = "block";
     setStatus(t("mb.clarifications", "We found possible ambiguities. Please clarify:"));
   }
@@ -347,12 +417,13 @@
     try {
       const file = list[0];
 
-      setStatus(t("mb.status.ocr", "Running OCR…"));
-      const text = await parseAzure(file);
-      if (ocrBox()) ocrBox().value = text;
+      setStatus(t("mb.status.ocr", "Reading…"));
+      const parsed = await parseAzure(file);
+
+      if (ocrBox()) ocrBox().value = parsed.text;
 
       setStatus(t("mb.status.interpreting", "Explaining and translating…"));
-      const data = await interpretAgent(text, getTargetLang());
+      const data = await interpretAgent(parsed.text, getTargetLang());
       render(data);
       renderClarifications(data?.clarifications);
 
@@ -422,19 +493,25 @@
     const fileInput = getFileInput();
     const camInput = getCamInput();
 
-    const clickFile = () => fileInput && fileInput.click();
-    const clickCam = () => camInput && camInput.click();
+    if (!fileInput || !camInput) {
+      console.warn("Voyadecir mailbills: missing file inputs.");
+      return;
+    }
 
+    const clickFile = () => fileInput.click();
+    const clickCam = () => camInput.click();
+
+    // Mobile browsers can be picky. Use click + pointerup (no preventDefault) to avoid blocking the picker.
     on(btnUpload, "click", clickFile);
-    on(btnUpload, "touchstart", (e) => { e.preventDefault(); clickFile(); }, { passive: false });
+    on(btnUpload, "pointerup", clickFile);
 
     on(btnCamera, "click", clickCam);
-    on(btnCamera, "touchstart", (e) => { e.preventDefault(); clickCam(); }, { passive: false });
+    on(btnCamera, "pointerup", clickCam);
 
     on(fileInput, "change", (e) => handleFiles(e.target.files));
     on(camInput, "change", (e) => handleFiles(e.target.files));
 
-    // Keep button but it’s now just a re-run
+    // Keep button but it’s now just a re-run (uses text already in the OCR box).
     on(btnTranslate, "click", async () => {
       const text = ocrBox()?.value || "";
       if (!text.trim()) return setStatus(t("mb.status.needs_upload", "Upload a document first."));
@@ -481,10 +558,14 @@
     setStatus(t("mb.status.ready", "Ready"));
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", wire);
-  } else {
-    wire();
+  try {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", wire);
+    } else {
+      wire();
+    }
+  } catch (e) {
+    console.error("Voyadecir mailbills failed to initialize:", e);
   }
 
   window.addEventListener("voyadecir:lang-change", () => {
