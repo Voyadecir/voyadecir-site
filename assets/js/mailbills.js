@@ -70,6 +70,16 @@
     "image/heif",
   ]);
 
+  // Explicitly blocked “document” types users might try to upload.
+  // (We block these even if a browser gives a weird/empty MIME.)
+  const BLOCKED_EXT = new Set([
+    "txt", "doc", "docx", "rtf", "odt", "pages",
+    "xls", "xlsx", "csv",
+    "ppt", "pptx",
+    "zip", "rar", "7z",
+    "exe"
+  ]);
+
   function extOf(name) {
     const n = (name || "").toLowerCase();
     const idx = n.lastIndexOf(".");
@@ -91,10 +101,43 @@
     return "application/octet-stream";
   }
 
+  function debugFile(file, label = "FILE") {
+    try {
+      console.log(`${label} DEBUG:`, {
+        name: file?.name,
+        type: file?.type,
+        size: file?.size,
+        ext: extOf(file?.name || ""),
+        guessedMime: guessMime(file),
+        lastModified: file?.lastModified,
+      });
+    } catch (_) {}
+  }
+
   function isAllowed(file) {
-    const ext = extOf(file?.name || "");
+    const name = file?.name || "";
+    const ext = extOf(name);
     const mime = guessMime(file);
-    return (ext && ALLOWED_EXT.has(ext)) || (mime && ALLOWED_MIME.has(mime));
+
+    // Hard block obvious non-photo docs (like .txt)
+    if (ext && BLOCKED_EXT.has(ext)) return false;
+
+    // Normal allow: known extension or known mime
+    if ((ext && ALLOWED_EXT.has(ext)) || (mime && ALLOWED_MIME.has(mime))) return true;
+
+    // Android camera capture edge case:
+    // Some browsers provide file.type="" and a name with no extension.
+    // If it came from our camera/file input, it’s still a real image blob.
+    // We accept it unless it clearly looks like a document.
+    const looksLikeUnknownButProbablyImage =
+      (!mime || mime === "application/octet-stream") &&
+      (!ext || ext.length === 0) &&
+      typeof file?.size === "number" &&
+      file.size > 0;
+
+    if (looksLikeUnknownButProbablyImage) return true;
+
+    return false;
   }
 
   // Best-effort: convert HEIC/HEIF/WebP to JPEG in-browser (some browsers support decode, some don’t).
@@ -151,11 +194,14 @@
   }
 
   async function parseAzure(file) {
+    debugFile(file, "UPLOAD");
+
     const normalized = await normalizeImageIfNeeded(file);
+    debugFile(normalized, "NORMALIZED");
 
     // Block garbage before Azure sees it (fixes your .txt test)
     if (!isAllowed(normalized)) {
-      throw new Error("Unsupported file. Upload a PDF, JPG, or PNG.");
+      throw new Error("Unsupported file. Upload a photo (camera image) or a PDF.");
     }
 
     const ct = guessMime(normalized);
