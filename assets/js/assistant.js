@@ -1,26 +1,41 @@
-/* =========================================================
-   Voyadecir Assistant
-   "Clara, your Assistant"
-   - Single instance (prevents duplicates)
-   - Language-aware UI strings
-   - Soft redirect to Voyadecir scope
-   - Optional support ticket submission (uses contact form if found)
-   ========================================================= */
+(() => {
+  "use strict";
 
-(function () {
-  // Prevent duplicate injection even if script included twice
-  if (window.__VOYADECIR_CLARA_LOADED__) return;
-  window.__VOYADECIR_CLARA_LOADED__ = true;
+  // ===== Config =====
+  const AI_TRANSLATOR_BASE =
+    (window.VOY_AI_TRANSLATOR_BASE || "https://ai-translator-i5jb.onrender.com").replace(
+      /\/$/,
+      ""
+    );
 
-  function qs(sel, root = document) {
-    return root.querySelector(sel);
-  }
-  function qsa(sel, root = document) {
-    return Array.from(root.querySelectorAll(sel));
-  }
+  const URL_ASSIST = `${AI_TRANSLATOR_BASE}/api/assistant`;
 
-  // Language source of truth: sessionStorage set by main.js
-  function getLang() {
+  // ===== i18n strings for widget =====
+  const STR = {
+    en: {
+      title: "Clara",
+      placeholder: "Ask me anything…",
+      send: "Send",
+      open: "Chat",
+      close: "Close",
+      hello: "Hi. I’m Clara. How can I help?",
+      clarify: "I found a couple things that could mean two different things. Which one do you mean?",
+      error: "Something went wrong. Try again.",
+    },
+    es: {
+      title: "Clara",
+      placeholder: "Pregúntame lo que sea…",
+      send: "Enviar",
+      open: "Chat",
+      close: "Cerrar",
+      hello: "Hola. Soy Clara. ¿Cómo puedo ayudarte?",
+      clarify:
+        "Encontré un par de cosas que podrían significar dos cosas diferentes. ¿Cuál querías decir?",
+      error: "Algo salió mal. Inténtalo otra vez.",
+    },
+  };
+
+  function uiLang() {
     try {
       return sessionStorage.getItem("voyadecir_lang") || "en";
     } catch (_) {
@@ -28,87 +43,13 @@
     }
   }
 
-  // Minimal strings (extend safely later)
-  const STR = {
-    en: {
-      title: "Clara, your Assistant",
-      close: "×",
-      placeholder: "Ask me about Voyadecir…",
-      send: "Send",
-      hello:
-        "Hi, I’m Clara. I can help explain how Voyadecir works, or help you understand your translations.",
-      scope:
-        "I can answer a couple questions, but I’m best at Voyadecir questions (web + future iOS/Android apps).",
-      bugPrompt:
-        "If this is a bug, describe what happened (what you uploaded, what you expected, and what you saw). I can log it for support.",
-      logged:
-        "Got it. I logged a support request for my bosses. You can also use the Contact page to follow up.",
-      thinking: "Thinking…",
-      error: "Something went wrong. Try again in a moment.",
-      clarify: "I see possible ambiguities. Please share more detail so I can respond correctly.",
-    },
-    es: {
-      title: "Clara, tu Asistente",
-      close: "×",
-      placeholder: "Pregúntame sobre Voyadecir…",
-      send: "Enviar",
-      hello:
-        "Hola, soy Clara. Puedo explicar cómo funciona Voyadecir o ayudarte a entender tus traducciones.",
-      scope:
-        "Puedo responder una o dos preguntas, pero soy mejor con preguntas sobre Voyadecir (web y futuras apps iOS/Android).",
-      bugPrompt:
-        "Si es un error, dime qué pasó (qué subiste, qué esperabas y qué viste). Puedo registrarlo para soporte.",
-      logged:
-        "Listo. Registré una solicitud de soporte para mis jefes. También puedes usar la página de Contacto para dar seguimiento.",
-      thinking: "Pensando…",
-      error: "Algo salió mal. Inténtalo de nuevo en un momento.",
-      clarify: "Veo posibles ambigüedades. Dame más detalles para responder bien.",
-    },
-    pt: {
-      title: "Clara, sua Assistente",
-      close: "×",
-      placeholder: "Pergunte sobre o Voyadecir…",
-      send: "Enviar",
-      hello:
-        "Oi, eu sou a Clara. Posso explicar como o Voyadecir funciona ou ajudar você a entender suas traduções.",
-      scope:
-        "Posso responder uma ou duas perguntas, mas sou melhor com dúvidas sobre o Voyadecir (web e futuros apps iOS/Android).",
-      bugPrompt:
-        "Se for um bug, descreva o que aconteceu (o que você enviou, o que esperava e o que viu). Posso registrar para suporte.",
-      logged:
-        "Entendi. Registrei uma solicitação de suporte. Você também pode usar a página de Contato para acompanhar.",
-      thinking: "Pensando…",
-      error: "Algo deu errado. Tente novamente em instantes.",
-      clarify: "Vejo possíveis ambiguidades. Conte mais detalhes para eu responder bem.",
-    },
-    fr: {
-      title: "Clara, votre Assistante",
-      close: "×",
-      placeholder: "Demandez-moi sur Voyadecir…",
-      send: "Envoyer",
-      hello:
-        "Bonjour, je suis Clara. Je peux expliquer comment Voyadecir fonctionne ou vous aider à comprendre vos traductions.",
-      scope:
-        "Je peux répondre à une ou deux questions, mais je suis surtout utile pour Voyadecir (web et futures apps iOS/Android).",
-      bugPrompt:
-        "Si c’est un bug, décrivez ce qui s’est passé (ce que vous avez envoyé, ce que vous attendiez, et ce que vous avez vu).",
-      logged:
-        "D’accord. J’ai enregistré une demande de support. Vous pouvez aussi utiliser la page Contact.",
-      thinking: "Réflexion…",
-      error: "Un problème est survenu. Réessayez dans un instant.",
-      clarify: "Je vois des ambiguïtés possibles. Donnez plus de détails pour que je réponde correctement.",
-    },
-  };
-
   function s(key) {
-    const lang = getLang();
-    const fromDict = window.VOY_I18N?.t?.(`assistant.${key}`, null);
-    if (typeof fromDict === "string") return fromDict;
-    return (STR[lang] && STR[lang][key]) ? STR[lang][key] : STR.en[key];
+    const lang = uiLang();
+    return (STR[lang] && STR[lang][key]) || STR.en[key] || key;
   }
 
-  function escapeHtml(text) {
-    return String(text)
+  function escapeHtml(str) {
+    return String(str)
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;")
@@ -116,273 +57,308 @@
       .replaceAll("'", "&#039;");
   }
 
-  // Inject CSS once
-  function injectCss() {
-    if (qs("#clara-widget-css")) return;
+  function buildWidget() {
+    // Insert minimal CSS (avoid collisions)
     const style = document.createElement("style");
-    style.id = "clara-widget-css";
     style.textContent = `
       .clara-fab {
         position: fixed;
-        right: 24px;
-        bottom: 24px;
-        z-index: 99999;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 10px 14px;
+        right: 18px;
+        bottom: 18px;
+        z-index: 9999;
+        border: none;
         border-radius: 999px;
+        padding: 12px 16px;
+        background: rgba(255,255,255,0.16);
+        color: #fff;
+        backdrop-filter: blur(18px) saturate(140%);
+        -webkit-backdrop-filter: blur(18px) saturate(140%);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
         cursor: pointer;
-        user-select: none;
-        -webkit-tap-highlight-color: transparent;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       }
-      .clara-fab span {
-        font-size: 14px;
-        font-weight: 600;
-        white-space: nowrap;
-      }
-
       .clara-panel {
         position: fixed;
-        right: 24px;
-        bottom: 80px;
-        width: min(420px, calc(100vw - 32px));
-        height: min(520px, calc(100vh - 140px));
-        z-index: 99999;
-        display: none;
-        flex-direction: column;
-        border-radius: 16px;
+        right: 18px;
+        bottom: 72px;
+        width: min(380px, calc(100vw - 36px));
+        height: 520px;
+        max-height: calc(100vh - 110px);
+        z-index: 9999;
+        border-radius: 18px;
         overflow: hidden;
+        background: rgba(10,10,10,0.25);
+        border: 1px solid rgba(255,255,255,0.18);
+        backdrop-filter: blur(18px) saturate(140%);
+        -webkit-backdrop-filter: blur(18px) saturate(140%);
+        box-shadow: 0 18px 60px rgba(0,0,0,0.35);
+        display: none;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        color: #fff;
       }
-
-      .clara-panel.open { display: flex; }
-
       .clara-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
         padding: 12px 14px;
+        border-bottom: 1px solid rgba(255,255,255,0.12);
+        background: rgba(255,255,255,0.08);
       }
-      .clara-title {
-        font-weight: 700;
-        font-size: 14px;
-      }
+      .clara-title { font-weight: 650; letter-spacing: 0.2px; }
       .clara-close {
-        width: 32px;
-        height: 32px;
-        border-radius: 999px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        user-select: none;
+        border:none;
+        background: rgba(255,255,255,0.12);
+        color:#fff;
+        padding: 8px 10px;
+        border-radius: 12px;
+        cursor:pointer;
       }
-
       .clara-body {
-        padding: 12px 14px;
-        overflow: auto;
-        flex: 1;
+        height: calc(100% - 112px);
+        overflow:auto;
+        padding: 12px;
       }
-
       .clara-msg {
+        display:flex;
         margin: 10px 0;
+      }
+      .clara-assistant { justify-content:flex-start; }
+      .clara-user { justify-content:flex-end; }
+      .clara-bubble {
+        max-width: 85%;
         padding: 10px 12px;
         border-radius: 14px;
-        max-width: 92%;
-        line-height: 1.25;
-        font-size: 13px;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(255,255,255,0.10);
+        line-height: 1.35;
+        font-size: 14px;
+        white-space: pre-wrap;
       }
-      .clara-msg.user {
-        margin-left: auto;
+      .clara-user .clara-bubble {
+        background: rgba(120,120,255,0.18);
       }
-
       .clara-footer {
+        display:flex;
+        gap: 8px;
         padding: 10px 12px;
-        display: flex;
-        gap: 10px;
-        align-items: center;
+        border-top: 1px solid rgba(255,255,255,0.12);
+        background: rgba(255,255,255,0.06);
       }
       .clara-input {
-        flex: 1;
+        flex:1;
         border-radius: 12px;
-        padding: 10px 12px;
-        font-size: 13px;
-        outline: none;
         border: 1px solid rgba(255,255,255,0.18);
-        background: rgba(255,255,255,0.10);
-        color: inherit;
+        background: rgba(0,0,0,0.18);
+        color: #fff;
+        padding: 10px 10px;
+        outline: none;
       }
       .clara-send {
-        padding: 10px 14px;
+        border:none;
         border-radius: 12px;
-        cursor: pointer;
-        font-weight: 700;
-        font-size: 12px;
-        border: 1px solid rgba(255,255,255,0.18);
-        background: rgba(255,255,255,0.10);
-        color: inherit;
-      }
-
-      /* Keep above bottom bar if present */
-      @media (max-width: 600px) {
-        .clara-fab { right: 14px; bottom: 18px; }
-        .clara-panel { right: 14px; bottom: 74px; }
+        padding: 10px 12px;
+        background: rgba(255,255,255,0.14);
+        color:#fff;
+        cursor:pointer;
       }
     `;
     document.head.appendChild(style);
-  }
 
-  // Try to reuse glass class if site defines it
-  function applyGlass(el) {
-    el.classList.add("glass");
-  }
-
-  function buildWidget() {
-    injectCss();
-
-    // FAB
-    const fab = document.createElement("div");
+    const fab = document.createElement("button");
     fab.className = "clara-fab";
-    applyGlass(fab);
-    fab.setAttribute("role", "button");
-    fab.setAttribute("aria-label", s("title"));
-    fab.innerHTML = `<span>${escapeHtml(s("title"))}</span>`;
+    fab.type = "button";
+    fab.textContent = s("open");
 
-    // Panel
     const panel = document.createElement("div");
     panel.className = "clara-panel";
-    applyGlass(panel);
 
-    panel.innerHTML = `
-      <div class="clara-header">
-        <div class="clara-title">${escapeHtml(s("title"))}</div>
-        <div class="clara-close" aria-label="${escapeHtml(s("close"))}">${escapeHtml(s("close"))}</div>
-      </div>
-      <div class="clara-body" id="clara-body"></div>
-      <div class="clara-footer">
-        <input class="clara-input" id="clara-input" type="text" placeholder="${escapeHtml(s("placeholder"))}" />
-        <button class="clara-send" id="clara-send" type="button">${escapeHtml(s("send"))}</button>
-      </div>
-    `;
+    const header = document.createElement("div");
+    header.className = "clara-header";
+
+    const title = document.createElement("div");
+    title.className = "clara-title";
+    title.textContent = s("title");
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "clara-close";
+    closeBtn.type = "button";
+    closeBtn.textContent = s("close");
+
+    header.appendChild(title);
+    header.appendChild(closeBtn);
+
+    const body = document.createElement("div");
+    body.className = "clara-body";
+
+    const footer = document.createElement("div");
+    footer.className = "clara-footer";
+
+    const input = document.createElement("input");
+    input.className = "clara-input";
+    input.type = "text";
+    input.placeholder = s("placeholder");
+    input.autocomplete = "off";
+
+    const sendBtn = document.createElement("button");
+    sendBtn.className = "clara-send";
+    sendBtn.type = "button";
+    sendBtn.textContent = s("send");
+
+    footer.appendChild(input);
+    footer.appendChild(sendBtn);
+
+    panel.appendChild(header);
+    panel.appendChild(body);
+    panel.appendChild(footer);
 
     document.body.appendChild(fab);
     document.body.appendChild(panel);
 
-    // Initial messages
-    const body = qs("#clara-body", panel);
+    function open() {
+      panel.style.display = "block";
+      input.focus();
+    }
+    function close() {
+      panel.style.display = "none";
+    }
+
+    fab.addEventListener("click", () => {
+      if (panel.style.display === "block") close();
+      else open();
+    });
+    closeBtn.addEventListener("click", close);
+
     function add(role, text) {
-      const div = document.createElement("div");
-      div.className = `clara-msg ${role}`;
-      applyGlass(div);
-      div.innerHTML = escapeHtml(text);
-      body.appendChild(div);
+      const msg = document.createElement("div");
+      msg.className = `clara-msg clara-${role}`;
+
+      const bubble = document.createElement("div");
+      bubble.className = "clara-bubble";
+      bubble.innerHTML = escapeHtml(text);
+
+      msg.appendChild(bubble);
+      body.appendChild(msg);
       body.scrollTop = body.scrollHeight;
     }
 
-    add("assistant", s("hello"));
-    add("assistant", s("scope"));
-    add("assistant", s("bugPrompt"));
-
-    // Open / close
-    function open() {
-      panel.classList.add("open");
-      const input = qs("#clara-input", panel);
-      if (input) input.focus();
-    }
-    function close() {
-      panel.classList.remove("open");
-    }
-
-    fab.addEventListener("click", open, { passive: true });
-    fab.addEventListener("touchstart", open, { passive: true });
-    qs(".clara-close", panel).addEventListener("click", close, { passive: true });
-
-    // Send logic
-    let softCount = 0;
-
-    async function send() {
-      const input = qs("#clara-input", panel);
-      const msg = (input.value || "").trim();
-      if (!msg) return;
-      input.value = "";
-
-      add("user", msg);
-
-      // Soft redirect after 1–2 off-topic questions
-      softCount++;
-
-      add("assistant", s("thinking"));
+    async function ask(text) {
+      add("user", text);
 
       try {
-        const lang = getLang();
-
-        // Call real backend (ai-translator) by default.
-        const base = (window.VOY_ASSISTANT_BASE || window.VOY_AI_TRANSLATOR_BASE || window.location.origin || "").replace(/\/$/, "");
-        const res = await fetch(base + "/api/assistant", {
+        const res = await fetch(URL_ASSIST, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            message: msg,
-            lang,
-            ui_lang: lang,
-            // lightweight context the backend can optionally use
-            page: location.pathname,
+            text,
+            ui_lang: uiLang(),
           }),
         });
 
+        const raw = await res.text().catch(() => "");
+        let json = null;
+        try {
+          json = raw ? JSON.parse(raw) : null;
+        } catch (_) {}
+
         if (!res.ok) {
-          // Remove "thinking" bubble then show error
-          body.removeChild(body.lastElementChild);
-          add("assistant", s("error"));
+          const msg =
+            json?.detail || json?.message || raw || `${s("error")} (HTTP ${res.status})`;
+          add("assistant", String(msg));
           return;
         }
 
-        const data = await res.json();
-
-        // Remove thinking bubble
-        body.removeChild(body.lastElementChild);
-
-        // Show reply
-        if (data && data.reply) {
-          add("assistant", data.reply);
-        } else {
-          add("assistant", s("error"));
-        }
-
-        if (data?.enrichment?.ambiguous_words?.length) {
-          add("assistant", s("clarify"));
-        }
-
-        // Soft redirect reminder (only if user keeps going off track)
-        if (softCount >= 3) {
-          add("assistant", s("scope"));
-          softCount = 0;
-        }
-      } catch (e) {
-        // Remove thinking bubble
-        if (body.lastElementChild) body.removeChild(body.lastElementChild);
+        const answer = json?.answer || json?.message || json?.text || "";
+        add("assistant", String(answer || ""));
+      } catch (_) {
         add("assistant", s("error"));
       }
     }
 
-    qs("#clara-send", panel).addEventListener("click", send);
-    qs("#clara-input", panel).addEventListener("keydown", (e) => {
-      if (e.key === "Enter") send();
+    function onSend() {
+      const v = (input.value || "").trim();
+      if (!v) return;
+      input.value = "";
+      ask(v);
+    }
+
+    sendBtn.addEventListener("click", onSend);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") onSend();
     });
 
-    // Public hook for language refresh (main.js can call if desired)
+    // greet once
+    add("assistant", s("hello"));
+
+    // allow the rest of the site to force a language refresh
     window.__claraRefreshLang = function () {
-      // Update title/button/placeholder without re-injecting
       try {
-        qs(".clara-title", panel).textContent = s("title");
-        qs("#clara-send", panel).textContent = s("send");
-        qs("#clara-input", panel).setAttribute("placeholder", s("placeholder"));
-        qs("span", fab).textContent = s("title");
+        fab.textContent = s("open");
+        closeBtn.textContent = s("close");
+        title.textContent = s("title");
+        input.placeholder = s("placeholder");
+        sendBtn.textContent = s("send");
       } catch (_) {}
+    };
+
+    // Public API so other pages (mail-bills.js) can "speak" through Clara.
+    // Safe rendering: plain text + bullet lists rendered as real <ul>.
+    function addBullets(role, introText, bullets) {
+      try {
+        const msg = document.createElement("div");
+        msg.className = `clara-msg clara-${role}`;
+
+        const bubble = document.createElement("div");
+        bubble.className = "clara-bubble";
+
+        if (introText) {
+          const p = document.createElement("div");
+          p.textContent = String(introText);
+          bubble.appendChild(p);
+        }
+
+        const ul = document.createElement("ul");
+        ul.style.margin = "8px 0 0 18px";
+        ul.style.padding = "0";
+        ul.style.lineHeight = "1.35";
+
+        (bullets || []).forEach((b) => {
+          const li = document.createElement("li");
+          li.textContent = String(b);
+          ul.appendChild(li);
+        });
+
+        bubble.appendChild(ul);
+        msg.appendChild(bubble);
+        body.appendChild(msg);
+        body.scrollTop = body.scrollHeight;
+      } catch (_) {}
+    }
+
+    window.VOY_CLARA = window.VOY_CLARA || {};
+
+    // Speak a plain message in the Clara panel
+    window.VOY_CLARA.say = function (text, opts = {}) {
+      const role = opts.role === "user" ? "user" : "assistant";
+      add(role, String(text || ""));
+    };
+
+    // Speak a clarification request with bullet options/questions
+    window.VOY_CLARA.clarify = function (items, opts = {}) {
+      const list = Array.isArray(items) ? items : [];
+      if (!list.length) return;
+
+      const intro = opts.intro || s("clarify");
+
+      const bullets = list
+        .map((item) => (item?.prompt || item?.question || item?.text || item?.word || "").toString())
+        .filter(Boolean);
+
+      if (!bullets.length) return;
+      addBullets("assistant", intro, bullets);
     };
   }
 
-  // Wait until DOM ready
+  // init
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", buildWidget);
   } else {
