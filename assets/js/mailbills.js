@@ -298,117 +298,42 @@
     setList("other-amounts-section", "other-amounts-list", data.other_amounts_items || data.other_amounts || []);
   }
 
-  // ===== Clarifications: make Clara sound human + clean bullets =====
-  function niceLangName(code) {
-    const map = { en: "English", es: "Spanish", fr: "French", pt: "Portuguese", zh: "Chinese" };
-    return map[code] || code || "";
-  }
-
-  function normalizeMeaning(m) {
-    if (!m) return null;
-    const type = String(m.type || "").trim();
-    const translation = String(m.translation || "").trim();
-    const definition = String(m.definition || "").trim();
-    const example = Array.isArray(m.examples_source) ? m.examples_source[0] : (m.examples_source || "");
-    return {
-      type,
-      translation,
-      definition,
-      example: String(example || "").trim(),
-    };
-  }
-
   function renderClarifications(list) {
+    // Preferred: show clarifications through Clara (assistant widget) as clean bullet points.
+    const items = Array.isArray(list) ? list : [];
+    const questions = items
+      .map((item) => (item?.prompt || item?.question || item?.text || item?.word || "").toString())
+      .filter(Boolean);
+
+    // Hide the old inline clarification box (we keep it as a fallback only).
     const wrap = document.getElementById("clarification-section");
+    if (wrap) wrap.style.display = "none";
+
+    if (!questions.length) return;
+
+    // Ask through Clara if available
+    if (window.VOY_CLARA && typeof window.VOY_CLARA.clarify === "function") {
+      window.VOY_CLARA.clarify(items, {
+        intro: t(
+          "mb.clarifications_intro",
+          "Clara here. Quick question so I translate this correctly:"
+        ),
+      });
+      return;
+    }
+
+    // Fallback: show inline bullets if Clara widget is not present for some reason
     const ul = document.getElementById("clarification-list");
     if (!wrap || !ul) return;
 
     ul.innerHTML = "";
-    if (!Array.isArray(list) || list.length === 0) {
-      wrap.style.display = "none";
-      return;
-    }
-
-    // Clara-style intro (uses status line unless you add #clarification-intro in HTML)
-    const intro = document.getElementById("clarification-intro");
-    const introText = t(
-      "mb.clarifications_intro",
-      "Clara here. Quick question so I translate this correctly:"
-    );
-    if (intro) intro.textContent = introText;
-    setStatus(introText);
-
-    list.forEach((item) => {
+    questions.forEach((q) => {
       const li = document.createElement("li");
-
-      const word = String(item?.word || item?.token || "").trim();
-      const src = String(item?.source_language || item?.source_lang || item?.source || "").trim();
-      const tgt = String(item?.target_language || item?.target_lang || item?.target || getTargetLang()).trim();
-
-      const meaningsRaw =
-        item?.meanings?.meanings || item?.meanings || item?.options || item?.senses || [];
-
-      const meanings = Array.isArray(meaningsRaw)
-        ? meaningsRaw.map(normalizeMeaning).filter(Boolean)
-        : [];
-
-      const srcName = niceLangName(src) || "the original";
-      const tgtName = niceLangName(tgt) || "the translation";
-
-      // Main question line
-      const qEl = document.createElement("div");
-      qEl.className = "clarification-question";
-      qEl.textContent = word
-        ? `When you say “${word}” in ${srcName}, which meaning do you mean?`
-        : "Which meaning do you mean here?";
-      li.appendChild(qEl);
-
-      // Options as sub-bullets
-      if (meanings.length) {
-        const sub = document.createElement("ul");
-        sub.className = "clarification-options";
-
-        meanings.slice(0, 6).forEach((m) => {
-          const opt = document.createElement("li");
-
-          const parts = [];
-          if (m.translation) parts.push(`“${m.translation}”`);
-          if (m.type) parts.push(m.type);
-          if (m.definition) parts.push(m.definition);
-
-          opt.textContent = parts.filter(Boolean).join(" • ") || "Option";
-
-          if (m.example) {
-            const ex = document.createElement("div");
-            ex.className = "clarification-example";
-            ex.textContent = `Example: ${m.example}`;
-            opt.appendChild(ex);
-          }
-
-          sub.appendChild(opt);
-        });
-
-        li.appendChild(sub);
-
-        const hint = document.createElement("div");
-        hint.className = "clarification-hint";
-        hint.textContent = `Reply with the one you mean, and I’ll translate it into ${tgtName}.`;
-        li.appendChild(hint);
-      } else {
-        // Fallback if backend gave only a simple prompt/question
-        const question = String(item?.prompt || item?.question || "").trim();
-        if (question) {
-          const p = document.createElement("div");
-          p.className = "clarification-question";
-          p.textContent = question;
-          li.appendChild(p);
-        }
-      }
-
+      li.textContent = q;
       ul.appendChild(li);
     });
-
     wrap.style.display = "block";
+    setStatus(t("mb.clarifications", "We found possible ambiguities. Please clarify:"));
   }
 
   async function handleFiles(files) {
