@@ -33,7 +33,7 @@
 
   function setStatus(msg) {
     const el = $("#status-line");
-    if (el) el.textContent = msg;
+    if (el) el.textContent = String(msg ?? "");
   }
 
   function setBusy(isBusy) {
@@ -70,15 +70,13 @@
     "image/heif",
   ]);
 
-  // Explicitly blocked “document” types users might try to upload.
-  // (We block these even if a browser gives a weird/empty MIME.)
-  const BLOCKED_EXT = new Set([
-    "doc", "docx", "rtf", "odt", "pages",
-    "xls", "xlsx", "csv",
-    "ppt", "pptx",
-    "zip", "rar", "7z",
-    "exe"
-  ]);
+  // Option C: text-like files (skip OCR; still interpret/translate + PDF export)
+  const TEXT_EXT = new Set(["txt", "md", "log", "csv", "tsv", "json", "xml", "yaml", "yml"]);
+  const TEXT_MIME_EXACT = new Set(["text/plain", "application/json", "application/xml"]);
+  const TEXT_MIME_PREFIXES = ["text/"];
+
+  // Explicitly blocked dangerous/irrelevant uploads
+  const BLOCKED_EXT = new Set(["exe", "msi", "apk", "zip", "rar", "7z"]);
 
   function extOf(name) {
     const n = (name || "").toLowerCase();
@@ -87,8 +85,8 @@
   }
 
   function guessMime(file) {
-    const t = (file?.type || "").toLowerCase();
-    if (t) return t;
+    const tt = (file?.type || "").toLowerCase();
+    if (tt) return tt;
 
     const ext = extOf(file?.name || "");
     if (ext === "pdf") return "application/pdf";
@@ -98,7 +96,7 @@
     if (ext === "webp") return "image/webp";
     if (ext === "heic") return "image/heic";
     if (ext === "heif") return "image/heif";
-    if (ext === "txt") return "text/plain";
+    if (ext && TEXT_EXT.has(ext)) return "text/plain";
     return "application/octet-stream";
   }
 
@@ -113,6 +111,14 @@
         lastModified: file?.lastModified,
       });
     } catch (_) {}
+  }
+
+  function isTextFile(file) {
+    const ext = extOf(file?.name || "");
+    const mime = guessMime(file);
+    if (ext && TEXT_EXT.has(ext)) return true;
+    if (TEXT_MIME_EXACT.has(mime)) return true;
+    return TEXT_MIME_PREFIXES.some((p) => mime.startsWith(p));
   }
 
   // Sniff common types from magic bytes (fixes Android Edge camera files with empty type/extension).
@@ -140,23 +146,17 @@
     return "";
   }
 
-  function isAllowed(file) {
+  function isAllowedBinaryForOCR(file) {
     const name = file?.name || "";
     const ext = extOf(name);
     const mime = guessMime(file);
 
-    // Hard block obvious non-photo docs (like .docx)
     if (ext && BLOCKED_EXT.has(ext)) return false;
-
-    // Allow plain text (Option C: skip OCR, still translate/summarize/PDF)
-    if (ext === "txt" || mime === "text/plain") return true;
 
     // Normal allow: known extension or known mime
     if ((ext && ALLOWED_EXT.has(ext)) || (mime && ALLOWED_MIME.has(mime))) return true;
 
-    // Android camera capture edge case:
-    // Some browsers provide file.type="" and a name with no extension.
-    // We accept it if it has bytes and isn't clearly a document extension.
+    // Android camera capture edge case (type="" and no extension)
     const looksLikeUnknownButProbablyBinary =
       (!mime || mime === "application/octet-stream") &&
       (!ext || ext.length === 0) &&
@@ -177,7 +177,6 @@
 
     if (!needsConvert) return file;
 
-    // Try decoding to canvas, then export JPEG.
     try {
       const blobUrl = URL.createObjectURL(file);
       const img = new Image();
@@ -207,7 +206,6 @@
         (file.name || "upload").replace(/\.(heic|heif|webp)$/i, "") + ".jpg";
       return new File([jpegBlob], newName, { type: "image/jpeg" });
     } catch (_) {
-      // If conversion fails, keep original and let backend decide.
       return file;
     }
   }
@@ -221,37 +219,88 @@
     return { ok: res.ok, status: res.status, json, text };
   }
 
+  async function readTextFromFile(file) {
+    try {
+      if (typeof file?.text === "function") {
+        return await file.text();
+      }
+    } catch (_) {}
+    return await new Promise((resolve, reject) => {
+      try {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result || ""));
+        r.onerror = () => reject(new Error("Could not read the text file."));
+        r.readAsText(file);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  // ===== Clara bridge (assistant.js should listen for this) =====
+  function emitAssistantMessage(role, text) {
+    const msg = String(text ?? "");
+    try {
+      window.dispatchEvent(new CustomEvent("voyadecir:assistant-message", {
+        detail: { role: role || "assistant", text: msg }
+      }));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Fallback: if some older Clara DOM exists, append there.
+  function pushClaraFallback(role, text) {
+    try {
+      const body = document.querySelector("#clara-body");
+      if (!body) return false;
+      const div = document.createElement("div");
+      div.className = `clara-msg ${role || "assistant"}`;
+      div.style.whiteSpace = "pre-wrap";
+      div.textContent = String(text || "");
+      body.appendChild(div);
+      body.scrollTop = body.scrollHeight;
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function pushClara(role, text) {
+    // Prefer assistant event (new system)
+    if (emitAssistantMessage(role, text)) return true;
+    // Fallback to DOM if assistant not listening
+    return pushClaraFallback(role, text);
+  }
+
   async function parseAzure(file) {
     debugFile(file, "UPLOAD");
+
+    // Option C: text files skip OCR
+    if (isTextFile(file)) {
+      const txt = await readTextFromFile(file);
+      const cleaned = String(txt || "").trim();
+      if (!cleaned) throw new Error("That file looks empty.");
+      return { kind: "text", text: cleaned };
+    }
 
     const normalized = await normalizeImageIfNeeded(file);
     debugFile(normalized, "NORMALIZED");
 
-    if (!isAllowed(normalized)) {
-      throw new Error("Unsupported file. Upload a photo (camera image), a PDF, or a .txt file.");
+    if (!isAllowedBinaryForOCR(normalized)) {
+      throw new Error("Unsupported file. Upload a photo/PDF — or a .txt/.csv/.json file for direct translation.");
     }
 
-    // If it's text, skip OCR completely (Option C).
-    const ext = extOf(normalized?.name || "");
-    const mimeGuess = guessMime(normalized);
-    if (ext === "txt" || mimeGuess === "text/plain") {
-      const text = await normalized.text().catch(() => "");
-      if (!String(text || "").trim()) throw new Error("That .txt file is empty.");
-      return { kind: "text", text: String(text) };
-    }
-
-    // Binary OCR path
     const bytes = await normalized.arrayBuffer();
 
-    // Some mobile browsers give type="" and name without extension.
-    // Sniff the real content type from bytes so Azure doesn’t return HTTP 400.
+    // Force a correct content type for Android Edge camera captures
     let ct = guessMime(normalized);
     if (!ct || ct === "application/octet-stream") {
       const sniffed = sniffMimeFromBytes(bytes);
       if (sniffed) ct = sniffed;
     }
     if (!ct || ct === "application/octet-stream") {
-      // last-resort default; Azure Read usually handles jpeg, but we prefer sniffing above.
       ct = "image/jpeg";
     }
 
@@ -311,24 +360,6 @@
     return out.json || {};
   }
 
-  // Try to add a message into Clara's chat panel if it's present.
-  function pushClara(role, text) {
-    try {
-      const body = document.querySelector("#clara-body");
-      if (!body) return false;
-
-      const div = document.createElement("div");
-      div.className = `clara-msg ${role || "assistant"}`;
-      div.style.whiteSpace = "pre-wrap";
-      div.textContent = String(text || "");
-      body.appendChild(div);
-      body.scrollTop = body.scrollHeight;
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
-
   function render(data) {
     const sb = summaryBox();
     if (sb) {
@@ -372,19 +403,18 @@
       return;
     }
 
-    // Clara-style + clean bullet points
     const bullets = items
       .map((item) => item?.prompt || item?.question || item?.word || "")
       .map((s) => String(s || "").trim())
       .filter(Boolean);
 
-    const text =
-      `${t("mb.clarifications.title", "Quick questions so I translate this correctly:")}\n` +
+    const claraText =
+      `${t("mb.clarifications.title", "Clara: Quick question so I translate this the right way—")}\n` +
       bullets.map((q) => `• ${q}`).join("\n");
 
-    const pushed = pushClara("assistant", text);
+    const pushed = pushClara("assistant", claraText);
 
-    // Fallback: show in-page list if Clara panel isn’t available.
+    // Fallback: show in-page list if Clara panel isn’t available / isn’t listening.
     const wrap = document.getElementById("clarification-section");
     const ul = document.getElementById("clarification-list");
     if (!wrap || !ul) return;
@@ -392,7 +422,7 @@
     ul.innerHTML = "";
     if (pushed) {
       wrap.style.display = "none";
-      setStatus(t("mb.clarifications.sent", "Clara asked a couple questions above."));
+      setStatus(t("mb.clarifications.sent", "Clara asked a couple questions in the chat."));
       return;
     }
 
@@ -422,7 +452,7 @@
 
       if (ocrBox()) ocrBox().value = parsed.text;
 
-      setStatus(t("mb.status.interpreting", "Explaining and translating…"));
+      setStatus(t("mb.status.interpreting", "Clara is translating and explaining…"));
       const data = await interpretAgent(parsed.text, getTargetLang());
       render(data);
       renderClarifications(data?.clarifications);
@@ -461,8 +491,8 @@
       });
 
       if (!res.ok) {
-        const t = await res.text().catch(() => "");
-        throw new Error(t || `PDF export failed with HTTP ${res.status}.`);
+        const tt = await res.text().catch(() => "");
+        throw new Error(tt || `PDF export failed with HTTP ${res.status}.`);
       }
 
       const blob = await res.blob();
@@ -511,14 +541,14 @@
     on(fileInput, "change", (e) => handleFiles(e.target.files));
     on(camInput, "change", (e) => handleFiles(e.target.files));
 
-    // Keep button but it’s now just a re-run (uses text already in the OCR box).
+    // Keep button but it’s now just a re-run
     on(btnTranslate, "click", async () => {
       const text = ocrBox()?.value || "";
       if (!text.trim()) return setStatus(t("mb.status.needs_upload", "Upload a document first."));
 
       setBusy(true);
       enablePdf(false);
-      setStatus(t("mb.status.interpreting", "Explaining and translating…"));
+      setStatus(t("mb.status.interpreting", "Clara is translating and explaining…"));
       try {
         const data = await interpretAgent(text, getTargetLang());
         render(data);
