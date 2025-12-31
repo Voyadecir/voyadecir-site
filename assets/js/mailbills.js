@@ -154,16 +154,20 @@
       throw new Error("Unsupported file. Upload a PDF, JPG, or PNG.");
     }
 
-    const ct = guessMime(normalized);
+    const formData = new FormData();
+    formData.append("file", normalized);
 
-    const bytes = await normalized.arrayBuffer();
+    const headers = {
+      "X-Voyadecir-Lang": uiLang(),
+    };
+    if (normalized.name) {
+      headers["x-filename"] = normalized.name;
+    }
+
     const out = await fetchJson(URL_PARSE, {
       method: "POST",
-      headers: {
-        "Content-Type": ct,
-        "X-Voyadecir-Lang": uiLang(),
-      },
-      body: bytes,
+      headers: headers,
+      body: formData,
     });
 
     if (!out.ok) {
