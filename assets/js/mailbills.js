@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  // ===== Endpoints (unchanged engine; frontend-only behavior changes) =====
+  // ===== Endpoints (engine unchanged; frontend-only behavior) =====
   const AZURE_FUNCS_BASE =
     (window.VOY_AZURE_FUNCS_BASE ||
       "https://voyadecir-ai-functions-aze4fqhjdcbzfkdu.centralus-01.azurewebsites.net"
@@ -55,9 +55,8 @@
     return { ok: res.ok, status: res.status, json, text };
   }
 
-  // ===== OCR (unchanged transport: sends raw bytes; do NOT change engine) =====
+  // ===== OCR transport (keep raw bytes; do NOT change engine) =====
   async function parseAzure(file) {
-    // Read bytes
     const buf = await file.arrayBuffer();
     const out = await fetchJson(URL_PARSE, {
       method: "POST",
@@ -92,9 +91,7 @@
     return { kind: "ocr", text: String(text) };
   }
 
-  // ===== DEMO MODE (locked) =====
-  // 1) Interpret ONCE in English
-  // 2) Spanish is ONLY a mirrored translation of the English explanation (no re-analysis)
+  // ===== DEMO MODE (locked bilingual) =====
   async function interpretEnglish(text) {
     const out = await fetchJson(URL_INTERPRET, {
       method: "POST",
@@ -137,7 +134,6 @@
       throw new Error(String(msg));
     }
 
-    // Accept a few plausible shapes without touching backend
     const j = out.json || {};
     return (
       j.translation ||
@@ -288,7 +284,6 @@
       setStatus("Ready");
     });
 
-    // Copy buttons
     on($("#mb-copy-text"), "click", () => {
       const v = ocrBox()?.value || "";
       if (v) navigator.clipboard?.writeText(v).catch(() => {});
