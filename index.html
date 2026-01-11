@@ -11,49 +11,49 @@
   <script defer src="/assets/js/main.js?v=101"></script>
 </head>
 
-<body class="home-page">
-  <header class="site-header">
-    <div class="header-inner">
+<body>
+  <header>
+    <div class="container nav">
       <a class="brand" href="/index.html" aria-label="Voyadecir Home">
         <img class="logo" src="/assets/img/Voyadecir%20Logo.svg" alt="Voyadecir logo">
-        <div class="brand-text">
-          <div class="brand-name">Voyadecir</div>
-          <div class="brand-tagline">Translate. Understand. Connect.</div>
+        <div>
+          <div class="brand-title">Voyadecir</div>
+          <span class="tagline">Translate. Understand. Connect.</span>
         </div>
       </a>
 
-      <nav class="nav" aria-label="Primary navigation">
-        <a class="nav-link active" href="/index.html">Home</a>
-        <a class="nav-link" href="/mail-bills.html">Demo</a>
-        <a class="nav-link" href="/privacy.html">Privacy</a>
-        <a class="nav-link" href="/terms.html">Terms</a>
+      <nav class="primary-nav" aria-label="Primary navigation">
+        <a href="/index.html" aria-current="page">Home</a>
+        <a href="/mail-bills.html">Demo</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
       </nav>
     </div>
   </header>
 
   <main class="container section">
-    <section class="hero">
-      <h1 class="hero-title">Understand scary mail fast.</h1>
-      <p class="hero-sub">
-        Upload a letter, bill, or notice. Voyadecir extracts the text and explains it clearly in
+    <div class="translate-shell">
+      <h1 class="translate-title">Understand scary mail fast.</h1>
+      <p class="translate-sub">
+        Upload a letter, bill, or notice. Voyadecir extracts text and explains it clearly in
         <strong>English first</strong>, then provides a <strong>mirrored Spanish translation</strong> of that explanation.
       </p>
 
-      <div class="cta-row">
+      <div class="translate-actions">
         <a class="glass-button" href="/mail-bills.html">Try the Demo</a>
       </div>
 
-      <div class="card glass glass-surface" style="margin-top:20px;">
+      <div class="card glass" style="max-width:860px;margin:22px auto 0;">
         <div class="inner">
-          <h2 style="margin-top:0;">What this demo shows</h2>
-          <ul style="margin:0; padding-left:18px;">
+          <h2 style="margin:0 0 10px;">What this demo shows</h2>
+          <ul style="margin:0;padding-left:18px;line-height:1.6;">
             <li>OCR: extracts text from PDFs/photos</li>
-            <li>Explanation: English-first plain-language summary</li>
+            <li>Explanation: English-first plain-language explanation</li>
             <li>LEP flow: Spanish is a mirrored translation of the English explanation (no re-analysis)</li>
           </ul>
         </div>
       </div>
-    </section>
+    </div>
   </main>
 
   <footer>
