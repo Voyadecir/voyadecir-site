@@ -11,6 +11,56 @@
 
   <title>Voyadecir — Demo</title>
   <link rel="stylesheet" href="/assets/css/styles.css?v=101">
+
+  <!-- Demo Mode overrides -->
+  <style>
+    html, body { height: 100%; }
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+
+    main.container.section {
+      flex: 1;
+      padding-top: 24px !important;
+      padding-bottom: 24px !important;
+      text-align: center;
+    }
+
+    .translate-shell { text-align: center; }
+
+    .brand img.logo {
+      height: 72px !important;
+      width: auto;
+      filter: brightness(0) invert(1);
+      opacity: 0.95;
+    }
+
+    a, a:visited, a:hover, a:active {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .primary-nav a, .primary-nav a:visited {
+      color: rgba(255,255,255,0.92);
+      text-decoration: none;
+    }
+    .primary-nav a[aria-current="page"] {
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 999px;
+      padding: 8px 12px;
+    }
+
+    footer a, footer a:visited { color: rgba(255,255,255,0.85); text-decoration: none; }
+
+    /* Keep results section centered and symmetric */
+    .translator-outer { margin-left: auto; margin-right: auto; }
+    .translator-ui { text-align: center; }
+
+    /* Center labels too */
+    .translator-box label { display:block; text-align:center !important; }
+
+    /* Reduce chance of needing to scroll on iPad by trimming vertical spacing */
+    .translator-foot { margin-top: 10px !important; }
+  </style>
 </head>
 
 <body class="page-mailbills">
@@ -42,7 +92,6 @@
       </p>
 
       <div class="translate-actions">
-        <!-- iOS Safari sometimes refuses click-to-open if input is display:none -->
         <input type="file" id="file-input" accept=".pdf,image/*" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" multiple>
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" multiple>
 
@@ -59,52 +108,51 @@
         <div class="translator-ui">
           <div class="translator-panels">
             <div class="translator-box">
-              <label style="text-align:left;color:var(--muted);font-size:14px;">OCR Text (extracted)</label>
+              <label style="color:var(--muted);font-size:14px;">OCR Text (extracted)</label>
               <textarea id="ocr-text" spellcheck="false" placeholder="Text from your document will appear here..."></textarea>
-              <div class="inline-actions">
+              <div class="inline-actions" style="justify-content:center;">
                 <button type="button" class="inline-btn" id="mb-copy-text">Copy Text</button>
               </div>
             </div>
 
             <div class="translator-box">
-              <label style="text-align:left;color:var(--muted);font-size:14px;">English Explanation (first)</label>
+              <label style="color:var(--muted);font-size:14px;">English Explanation (first)</label>
               <textarea id="summary-en" spellcheck="false" placeholder="English explanation will appear here..."></textarea>
-              <div class="inline-actions">
+              <div class="inline-actions" style="justify-content:center;">
                 <button type="button" class="inline-btn" id="mb-copy-en">Copy English</button>
               </div>
             </div>
 
             <div class="translator-box">
-              <label style="text-align:left;color:var(--muted);font-size:14px;">Spanish (mirrored translation)</label>
+              <label style="color:var(--muted);font-size:14px;">Spanish (mirrored translation)</label>
               <textarea id="summary-es" spellcheck="false" placeholder="Spanish translation of the English explanation will appear here..."></textarea>
-              <div class="inline-actions">
+              <div class="inline-actions" style="justify-content:center;">
                 <button type="button" class="inline-btn" id="mb-copy-es">Copy Spanish</button>
               </div>
             </div>
           </div>
 
-          <!-- Optional structured sections (kept for compatibility, hidden unless used) -->
-          <div id="identity-section" style="display:none;margin-top:16px;text-align:left;">
+          <div id="identity-section" style="display:none;margin-top:16px;text-align:center;">
             <h4>What you need to identify yourself:</h4>
-            <ul id="identity-list"></ul>
+            <ul id="identity-list" style="list-style-position:inside;padding-left:0;margin:0;"></ul>
           </div>
 
-          <div id="payment-section" style="display:none;margin-top:16px;text-align:left;">
+          <div id="payment-section" style="display:none;margin-top:16px;text-align:center;">
             <h4>How to pay:</h4>
-            <ul id="payment-list"></ul>
+            <ul id="payment-list" style="list-style-position:inside;padding-left:0;margin:0;"></ul>
           </div>
 
-          <div id="other-amounts-section" style="display:none;margin-top:16px;text-align:left;">
+          <div id="other-amounts-section" style="display:none;margin-top:16px;text-align:center;">
             <h4>Other important amounts:</h4>
-            <ul id="other-amounts-list"></ul>
+            <ul id="other-amounts-list" style="list-style-position:inside;padding-left:0;margin:0;"></ul>
           </div>
 
-          <div id="clarification-section" style="display:none;margin-top:16px;text-align:left;">
+          <div id="clarification-section" style="display:none;margin-top:16px;text-align:center;">
             <h4>We found possible ambiguities. Please clarify:</h4>
-            <ul id="clarification-list"></ul>
+            <ul id="clarification-list" style="list-style-position:inside;padding-left:0;margin:0;"></ul>
           </div>
 
-          <div class="translator-foot">
+          <div class="translator-foot" style="justify-content:center;">
             <span>Your document is processed securely and not stored permanently.</span>
           </div>
         </div>
@@ -122,7 +170,7 @@
       </div>
     </div>
 
-    <div class="container" style="margin-top:10px;">
+    <div class="container" style="margin-top:10px;text-align:center;">
       <div class="site-disclaimer">
         Disclaimer: Voyadecir is for informational translation only and is not HIPAA- or FERPA-compliant.
         Do not upload personal health information (PHI) or student education records.
