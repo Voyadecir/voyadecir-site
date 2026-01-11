@@ -9,6 +9,61 @@
   <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/assets/css/styles.css?v=101" />
   <script defer src="/assets/js/main.js?v=101"></script>
+
+  <!-- Demo Mode overrides: layout, centering, logo visibility, link styling -->
+  <style>
+    /* Full-height shell so footer sits where it should (no weird extra scroll) */
+    html, body { height: 100%; }
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Make main fill remaining space and center content */
+    main.container.section {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 28px !important;
+      padding-bottom: 28px !important;
+      text-align: center;
+    }
+
+    /* Center everything by default */
+    .translate-shell { text-align: center; }
+
+    /* Bigger, visible logo (keep SVG file, just visually make it white) */
+    .brand img.logo {
+      height: 72px !important;
+      width: auto;
+      filter: brightness(0) invert(1); /* turns dark logo into white */
+      opacity: 0.95;
+    }
+
+    /* Kill purple visited links + underlines everywhere */
+    a, a:visited, a:hover, a:active {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* Keep nav readable and consistent */
+    .primary-nav a, .primary-nav a:visited {
+      color: rgba(255,255,255,0.92);
+      text-decoration: none;
+    }
+    .primary-nav a[aria-current="page"] {
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 999px;
+      padding: 8px 12px;
+    }
+
+    /* Footer links: no purple, no underline */
+    footer a, footer a:visited { color: rgba(255,255,255,0.85); text-decoration: none; }
+
+    /* Make the “What this demo shows” box centered and symmetric */
+    .card.glass { margin-left: auto; margin-right: auto; }
+    .card.glass ul { list-style-position: inside; padding-left: 0; margin: 0; }
+    .card.glass li { text-align: center; }
+  </style>
 </head>
 
 <body>
@@ -43,10 +98,10 @@
         <a class="glass-button" href="/mail-bills.html">Try the Demo</a>
       </div>
 
-      <div class="card glass" style="max-width:860px;margin:22px auto 0;">
+      <div class="card glass" style="max-width:860px;margin:18px auto 0;">
         <div class="inner">
           <h2 style="margin:0 0 10px;">What this demo shows</h2>
-          <ul style="margin:0;padding-left:18px;line-height:1.6;">
+          <ul style="line-height:1.6;">
             <li>OCR: extracts text from PDFs/photos</li>
             <li>Explanation: English-first plain-language explanation</li>
             <li>LEP flow: Spanish is a mirrored translation of the English explanation (no re-analysis)</li>
@@ -66,7 +121,7 @@
       </div>
     </div>
 
-    <div class="container" style="margin-top:10px;">
+    <div class="container" style="margin-top:10px;text-align:center;">
       <div class="site-disclaimer">
         Disclaimer: Voyadecir is for informational translation only and is not HIPAA- or FERPA-compliant.
         Do not upload personal health information (PHI) or student education records.
