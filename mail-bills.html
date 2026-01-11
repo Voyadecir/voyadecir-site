@@ -10,103 +10,105 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
   <title>Voyadecir — Demo</title>
-
   <link rel="stylesheet" href="/assets/css/styles.css?v=101">
 </head>
 
 <body class="page-mailbills">
-  <header class="site-header">
-    <div class="header-inner">
+  <header>
+    <div class="container nav">
       <a class="brand" href="/index.html" aria-label="Voyadecir Home">
         <img class="logo" src="/assets/img/Voyadecir%20Logo.svg" alt="Voyadecir logo">
-        <div class="brand-text">
-          <div class="brand-name">Voyadecir</div>
-          <div class="brand-tagline">Translate. Understand. Connect.</div>
+        <div>
+          <div class="brand-title">Voyadecir</div>
+          <span class="tagline">Translate. Understand. Connect.</span>
         </div>
       </a>
 
-      <nav class="nav" aria-label="Primary navigation">
-        <a class="nav-link" href="/index.html">Home</a>
-        <a class="nav-link active" href="/mail-bills.html">Demo</a>
-        <a class="nav-link" href="/privacy.html">Privacy</a>
-        <a class="nav-link" href="/terms.html">Terms</a>
+      <nav class="primary-nav" aria-label="Primary navigation">
+        <a href="/index.html">Home</a>
+        <a href="/mail-bills.html" aria-current="page">Demo</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
       </nav>
     </div>
   </header>
 
-  <main class="page-main">
+  <main class="container section">
     <div class="translate-shell">
-      <h1 class="translate-title">Mail & Bills Helper (Demo)</h1>
+      <h1 class="translate-title">Mail &amp; Bills Helper (Demo)</h1>
       <p class="translate-sub">
         Upload a photo or PDF. You’ll get an <strong>English explanation first</strong>, then a
         <strong>mirrored Spanish translation</strong> of that explanation.
       </p>
 
       <div class="translate-actions">
+        <!-- iOS Safari sometimes refuses click-to-open if input is display:none -->
         <input type="file" id="file-input" accept=".pdf,image/*" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" multiple>
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" multiple>
 
-        <button type="button" class="glass-button translate-btn" id="btn-upload">Upload Document</button>
-        <button type="button" class="glass-button translate-btn" id="btn-camera">Take Picture</button>
-        <button type="button" class="glass-button translate-btn" id="mb-clear">Clear</button>
+        <button type="button" class="glass-button" id="btn-upload">Upload Document</button>
+        <button type="button" class="glass-button" id="btn-camera">Take Picture</button>
+        <button type="button" class="glass-button" id="mb-clear">Clear</button>
       </div>
 
-      <div class="status-row">
+      <div class="translator-foot" style="justify-content:center;">
         <div id="status-line" class="status-line" aria-live="polite">Ready</div>
       </div>
 
-      <section class="results-wrap" id="results-card">
-        <div class="results-grid">
-          <div class="result-panel">
-            <h3 style="margin:0 0 8px 0;">OCR Text (extracted)</h3>
-            <textarea id="ocr-text" class="result-textarea" rows="10" spellcheck="false"
-              placeholder="Text from your document will appear here..."></textarea>
-            <div class="panel-actions">
-              <button type="button" class="glass-button small" id="mb-copy-text">Copy Text</button>
+      <section class="translator-outer glass-panel glass" id="results-card" aria-label="Results">
+        <div class="translator-ui">
+          <div class="translator-panels">
+            <div class="translator-box">
+              <label style="text-align:left;color:var(--muted);font-size:14px;">OCR Text (extracted)</label>
+              <textarea id="ocr-text" spellcheck="false" placeholder="Text from your document will appear here..."></textarea>
+              <div class="inline-actions">
+                <button type="button" class="inline-btn" id="mb-copy-text">Copy Text</button>
+              </div>
+            </div>
+
+            <div class="translator-box">
+              <label style="text-align:left;color:var(--muted);font-size:14px;">English Explanation (first)</label>
+              <textarea id="summary-en" spellcheck="false" placeholder="English explanation will appear here..."></textarea>
+              <div class="inline-actions">
+                <button type="button" class="inline-btn" id="mb-copy-en">Copy English</button>
+              </div>
+            </div>
+
+            <div class="translator-box">
+              <label style="text-align:left;color:var(--muted);font-size:14px;">Spanish (mirrored translation)</label>
+              <textarea id="summary-es" spellcheck="false" placeholder="Spanish translation of the English explanation will appear here..."></textarea>
+              <div class="inline-actions">
+                <button type="button" class="inline-btn" id="mb-copy-es">Copy Spanish</button>
+              </div>
             </div>
           </div>
 
-          <div class="result-panel">
-            <h3 style="margin:0 0 8px 0;">English Explanation (first)</h3>
-            <textarea id="summary-en" class="result-textarea" rows="10" spellcheck="false"
-              placeholder="English explanation will appear here..."></textarea>
-            <div class="panel-actions">
-              <button type="button" class="glass-button small" id="mb-copy-en">Copy English</button>
-            </div>
+          <!-- Optional structured sections (kept for compatibility, hidden unless used) -->
+          <div id="identity-section" style="display:none;margin-top:16px;text-align:left;">
+            <h4>What you need to identify yourself:</h4>
+            <ul id="identity-list"></ul>
           </div>
 
-          <div class="result-panel">
-            <h3 style="margin:0 0 8px 0;">Spanish (mirrored translation)</h3>
-            <textarea id="summary-es" class="result-textarea" rows="10" spellcheck="false"
-              placeholder="Spanish translation of the English explanation will appear here..."></textarea>
-            <div class="panel-actions">
-              <button type="button" class="glass-button small" id="mb-copy-es">Copy Spanish</button>
-            </div>
+          <div id="payment-section" style="display:none;margin-top:16px;text-align:left;">
+            <h4>How to pay:</h4>
+            <ul id="payment-list"></ul>
           </div>
-        </div>
 
-        <div id="identity-section" style="display:none;margin-top:16px;">
-          <h4>What you need to identify yourself:</h4>
-          <ul id="identity-list"></ul>
-        </div>
+          <div id="other-amounts-section" style="display:none;margin-top:16px;text-align:left;">
+            <h4>Other important amounts:</h4>
+            <ul id="other-amounts-list"></ul>
+          </div>
 
-        <div id="payment-section" style="display:none;margin-top:16px;">
-          <h4>How to pay:</h4>
-          <ul id="payment-list"></ul>
-        </div>
+          <div id="clarification-section" style="display:none;margin-top:16px;text-align:left;">
+            <h4>We found possible ambiguities. Please clarify:</h4>
+            <ul id="clarification-list"></ul>
+          </div>
 
-        <div id="other-amounts-section" style="display:none;margin-top:16px;">
-          <h4>Other important amounts:</h4>
-          <ul id="other-amounts-list"></ul>
-        </div>
-
-        <div id="clarification-section" style="display:none;margin-top:16px;">
-          <h4>We found possible ambiguities. Please clarify:</h4>
-          <ul id="clarification-list"></ul>
+          <div class="translator-foot">
+            <span>Your document is processed securely and not stored permanently.</span>
+          </div>
         </div>
       </section>
-
-      <p class="translate-footnote">Your document is processed securely and not stored permanently.</p>
     </div>
   </main>
 
@@ -131,6 +133,6 @@
 
   <script defer src="/assets/js/main.js?v=101"></script>
   <script defer src="/assets/js/mailbills.js?v=101"></script>
-  <script defer src="/assets/js/assistant.js?v=1"></script>
+  <script defer src="/assets/js/assistant.js?v=101"></script>
 </body>
 </html>
