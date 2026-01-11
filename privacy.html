@@ -9,6 +9,41 @@
   <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/assets/css/styles.css?v=101" />
   <script defer src="/assets/js/main.js?v=101"></script>
+
+  <style>
+    html, body { height: 100%; }
+    body { min-height: 100vh; display:flex; flex-direction:column; }
+
+    main.container.section {
+      flex: 1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding-top: 28px !important;
+      padding-bottom: 28px !important;
+      text-align:center;
+    }
+
+    .brand img.logo {
+      height: 72px !important;
+      width: auto;
+      filter: brightness(0) invert(1);
+      opacity: 0.95;
+    }
+
+    a, a:visited, a:hover, a:active { color: inherit; text-decoration: none; }
+    .primary-nav a, .primary-nav a:visited { color: rgba(255,255,255,0.92); text-decoration:none; }
+    .primary-nav a[aria-current="page"] {
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 999px;
+      padding: 8px 12px;
+    }
+    footer a, footer a:visited { color: rgba(255,255,255,0.85); text-decoration:none; }
+
+    /* Card list centering */
+    .card.glass { margin-left:auto; margin-right:auto; }
+  </style>
 </head>
 
 <body>
@@ -32,21 +67,36 @@
   </header>
 
   <main class="container section">
-    <h1>Privacy</h1>
+    <div class="translate-shell" style="width:100%;max-width:860px;">
+      <h1 class="translate-title">Privacy</h1>
 
-    <p>
-      Voyadecir is built to help users translate and understand documents. We aim to minimize data retention and limit exposure of sensitive content.
-    </p>
+      <div class="card glass" style="margin:18px auto 0;">
+        <div class="inner">
+          <h2 style="margin:0 0 10px;">Data minimization</h2>
+          <p style="margin:0;">
+            Voyadecir is built to help users translate and understand documents. We aim to minimize data retention and limit exposure of sensitive content.
+          </p>
+        </div>
+      </div>
 
-    <h2>Do not upload regulated sensitive data</h2>
-    <p>
-      Voyadecir is not a HIPAA- or FERPA-compliant service. Do not upload personal health information (PHI) or student education records.
-    </p>
+      <div class="card glass" style="margin:14px auto 0;">
+        <div class="inner">
+          <h2 style="margin:0 0 10px;">Do not upload regulated sensitive data</h2>
+          <p style="margin:0;">
+            Voyadecir is not a HIPAA- or FERPA-compliant service. Do not upload personal health information (PHI) or student education records.
+          </p>
+        </div>
+      </div>
 
-    <h2>Informational outputs only</h2>
-    <p>
-      Outputs are informational only and may contain errors. Verify against original sources or qualified professionals for legal, medical, financial, or official use.
-    </p>
+      <div class="card glass" style="margin:14px auto 0;">
+        <div class="inner">
+          <h2 style="margin:0 0 10px;">Informational outputs only</h2>
+          <p style="margin:0;">
+            Outputs are informational only and may contain errors. Verify against original sources or qualified professionals for legal, medical, financial, or official use.
+          </p>
+        </div>
+      </div>
+    </div>
   </main>
 
   <footer>
@@ -59,7 +109,7 @@
       </div>
     </div>
 
-    <div class="container" style="margin-top:10px;">
+    <div class="container" style="margin-top:10px;text-align:center;">
       <div class="site-disclaimer">
         Disclaimer: Voyadecir is for informational translation only and is not HIPAA- or FERPA-compliant.
         Do not upload personal health information (PHI) or student education records.
