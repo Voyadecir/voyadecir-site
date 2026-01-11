@@ -16,7 +16,7 @@
       title: "Clara",
       placeholder: "Ask me anything…",
       send: "Send",
-      open: "Chat",
+      open: "Clara",
       close: "Close",
       hello: "Hi. I’m Clara. How can I help?",
       clarify: "I found a couple things that could mean two different things. Which one do you mean?",
@@ -26,7 +26,7 @@
       title: "Clara",
       placeholder: "Pregúntame lo que sea…",
       send: "Enviar",
-      open: "Chat",
+      open: "Clara",
       close: "Cerrar",
       hello: "Hola. Soy Clara. ¿Cómo puedo ayudarte?",
       clarify:
@@ -260,108 +260,38 @@
           json = raw ? JSON.parse(raw) : null;
         } catch (_) {}
 
-        if (!res.ok) {
-          const msg =
-            json?.detail || json?.message || raw || `${s("error")} (HTTP ${res.status})`;
-          add("assistant", String(msg));
-          return;
-        }
+        if (!res.ok) throw new Error(json?.detail || json?.message || raw || "Request failed");
 
-        const answer = json?.answer || json?.message || json?.text || "";
-        add("assistant", String(answer || ""));
+        const out = json?.reply || json?.text || json?.message || "";
+        add("assistant", out || s("error"));
       } catch (_) {
         add("assistant", s("error"));
       }
     }
 
-    function onSend() {
-      const v = (input.value || "").trim();
-      if (!v) return;
-      input.value = "";
-      ask(v);
-    }
-
-    sendBtn.addEventListener("click", onSend);
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") onSend();
-    });
-
-    // greet once
+    // Seed greeting
     add("assistant", s("hello"));
 
-    // allow the rest of the site to force a language refresh
-    window.__claraRefreshLang = function () {
-      try {
-        fab.textContent = s("open");
-        closeBtn.textContent = s("close");
-        title.textContent = s("title");
-        input.placeholder = s("placeholder");
-        sendBtn.textContent = s("send");
-      } catch (_) {}
-    };
-
-    // Public API so other pages (mail-bills.js) can "speak" through Clara.
-    // Safe rendering: plain text + bullet lists rendered as real <ul>.
-    function addBullets(role, introText, bullets) {
-      try {
-        const msg = document.createElement("div");
-        msg.className = `clara-msg clara-${role}`;
-
-        const bubble = document.createElement("div");
-        bubble.className = "clara-bubble";
-
-        if (introText) {
-          const p = document.createElement("div");
-          p.textContent = String(introText);
-          bubble.appendChild(p);
-        }
-
-        const ul = document.createElement("ul");
-        ul.style.margin = "8px 0 0 18px";
-        ul.style.padding = "0";
-        ul.style.lineHeight = "1.35";
-
-        (bullets || []).forEach((b) => {
-          const li = document.createElement("li");
-          li.textContent = String(b);
-          ul.appendChild(li);
-        });
-
-        bubble.appendChild(ul);
-        msg.appendChild(bubble);
-        body.appendChild(msg);
-        body.scrollTop = body.scrollHeight;
-      } catch (_) {}
+    function send() {
+      const text = String(input.value || "").trim();
+      if (!text) return;
+      input.value = "";
+      ask(text);
     }
 
-    window.VOY_CLARA = window.VOY_CLARA || {};
-
-    // Speak a plain message in the Clara panel
-    window.VOY_CLARA.say = function (text, opts = {}) {
-      const role = opts.role === "user" ? "user" : "assistant";
-      add(role, String(text || ""));
-    };
-
-    // Speak a clarification request with bullet options/questions
-    window.VOY_CLARA.clarify = function (items, opts = {}) {
-      const list = Array.isArray(items) ? items : [];
-      if (!list.length) return;
-
-      const intro = opts.intro || s("clarify");
-
-      const bullets = list
-        .map((item) => (item?.prompt || item?.question || item?.text || item?.word || "").toString())
-        .filter(Boolean);
-
-      if (!bullets.length) return;
-      addBullets("assistant", intro, bullets);
-    };
+    sendBtn.addEventListener("click", send);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") send();
+    });
   }
 
-  // init
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", buildWidget);
-  } else {
-    buildWidget();
+  try {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", buildWidget);
+    } else {
+      buildWidget();
+    }
+  } catch (e) {
+    console.error("Clara widget failed:", e);
   }
 })();
