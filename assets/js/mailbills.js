@@ -55,6 +55,16 @@
     return { ok: res.ok, status: res.status, json, text };
   }
 
+  // ===== Crash visibility (Safari loves to fail silently) =====
+  window.addEventListener("error", (e) => {
+    try { console.error("[mailbills] window error:", e.error || e.message, e); } catch (_) {}
+    try { setStatus("JS error: " + (e.message || "unknown")); } catch (_) {}
+  });
+  window.addEventListener("unhandledrejection", (e) => {
+    try { console.error("[mailbills] unhandled rejection:", e.reason); } catch (_) {}
+    try { setStatus("Promise error: " + (e.reason?.message || String(e.reason))); } catch (_) {}
+  });
+
   // ===== OCR transport (keep raw bytes; do NOT change engine) =====
   async function parseAzure(file) {
     const buf = await file.arrayBuffer();
@@ -146,12 +156,17 @@
   }
 
   function extractEnglishExplanation(data) {
+    // Prefer the new structured fields from the backend.
     return String(
-      data.summary ||
-      data.explanation ||
-      data.message ||
-      data.result?.summary ||
-      data.result?.explanation ||
+      data?.english_explanation ||
+      data?.english_summary ||
+      data?.summary ||
+      data?.explanation ||
+      data?.message ||
+      data?.result?.english_explanation ||
+      data?.result?.english_summary ||
+      data?.result?.summary ||
+      data?.result?.explanation ||
       ""
     );
   }
@@ -227,15 +242,23 @@
       const en = extractEnglishExplanation(data);
       if (englishBox()) englishBox().value = en;
 
-      setStatus("Translating explanation to Spanish…");
-      const es = await translateText(en, "es");
-      if (spanishBox()) spanishBox().value = String(es || "");
+      // Prefer server-provided mirrored Spanish (faster, avoids extra call).
+      if (data?.spanish_explanation || data?.spanish_summary) {
+        setStatus("Using mirrored Spanish…");
+        const esOut = String(data?.spanish_explanation || data?.spanish_summary || "");
+        if (spanishBox()) spanishBox().value = esOut;
+      } else {
+        setStatus("Translating explanation to Spanish…");
+        const es = await translateText(en, "es");
+        if (spanishBox()) spanishBox().value = String(es || "");
+      }
 
       renderExtras(data);
       renderClarifications(data?.clarifications);
 
       setStatus("Done");
     } catch (err) {
+      console.error("[mailbills] handleFiles error:", err);
       setStatus(err?.message ? err.message : String(err));
     } finally {
       setBusy(false);
@@ -255,21 +278,34 @@
     const camInput = getCamInput();
 
     if (!fileInput || !camInput) {
-      console.warn("Voyadecir demo: missing file inputs.");
+      const msg = `Missing file inputs. fileInput=${!!fileInput} camInput=${!!camInput}`;
+      console.error("[mailbills]", msg);
+      setStatus(msg);
       return;
     }
 
-    const clickFile = () => fileInput.click();
-    const clickCam = () => camInput.click();
+    // Safari reliability: use CLICK only (no pointerup).
+    on(btnUpload, "click", () => {
+      console.log("[mailbills] upload click");
+      fileInput.click();
+    });
 
-    on(btnUpload, "click", clickFile);
-    on(btnUpload, "pointerup", clickFile);
+    on(btnCamera, "click", () => {
+      console.log("[mailbills] camera click");
+      camInput.click();
+    });
 
-    on(btnCamera, "click", clickCam);
-    on(btnCamera, "pointerup", clickCam);
+    on(fileInput, "change", (e) => {
+      console.log("[mailbills] file-input change", e.target?.files?.length || 0);
+      setStatus(`Selected file(s): ${e.target?.files?.length || 0}`);
+      handleFiles(e.target.files);
+    });
 
-    on(fileInput, "change", (e) => handleFiles(e.target.files));
-    on(camInput, "change", (e) => handleFiles(e.target.files));
+    on(camInput, "change", (e) => {
+      console.log("[mailbills] camera-input change", e.target?.files?.length || 0);
+      setStatus(`Captured file(s): ${e.target?.files?.length || 0}`);
+      handleFiles(e.target.files);
+    });
 
     on(btnClear, "click", () => {
       if (ocrBox()) ocrBox().value = "";
@@ -297,6 +333,7 @@
       if (v) navigator.clipboard?.writeText(v).catch(() => {});
     });
 
+    console.log("[mailbills] wired");
     setStatus("Ready");
   }
 
