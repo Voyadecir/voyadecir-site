@@ -1,4 +1,4 @@
-b(() => {
+(() => {
   "use strict";
 
   // ===== Endpoints (engine unchanged; frontend-only behavior) =====
@@ -77,18 +77,14 @@ b(() => {
   }
 
   function inferContentType(file) {
-    // Prefer the browser-provided type if present
     const t = String(file?.type || "").toLowerCase();
     if (t) return t;
 
-    // Fall back to filename-based inference
     const n = String(file?.name || "").toLowerCase();
     if (n.endsWith(".pdf")) return "application/pdf";
     if (n.endsWith(".png")) return "image/png";
     if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
     if (n.endsWith(".webp")) return "image/webp";
-
-    // Last-resort fallback
     return "application/octet-stream";
   }
 
@@ -99,8 +95,6 @@ b(() => {
   // ===== OCR transport (ASYNC job start + status poll) =====
 
   async function startAzureOcrJob(file) {
-    // Common iPhone/Safari failure mode: HEIC/HEIF
-    // If you want to support HEIC, fix it server-side in Azure Functions by converting to JPEG.
     if (isHeicLike(file)) {
       throw new Error(
         "This photo format (HEIC/HEIF) is not supported for OCR yet. " +
@@ -111,7 +105,6 @@ b(() => {
     const ct = inferContentType(file);
     console.log("[mailbills] OCR start upload:", describeFile(file), "=> Content-Type:", ct);
 
-    // Send the file as raw bytes. This endpoint returns { job_id }
     const buf = await file.arrayBuffer();
     const out = await fetchJson(URL_PARSE_START, {
       method: "POST",
@@ -142,7 +135,7 @@ b(() => {
   async function pollAzureOcrJob(jobId, opts = {}) {
     const {
       intervalMs = 1500,
-      timeoutMs = 180000, // 3 minutes default; adjust if needed
+      timeoutMs = 240000, // 4 minutes to be nicer to big PDFs
       onTick = null,
     } = opts;
 
@@ -156,7 +149,6 @@ b(() => {
       const url = `${URL_PARSE_STATUS}?job_id=${encodeURIComponent(jobId)}`;
       const out = await fetchJson(url, { method: "GET" });
 
-      // If status endpoint fails, surface it immediately
       if (!out.ok) {
         const msg =
           out.json?.detail ||
@@ -168,7 +160,8 @@ b(() => {
       }
 
       const j = out.json || {};
-      const status = String(j.status || j.state || "").toLowerCase();
+      const statusRaw = j.status || j.state || "";
+      const status = String(statusRaw).toLowerCase();
 
       if (typeof onTick === "function") {
         try { onTick(status, j); } catch (_) {}
@@ -187,22 +180,20 @@ b(() => {
         throw new Error(String(msg));
       }
 
-      // Still running
+      // Treat empty/unknown as still running
       await new Promise((r) => setTimeout(r, intervalMs));
     }
   }
 
   async function parseAzure(file) {
-    // Wrapper to preserve your existing handleFiles flow
     const jobId = await startAzureOcrJob(file);
 
     setStatus("OCR started…");
     const text = await pollAzureOcrJob(jobId, {
       intervalMs: 1500,
-      timeoutMs: 180000,
+      timeoutMs: 240000,
       onTick: (status) => {
-        // Keep status human-friendly
-        if (status === "running" || status === "processing" || !status) {
+        if (!status || status === "running" || status === "processing") {
           setStatus("Running OCR…");
         } else {
           setStatus(`Running OCR… (${status})`);
@@ -270,7 +261,6 @@ b(() => {
   }
 
   function extractEnglishExplanation(data) {
-    // Prefer the new structured fields from the backend.
     return String(
       data?.english_explanation ||
       data?.english_summary ||
@@ -356,7 +346,6 @@ b(() => {
       const en = extractEnglishExplanation(data);
       if (englishBox()) englishBox().value = en;
 
-      // Prefer server-provided mirrored Spanish (faster, avoids extra call).
       if (data?.spanish_explanation || data?.spanish_summary) {
         setStatus("Using mirrored Spanish…");
         const esOut = String(data?.spanish_explanation || data?.spanish_summary || "");
@@ -398,7 +387,6 @@ b(() => {
       return;
     }
 
-    // Safari reliability: use CLICK only (no pointerup).
     on(btnUpload, "click", () => {
       console.log("[mailbills] upload click");
       fileInput.click();
