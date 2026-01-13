@@ -1,4 +1,4 @@
-(() => {
+b(() => {
   "use strict";
 
   // ===== Endpoints (engine unchanged; frontend-only behavior) =====
@@ -11,7 +11,11 @@
     (window.VOY_AI_TRANSLATOR_BASE || "https://ai-translator-i5jb.onrender.com"
     ).replace(/\/$/, "");
 
-  const URL_PARSE = `${AZURE_FUNCS_BASE}/api/mailbills/parse`;
+  // NEW async OCR endpoints (Azure Functions)
+  const URL_PARSE_START = `${AZURE_FUNCS_BASE}/api/mailbills_parse_start`;
+  const URL_PARSE_STATUS = `${AZURE_FUNCS_BASE}/api/mailbills_parse_status`;
+
+  // Existing engine endpoints (unchanged)
   const URL_INTERPRET = `${AI_TRANSLATOR_BASE}/api/mailbills/interpret`;
   const URL_TRANSLATE = `${AI_TRANSLATOR_BASE}/api/translate`;
 
@@ -92,8 +96,9 @@
     return `${file?.name || "upload"} (${file?.type || "unknown type"}, ${file?.size || 0} bytes)`;
   }
 
-  // ===== OCR transport (keep raw bytes; do NOT change engine) =====
-  async function parseAzure(file) {
+  // ===== OCR transport (ASYNC job start + status poll) =====
+
+  async function startAzureOcrJob(file) {
     // Common iPhone/Safari failure mode: HEIC/HEIF
     // If you want to support HEIC, fix it server-side in Azure Functions by converting to JPEG.
     if (isHeicLike(file)) {
@@ -104,10 +109,11 @@
     }
 
     const ct = inferContentType(file);
-    console.log("[mailbills] OCR upload:", describeFile(file), "=> Content-Type:", ct);
+    console.log("[mailbills] OCR start upload:", describeFile(file), "=> Content-Type:", ct);
 
+    // Send the file as raw bytes. This endpoint returns { job_id }
     const buf = await file.arrayBuffer();
-    const out = await fetchJson(URL_PARSE, {
+    const out = await fetchJson(URL_PARSE_START, {
       method: "POST",
       headers: {
         "Content-Type": ct,
@@ -117,27 +123,92 @@
     });
 
     if (!out.ok) {
-      // Surface the most helpful error message we can
       const msg =
         out.json?.detail ||
         out.json?.message ||
         out.json?.error ||
         out.text ||
-        `OCR failed with HTTP ${out.status}.`;
+        `OCR start failed with HTTP ${out.status}.`;
       throw new Error(String(msg));
     }
 
-    const j = out.json || {};
-    const text =
-      j.text ||
-      j.ocr_text ||
-      j.result?.text ||
-      j.result?.ocr_text ||
-      "";
-
-    if (!String(text || "").trim()) {
-      throw new Error("OCR returned no text. Try a clearer photo or PDF.");
+    const jobId = out.json?.job_id || out.json?.jobId || out.json?.id || "";
+    if (!String(jobId || "").trim()) {
+      throw new Error("OCR start did not return a job_id.");
     }
+    return String(jobId);
+  }
+
+  async function pollAzureOcrJob(jobId, opts = {}) {
+    const {
+      intervalMs = 1500,
+      timeoutMs = 180000, // 3 minutes default; adjust if needed
+      onTick = null,
+    } = opts;
+
+    const startedAt = Date.now();
+
+    while (true) {
+      if (Date.now() - startedAt > timeoutMs) {
+        throw new Error("OCR is taking too long. Please try again or upload a smaller/clearer document.");
+      }
+
+      const url = `${URL_PARSE_STATUS}?job_id=${encodeURIComponent(jobId)}`;
+      const out = await fetchJson(url, { method: "GET" });
+
+      // If status endpoint fails, surface it immediately
+      if (!out.ok) {
+        const msg =
+          out.json?.detail ||
+          out.json?.message ||
+          out.json?.error ||
+          out.text ||
+          `OCR status failed with HTTP ${out.status}.`;
+        throw new Error(String(msg));
+      }
+
+      const j = out.json || {};
+      const status = String(j.status || j.state || "").toLowerCase();
+
+      if (typeof onTick === "function") {
+        try { onTick(status, j); } catch (_) {}
+      }
+
+      if (status === "done") {
+        const text = String(j.text || j.ocr_text || j.result?.text || "");
+        if (!text.trim()) {
+          throw new Error("OCR completed but returned empty text. Try a clearer photo or PDF.");
+        }
+        return text;
+      }
+
+      if (status === "failed" || status === "error") {
+        const msg = j.error || j.message || "OCR job failed.";
+        throw new Error(String(msg));
+      }
+
+      // Still running
+      await new Promise((r) => setTimeout(r, intervalMs));
+    }
+  }
+
+  async function parseAzure(file) {
+    // Wrapper to preserve your existing handleFiles flow
+    const jobId = await startAzureOcrJob(file);
+
+    setStatus("OCR started…");
+    const text = await pollAzureOcrJob(jobId, {
+      intervalMs: 1500,
+      timeoutMs: 180000,
+      onTick: (status) => {
+        // Keep status human-friendly
+        if (status === "running" || status === "processing" || !status) {
+          setStatus("Running OCR…");
+        } else {
+          setStatus(`Running OCR… (${status})`);
+        }
+      },
+    });
 
     return { kind: "ocr", text: String(text) };
   }
@@ -275,7 +346,7 @@
     try {
       const file = list[0];
 
-      setStatus("Running OCR…");
+      setStatus("Starting OCR…");
       const parsed = await parseAzure(file);
       if (ocrBox()) ocrBox().value = parsed.text;
 
