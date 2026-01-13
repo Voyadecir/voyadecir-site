@@ -65,22 +65,63 @@
     try { setStatus("Promise error: " + (e.reason?.message || String(e.reason))); } catch (_) {}
   });
 
+  // ===== File helpers (Safari may give empty file.type) =====
+  function isHeicLike(file) {
+    const t = String(file?.type || "").toLowerCase();
+    const n = String(file?.name || "").toLowerCase();
+    return t.includes("heic") || t.includes("heif") || n.endsWith(".heic") || n.endsWith(".heif");
+  }
+
+  function inferContentType(file) {
+    // Prefer the browser-provided type if present
+    const t = String(file?.type || "").toLowerCase();
+    if (t) return t;
+
+    // Fall back to filename-based inference
+    const n = String(file?.name || "").toLowerCase();
+    if (n.endsWith(".pdf")) return "application/pdf";
+    if (n.endsWith(".png")) return "image/png";
+    if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
+    if (n.endsWith(".webp")) return "image/webp";
+
+    // Last-resort fallback
+    return "application/octet-stream";
+  }
+
+  function describeFile(file) {
+    return `${file?.name || "upload"} (${file?.type || "unknown type"}, ${file?.size || 0} bytes)`;
+  }
+
   // ===== OCR transport (keep raw bytes; do NOT change engine) =====
   async function parseAzure(file) {
+    // Common iPhone/Safari failure mode: HEIC/HEIF
+    // If you want to support HEIC, fix it server-side in Azure Functions by converting to JPEG.
+    if (isHeicLike(file)) {
+      throw new Error(
+        "This photo format (HEIC/HEIF) is not supported for OCR yet. " +
+        "Please upload a JPG/PNG/PDF, or change iPhone Camera settings to 'Most Compatible' (JPEG)."
+      );
+    }
+
+    const ct = inferContentType(file);
+    console.log("[mailbills] OCR upload:", describeFile(file), "=> Content-Type:", ct);
+
     const buf = await file.arrayBuffer();
     const out = await fetchJson(URL_PARSE, {
       method: "POST",
       headers: {
-        "Content-Type": file.type || "application/octet-stream",
+        "Content-Type": ct,
         "X-File-Name": encodeURIComponent(file.name || "upload"),
       },
       body: buf,
     });
 
     if (!out.ok) {
+      // Surface the most helpful error message we can
       const msg =
         out.json?.detail ||
         out.json?.message ||
+        out.json?.error ||
         out.text ||
         `OCR failed with HTTP ${out.status}.`;
       throw new Error(String(msg));
@@ -117,6 +158,7 @@
       const msg =
         out.json?.detail ||
         out.json?.message ||
+        out.json?.error ||
         out.text ||
         `Interpret failed with HTTP ${out.status}.`;
       throw new Error(String(msg));
@@ -139,6 +181,7 @@
       const msg =
         out.json?.detail ||
         out.json?.message ||
+        out.json?.error ||
         out.text ||
         `Translate failed with HTTP ${out.status}.`;
       throw new Error(String(msg));
