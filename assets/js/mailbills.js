@@ -11,7 +11,10 @@
     (window.VOY_AI_TRANSLATOR_BASE || "https://ai-translator-i5jb.onrender.com"
     ).replace(/\/$/, "");
 
-  // NEW async OCR endpoints (Azure Functions)
+  // NEW: direct-to-Blob upload session (SAS URL)
+  const URL_UPLOAD_URL = `${AZURE_FUNCS_BASE}/api/mailbills_upload_url`;
+
+  // Async OCR endpoints (Azure Functions)
   const URL_PARSE_START = `${AZURE_FUNCS_BASE}/api/mailbills_parse_start`;
   const URL_PARSE_STATUS = `${AZURE_FUNCS_BASE}/api/mailbills_parse_status`;
 
@@ -92,7 +95,54 @@
     return `${file?.name || "upload"} (${file?.type || "unknown type"}, ${file?.size || 0} bytes)`;
   }
 
-  // ===== OCR transport (ASYNC job start + status poll) =====
+  // ===== OCR transport (Browser -> Blob Storage -> Function) =====
+
+  async function getUploadSession(file) {
+    const out = await fetchJson(URL_UPLOAD_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        filename: file?.name || "upload.pdf",
+        content_type: inferContentType(file),
+      }),
+    });
+
+    if (!out.ok) {
+      const msg =
+        out.json?.detail ||
+        out.json?.message ||
+        out.json?.error ||
+        out.text ||
+        `Upload session failed with HTTP ${out.status}.`;
+      throw new Error(String(msg));
+    }
+
+    const j = out.json || {};
+    if (!j.job_id || !j.upload_url || !j.blob_url) {
+      throw new Error("Upload session response missing job_id/upload_url/blob_url.");
+    }
+    return j;
+  }
+
+  async function uploadFileToBlob(uploadUrl, file) {
+    const ct = inferContentType(file);
+    const buf = await file.arrayBuffer();
+
+    const res = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "x-ms-blob-type": "BlockBlob",
+        "Content-Type": ct,
+      },
+      body: buf,
+    });
+
+    if (!res.ok) {
+      let t = "";
+      try { t = await res.text(); } catch (_) {}
+      throw new Error(`Blob upload failed with HTTP ${res.status}${t ? `: ${t}` : ""}`);
+    }
+  }
 
   async function startAzureOcrJob(file) {
     if (isHeicLike(file)) {
@@ -103,29 +153,40 @@
     }
 
     const ct = inferContentType(file);
-    console.log("[mailbills] OCR start upload:", describeFile(file), "=> Content-Type:", ct);
+    console.log("[mailbills] upload:", describeFile(file), "=> Content-Type:", ct);
 
-    const buf = await file.arrayBuffer();
-    const out = await fetchJson(URL_PARSE_START, {
+    // 1) Ask Functions for a short-lived SAS upload URL
+    setStatus("Preparing upload…");
+    const sess = await getUploadSession(file);
+
+    // 2) Upload file directly to Blob Storage
+    setStatus("Uploading document…");
+    await uploadFileToBlob(sess.upload_url, file);
+
+    // 3) Start OCR job using the SAS URL so Document Intelligence can read it
+    setStatus("Starting OCR…");
+    const startOut = await fetchJson(URL_PARSE_START, {
       method: "POST",
-      headers: {
-        "Content-Type": ct,
-        "X-File-Name": encodeURIComponent(file.name || "upload"),
-      },
-      body: buf,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        job_id: sess.job_id,
+        // IMPORTANT: pass SAS URL, not bare blob_url
+        blob_url: sess.upload_url,
+      }),
     });
 
-    if (!out.ok) {
+    if (!startOut.ok) {
       const msg =
-        out.json?.detail ||
-        out.json?.message ||
-        out.json?.error ||
-        out.text ||
-        `OCR start failed with HTTP ${out.status}.`;
+        startOut.json?.detail ||
+        startOut.json?.message ||
+        startOut.json?.error ||
+        startOut.text ||
+        `OCR start failed with HTTP ${startOut.status}.`;
       throw new Error(String(msg));
     }
 
-    const jobId = out.json?.job_id || out.json?.jobId || out.json?.id || "";
+    // parse_start may echo job_id; if not, use our session job_id
+    const jobId = startOut.json?.job_id || sess.job_id;
     if (!String(jobId || "").trim()) {
       throw new Error("OCR start did not return a job_id.");
     }
@@ -135,7 +196,7 @@
   async function pollAzureOcrJob(jobId, opts = {}) {
     const {
       intervalMs = 1500,
-      timeoutMs = 240000, // 4 minutes to be nicer to big PDFs
+      timeoutMs = 240000, // 4 minutes
       onTick = null,
     } = opts;
 
@@ -180,7 +241,6 @@
         throw new Error(String(msg));
       }
 
-      // Treat empty/unknown as still running
       await new Promise((r) => setTimeout(r, intervalMs));
     }
   }
