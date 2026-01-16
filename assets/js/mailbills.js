@@ -163,15 +163,15 @@
     setStatus("Uploading document…");
     await uploadFileToBlob(sess.upload_url, file);
 
-    // 3) Start OCR job using the SAS URL so Document Intelligence can read it
+    // 3) Start OCR job using READ SAS URL so Document Intelligence can read it
     setStatus("Starting OCR…");
     const startOut = await fetchJson(URL_PARSE_START, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         job_id: sess.job_id,
-        // IMPORTANT: pass SAS URL, not bare blob_url
-        blob_url: sess.upload_url,
+        // ✅ FIX: pass READ SAS URL, NOT the upload_url
+        blob_url: sess.blob_url,
       }),
     });
 
