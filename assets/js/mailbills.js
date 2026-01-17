@@ -1,159 +1,397 @@
 (() => {
   "use strict";
 
+  // ===== Endpoints =====
   const AZURE_FUNCS_BASE =
     (window.VOY_AZURE_FUNCS_BASE ||
       "https://voyadecir-ai-functions-aze4fqhjdcbzfkdu.centralus-01.azurewebsites.net"
     ).replace(/\/$/, "");
 
   const AI_TRANSLATOR_BASE =
-    (window.VOY_AI_TRANSLATOR_BASE ||
-      "https://ai-translator-i5jb.onrender.com"
+    (window.VOY_AI_TRANSLATOR_BASE || "https://ai-translator-i5jb.onrender.com"
     ).replace(/\/$/, "");
 
   const URL_UPLOAD_URL = `${AZURE_FUNCS_BASE}/api/mailbills_upload_url`;
   const URL_PARSE_START = `${AZURE_FUNCS_BASE}/api/mailbills_parse_start`;
   const URL_PARSE_STATUS = `${AZURE_FUNCS_BASE}/api/mailbills_parse_status`;
+
   const URL_INTERPRET = `${AI_TRANSLATOR_BASE}/api/mailbills/interpret`;
+  const URL_TRANSLATE = `${AI_TRANSLATOR_BASE}/api/translate`;
 
-  const $ = (s) => document.querySelector(s);
-  const on = (e, ev, fn) => e && e.addEventListener(ev, fn);
+  // ===== Helpers =====
+  const $ = (sel) => document.querySelector(sel);
+  const on = (el, ev, fn, opt) => el && el.addEventListener(ev, fn, opt);
 
-  function setStatus(t) {
-    const el = $("#status-line");
-    if (el) el.textContent = t || "";
+  function uiLang() {
+    try {
+      return sessionStorage.getItem("voyadecir_lang") || "en";
+    } catch (_) {
+      return "en";
+    }
   }
 
-  function setBusy(b) {
+  function setStatus(msg) {
+    const el = $("#status-line");
+    if (el) el.textContent = String(msg ?? "");
+  }
+
+  function setBusy(isBusy) {
     ["#btn-upload", "#btn-camera", "#mb-clear"].forEach((id) => {
       const el = $(id);
-      if (el) el.disabled = !!b;
+      if (el) el.disabled = !!isBusy;
     });
   }
 
-  function inferType(f) {
-    if (f.type) return f.type;
-    const n = f.name.toLowerCase();
+  function getFileInput() { return $("#file-input"); }
+  function getCamInput() { return $("#camera-input"); }
+
+  function ocrBox() { return $("#ocr-text"); }
+  function englishBox() { return $("#summary-en"); }
+  function spanishBox() { return $("#summary-es"); }
+
+  async function fetchJson(url, opts) {
+    const res = await fetch(url, opts);
+    let text = "";
+    try { text = await res.text(); } catch (_) {}
+    let json = null;
+    try { json = text ? JSON.parse(text) : null; } catch (_) {}
+    return { ok: res.ok, status: res.status, json, text };
+  }
+
+  // ===== Crash visibility =====
+  window.addEventListener("error", (e) => {
+    try { console.error("[mailbills] window error:", e.error || e.message, e); } catch (_) {}
+    try { setStatus("JS error: " + (e.message || "unknown")); } catch (_) {}
+  });
+  window.addEventListener("unhandledrejection", (e) => {
+    try { console.error("[mailbills] unhandled rejection:", e.reason); } catch (_) {}
+    try { setStatus("Promise error: " + (e.reason?.message || String(e.reason))); } catch (_) {}
+  });
+
+  // ===== File helpers =====
+  function isHeicLike(file) {
+    const t = String(file?.type || "").toLowerCase();
+    const n = String(file?.name || "").toLowerCase();
+    return t.includes("heic") || t.includes("heif") || n.endsWith(".heic") || n.endsWith(".heif");
+  }
+
+  function inferContentType(file) {
+    const t = String(file?.type || "").toLowerCase();
+    if (t) return t;
+
+    const n = String(file?.name || "").toLowerCase();
     if (n.endsWith(".pdf")) return "application/pdf";
-    if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
     if (n.endsWith(".png")) return "image/png";
+    if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
+    if (n.endsWith(".webp")) return "image/webp";
     return "application/octet-stream";
   }
 
-  async function fetchJson(url, opts) {
-    const r = await fetch(url, opts);
-    const t = await r.text();
-    let j = null;
-    try { j = JSON.parse(t); } catch {}
-    return { ok: r.ok, status: r.status, json: j, text: t };
+  function describeFile(file) {
+    return `${file?.name || "upload"} (${file?.type || "unknown type"}, ${file?.size || 0} bytes)`;
   }
 
+  // ===== OCR transport (Browser -> Blob Storage -> Function) =====
+
   async function getUploadSession(file) {
-    const r = await fetchJson(URL_UPLOAD_URL, {
+    const out = await fetchJson(URL_UPLOAD_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        filename: file.name,
-        content_type: inferType(file),
+        filename: file?.name || "upload.pdf",
+        content_type: inferContentType(file),
       }),
     });
-    if (!r.ok) throw new Error(r.text);
-    return r.json;
+
+    if (!out.ok) {
+      const msg =
+        out.json?.detail ||
+        out.json?.message ||
+        out.json?.error ||
+        out.text ||
+        `Upload session failed with HTTP ${out.status}.`;
+      throw new Error(String(msg));
+    }
+
+    const j = out.json || {};
+    if (!j.job_id || !j.upload_url || !j.blob_url) {
+      throw new Error("Upload session response missing job_id/upload_url/blob_url.");
+    }
+    return j;
   }
 
-  async function uploadBlob(url, file) {
+  async function uploadFileToBlob(uploadUrl, file) {
+    const ct = inferContentType(file);
     const buf = await file.arrayBuffer();
-    const r = await fetch(url, {
+
+    const res = await fetch(uploadUrl, {
       method: "PUT",
       headers: {
         "x-ms-blob-type": "BlockBlob",
-        "Content-Type": inferType(file),
+        "Content-Type": ct,
       },
       body: buf,
     });
-    if (!r.ok) throw new Error("Blob upload failed");
+
+    if (!res.ok) {
+      let t = "";
+      try { t = await res.text(); } catch (_) {}
+      throw new Error(`Blob upload failed with HTTP ${res.status}${t ? `: ${t}` : ""}`);
+    }
   }
 
-  async function startOCR(sess) {
-    const r = await fetchJson(URL_PARSE_START, {
+  async function startAzureOcrJob(file) {
+    if (isHeicLike(file)) {
+      throw new Error(
+        "This photo format (HEIC/HEIF) is not supported for OCR yet. " +
+        "Please upload a JPG/PNG/PDF, or change iPhone Camera settings to 'Most Compatible' (JPEG)."
+      );
+    }
+
+    const ct = inferContentType(file);
+    console.log("[mailbills] upload:", describeFile(file), "=> Content-Type:", ct);
+
+    // 1) Ask Functions for short-lived SAS URLs
+    setStatus("Preparing upload…");
+    const sess = await getUploadSession(file);
+
+    // 2) Upload to Blob using WRITE SAS (sp=acw)
+    setStatus("Uploading document…");
+    await uploadFileToBlob(sess.upload_url, file);
+
+    // 3) Start OCR using READ SAS (sp=r)
+    setStatus("Starting OCR…");
+    const startOut = await fetchJson(URL_PARSE_START, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         job_id: sess.job_id,
-        blob_url: sess.upload_url,
+        blob_url: sess.blob_url, // ✅ MUST be sp=r
       }),
     });
-    if (!r.ok) throw new Error(r.text);
-    return r.json.job_id || sess.job_id;
+
+    if (!startOut.ok) {
+      const msg =
+        startOut.json?.detail ||
+        startOut.json?.message ||
+        startOut.json?.error ||
+        startOut.text ||
+        `OCR start failed with HTTP ${startOut.status}.`;
+      throw new Error(String(msg));
+    }
+
+    const jobId = startOut.json?.job_id || sess.job_id;
+    if (!String(jobId || "").trim()) {
+      throw new Error("OCR start did not return a job_id.");
+    }
+    return String(jobId);
   }
 
-  async function pollOCR(jobId) {
+  async function pollAzureOcrJob(jobId, opts = {}) {
+    const {
+      intervalMs = 1500,
+      timeoutMs = 240000,
+      onTick = null,
+    } = opts;
+
+    const startedAt = Date.now();
+
     while (true) {
-      const r = await fetchJson(
-        `${URL_PARSE_STATUS}?job_id=${encodeURIComponent(jobId)}`
-      );
-      if (!r.ok) throw new Error(r.text);
+      if (Date.now() - startedAt > timeoutMs) {
+        throw new Error("OCR is taking too long. Please try again or upload a smaller/clearer document.");
+      }
 
-      const s = (r.json.status || "").toLowerCase();
-      if (s === "done") return r.json.text;
-      if (s === "failed") throw new Error("OCR failed");
+      const url = `${URL_PARSE_STATUS}?job_id=${encodeURIComponent(jobId)}`;
+      const out = await fetchJson(url, { method: "GET" });
 
-      setStatus("Running OCR…");
-      await new Promise((r) => setTimeout(r, 1500));
+      if (!out.ok) {
+        const msg =
+          out.json?.detail ||
+          out.json?.message ||
+          out.json?.error ||
+          out.text ||
+          `OCR status failed with HTTP ${out.status}.`;
+        throw new Error(String(msg));
+      }
+
+      const j = out.json || {};
+      const status = String(j.status || j.state || "").toLowerCase();
+
+      if (typeof onTick === "function") {
+        try { onTick(status, j); } catch (_) {}
+      }
+
+      if (status === "done") {
+        const text = String(j.text || j.ocr_text || j.result?.text || "");
+        if (!text.trim()) {
+          throw new Error("OCR completed but returned empty text. Try a clearer photo or PDF.");
+        }
+        return text;
+      }
+
+      if (status === "failed" || status === "error") {
+        const msg = j.error || j.message || "OCR job failed.";
+        throw new Error(String(msg));
+      }
+
+      await new Promise((r) => setTimeout(r, intervalMs));
     }
   }
 
-  async function handleFile(file) {
+  async function parseAzure(file) {
+    const jobId = await startAzureOcrJob(file);
+
+    setStatus("OCR started…");
+    const text = await pollAzureOcrJob(jobId, {
+      intervalMs: 1500,
+      timeoutMs: 240000,
+      onTick: (status) => {
+        if (!status || status === "running" || status === "processing") {
+          setStatus("Running OCR…");
+        } else {
+          setStatus(`Running OCR… (${status})`);
+        }
+      },
+    });
+
+    return { kind: "ocr", text: String(text) };
+  }
+
+  // ===== Interpret + Translate (unchanged) =====
+  async function interpretEnglish(text) {
+    const out = await fetchJson(URL_INTERPRET, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text,
+        target_lang: "en",
+        ui_lang: uiLang(),
+      }),
+    });
+
+    if (!out.ok) {
+      const msg =
+        out.json?.detail ||
+        out.json?.message ||
+        out.json?.error ||
+        out.text ||
+        `Interpret failed with HTTP ${out.status}.`;
+      throw new Error(String(msg));
+    }
+
+    return out.json || {};
+  }
+
+  async function translateText(text, targetLang) {
+    const out = await fetchJson(URL_TRANSLATE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, target_lang: targetLang }),
+    });
+
+    if (!out.ok) {
+      const msg =
+        out.json?.detail ||
+        out.json?.message ||
+        out.json?.error ||
+        out.text ||
+        `Translate failed with HTTP ${out.status}.`;
+      throw new Error(String(msg));
+    }
+
+    const j = out.json || {};
+    return j.translation || j.translated_text || j.text || j.result?.translation || j.result?.translated_text || "";
+  }
+
+  function extractEnglishExplanation(data) {
+    return String(
+      data?.english_explanation ||
+      data?.english_summary ||
+      data?.summary ||
+      data?.explanation ||
+      data?.message ||
+      data?.result?.english_explanation ||
+      data?.result?.english_summary ||
+      data?.result?.summary ||
+      data?.result?.explanation ||
+      ""
+    );
+  }
+
+  async function handleFiles(files) {
+    const list = Array.from(files || []);
+    if (!list.length) return;
+
     setBusy(true);
+    setStatus("Reading document…");
+
     try {
-      setStatus("Uploading…");
-      const sess = await getUploadSession(file);
-      await uploadBlob(sess.upload_url, file);
+      const file = list[0];
 
-      setStatus("OCR processing…");
-      const jobId = await startOCR(sess);
-      const text = await pollOCR(jobId);
-      $("#ocr-text").value = text;
+      setStatus("Starting OCR…");
+      const parsed = await parseAzure(file);
+      if (ocrBox()) ocrBox().value = parsed.text;
 
-      setStatus("Generating explanation…");
-      const r = await fetchJson(URL_INTERPRET, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      if (!r.ok) throw new Error(r.text);
+      setStatus("Generating English explanation…");
+      const data = await interpretEnglish(parsed.text);
 
-      const data = r.json || {};
-      $("#summary-en").value =
-        data.english_explanation || data.summary || "";
+      const en = extractEnglishExplanation(data);
+      if (englishBox()) englishBox().value = en;
 
-      $("#summary-es").value =
-        data.spanish_explanation ||
-        data.spanish_summary ||
-        "";
+      if (data?.spanish_explanation || data?.spanish_summary) {
+        setStatus("Using mirrored Spanish…");
+        const esOut = String(data?.spanish_explanation || data?.spanish_summary || "");
+        if (spanishBox()) spanishBox().value = esOut;
+      } else {
+        setStatus("Translating explanation to Spanish…");
+        const es = await translateText(en, "es");
+        if (spanishBox()) spanishBox().value = String(es || "");
+      }
 
       setStatus("Done");
-    } catch (e) {
-      console.error(e);
-      setStatus(e.message);
+    } catch (err) {
+      console.error("[mailbills] handleFiles error:", err);
+      setStatus(err?.message ? err.message : String(err));
     } finally {
       setBusy(false);
+      const fi = getFileInput();
+      const ci = getCamInput();
+      if (fi) fi.value = "";
+      if (ci) ci.value = "";
     }
   }
 
   function wire() {
-    on($("#btn-upload"), "click", () => $("#file-input").click());
-    on($("#file-input"), "change", (e) => handleFile(e.target.files[0]));
-    on($("#mb-clear"), "click", () => {
-      $("#ocr-text").value = "";
-      $("#summary-en").value = "";
-      $("#summary-es").value = "";
+    const btnUpload = $("#btn-upload");
+    const btnCamera = $("#btn-camera");
+    const btnClear = $("#mb-clear");
+
+    const fileInput = getFileInput();
+    const camInput = getCamInput();
+
+    on(btnUpload, "click", () => fileInput.click());
+    on(btnCamera, "click", () => camInput.click());
+
+    on(fileInput, "change", (e) => handleFiles(e.target.files));
+    on(camInput, "change", (e) => handleFiles(e.target.files));
+
+    on(btnClear, "click", () => {
+      if (ocrBox()) ocrBox().value = "";
+      if (englishBox()) englishBox().value = "";
+      if (spanishBox()) spanishBox().value = "";
       setStatus("Ready");
     });
+
     setStatus("Ready");
   }
 
-  document.readyState === "loading"
-    ? document.addEventListener("DOMContentLoaded", wire)
-    : wire();
+  try {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", wire);
+    } else {
+      wire();
+    }
+  } catch (e) {
+    console.error("Voyadecir demo failed to initialize:", e);
+  }
 })();
